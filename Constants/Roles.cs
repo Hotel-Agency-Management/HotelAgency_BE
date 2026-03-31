@@ -11,6 +11,7 @@ namespace Booking.Constants
         public const string Accountant = "ACCOUNTANT";
         public const string CustomerSupport = "CUSTOMER_SUPPORT";
         public const string Auditor = "AUDITOR";
+        public const string Customer = "CUSTOMER";
         public static readonly string[] All =
         {
             SuperAdmin,
@@ -21,7 +22,8 @@ namespace Booking.Constants
             HousekeepingEmployee,
             Accountant,
             CustomerSupport,
-            Auditor
+            Auditor,
+            Customer
         };
     }
 }

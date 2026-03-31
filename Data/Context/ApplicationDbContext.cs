@@ -6,7 +6,7 @@ using Booking.Models;
 namespace Booking.Data
 {
     public class ApplicationDbContext
-        : IdentityDbContext<ApplicationUser, IdentityRole, string>
+        : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

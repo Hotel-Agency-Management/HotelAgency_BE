@@ -5,7 +5,7 @@ namespace Booking.Data.Seeders
 {
     public static class RoleSeeder
     {
-        public static async Task SeedAsync(RoleManager<IdentityRole> roleManager)
+        public static async Task SeedAsync(RoleManager<IdentityRole<int>> roleManager)
         {
             foreach (var roleName in Roles.All)
             {
@@ -13,7 +13,7 @@ namespace Booking.Data.Seeders
 
                 if (!exists)
                 {
-                    var result = await roleManager.CreateAsync(new IdentityRole(roleName));
+                    var result = await roleManager.CreateAsync(new IdentityRole<int>(roleName));
 
                     if (!result.Succeeded)
                     {

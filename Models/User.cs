@@ -3,7 +3,7 @@ using System;
 
 namespace Booking.Models
 {
-    public class ApplicationUser : IdentityUser
+    public class ApplicationUser : IdentityUser<int>
     {
         public int? AgencyId { get; set; }
 
