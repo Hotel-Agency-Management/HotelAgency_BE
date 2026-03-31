@@ -22,6 +22,7 @@ namespace Booking.Services
 
             var role = await _authRepository.GetRoleAsync(user);
             var token = _jwtService.GenerateToken(user, role);
+            user.LastLogin = DateTime.UtcNow;
 
             return new AuthResponseDto
             {
@@ -72,6 +73,22 @@ namespace Booking.Services
                 throw new RegistrationFailedException("User created but assigning role failed.");
 
             return user;
+        }
+
+        public async Task UpdateProfile(ApplicationUser user, UpdateProfileRequest request)
+        {
+            if (request.FirstName != null)
+                user.FirstName = request.FirstName;
+
+            if (request.LastName != null)
+                user.LastName = request.LastName;
+
+            if (request.PhoneNumber != null)
+                user.PhoneNumber = request.PhoneNumber;
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _authRepository.UpdateUserAsync(user);
         }
 
 
