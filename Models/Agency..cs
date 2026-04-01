@@ -32,5 +32,4 @@ namespace Booking.Models
         public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
         public ICollection<AgencyDocument> Documents { get; set; } = new List<AgencyDocument>();
     }
-
 }

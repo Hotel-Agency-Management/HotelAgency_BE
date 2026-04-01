@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace Booking.DTO
 {
-     public class AgencyInfoRequest
+    public class AgencyInfoRequest
     {
         [Required] public string AgencyName { get; set; } = string.Empty;
         [Required] public string AgencyAddress { get; set; } = string.Empty;

@@ -11,6 +11,6 @@ namespace Booking.Interfaces.Repositories
         Task<string> GetRoleAsync(ApplicationUser user);
         Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password);
         Task<IdentityResult> AddToRoleAsync(ApplicationUser user, string role);
-        
+
     }
 }
