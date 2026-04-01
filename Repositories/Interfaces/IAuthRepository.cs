@@ -12,6 +12,11 @@ namespace Booking.Interfaces.Repositories
         Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password);
         Task<IdentityResult> AddToRoleAsync(ApplicationUser user, string role);
         Task<bool> UpdateUserAsync(ApplicationUser user);
+        Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, string currentPassword, string newPassword);
+        Task DeleteExistingCodesAsync(int userId);
+        Task SaveResetCodeAsync(PasswordResetCode resetCode);
+        Task<PasswordResetCode?> GetValidResetCodeAsync(int userId, string code);
+        Task MarkCodeAsUsedAsync(PasswordResetCode resetCode);
 
     }
 }

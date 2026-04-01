@@ -1,10 +1,14 @@
 using Booking.Interfaces.Repositories;
 using Booking.Models;
 using Microsoft.AspNetCore.Identity;
+using Booking.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class AuthRepository(UserManager<ApplicationUser> _userManager) : IAuthRepository
+    public class AuthRepository(
+        UserManager<ApplicationUser> _userManager,
+        ApplicationDbContext _context) : IAuthRepository
     {
         public async Task<ApplicationUser?> FindByEmailAsync(string email)
         {
@@ -36,6 +40,46 @@ namespace Booking.Repositories
         {
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, string currentPassword, string newPassword)
+        {
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            
+            if (result.Succeeded)
+                await _userManager.UpdateSecurityStampAsync(user);
+
+            return result;
+        }
+
+        public async Task DeleteExistingCodesAsync(int userId)
+        {
+            var existingCodes = _context.PasswordResetCodes
+                .Where(x => x.UserId == userId && !x.IsUsed);
+            _context.PasswordResetCodes.RemoveRange(existingCodes);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SaveResetCodeAsync(PasswordResetCode resetCode)
+        {
+            await _context.PasswordResetCodes.AddAsync(resetCode);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<PasswordResetCode?> GetValidResetCodeAsync(int userId, string code)
+        {
+            return await _context.PasswordResetCodes
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == userId &&
+                    x.Code == code &&
+                    !x.IsUsed &&
+                    x.ExpiresAt > DateTime.UtcNow);
+        }
+
+        public async Task MarkCodeAsUsedAsync(PasswordResetCode resetCode)
+        {
+            resetCode.IsUsed = true;
+            await _context.SaveChangesAsync();
         }
     }
 }

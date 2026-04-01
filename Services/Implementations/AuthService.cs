@@ -5,10 +5,16 @@ using Booking.Exceptions;
 using Booking.Models;
 using Booking.Enums;
 using Booking.Constants;
+using Microsoft.AspNetCore.Identity;
+using Booking.Clients;
+
 
 namespace Booking.Services
 {
-    public class AuthService(IAuthRepository _authRepository, IJwtService _jwtService) : IAuthService
+    public class AuthService(
+        IAuthRepository _authRepository,
+        IJwtService _jwtService,
+        IEmailService _emailService) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -89,6 +95,9 @@ namespace Booking.Services
             if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
                 user.PhoneNumber = dto.PhoneNumber.Trim();
 
+            if (!string.IsNullOrWhiteSpace(dto.Gender))
+                user.Gender = dto.Gender.Trim();
+
             if (dto.DateOfBirth.HasValue)
                 user.DateOfBirth = dto.DateOfBirth.Value;
 
@@ -100,6 +109,56 @@ namespace Booking.Services
             return user;
         }
 
+        public async Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, ChangePasswordDto dto)
+        {
+            return await _authRepository.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+        }
+
+        public async Task<bool> SendResetPasswordEmailAsync(string email)
+        {
+            var user = await _authRepository.FindByEmailAsync(email);
+            if (user is null) return false;
+
+            await _authRepository.DeleteExistingCodesAsync(user.Id);
+
+            var resetCode = new PasswordResetCode
+            {
+                UserId = user.Id,
+                Code = GenerateCode(),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false
+            };
+
+            await _authRepository.SaveResetCodeAsync(resetCode);
+            // await _emailService.SendAsync(email, "Password Reset", $"Your reset code is: {resetCode.Code}");
+
+            return true;
+        }
+
+        public async Task<bool> ValidateResetCodeAsync(string email, string code)
+        {
+            var user = await _authRepository.FindByEmailAsync(email);
+            if (user is null) return false;
+
+            var resetCode = await _authRepository.GetValidResetCodeAsync(user.Id, code);
+            return resetCode is not null;
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string newPassword)
+        {
+            var user = await _authRepository.FindByEmailAsync(email);
+            if (user is null) return false;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (!result.Succeeded) return false;
+
+            await _authRepository.MarkCodeAsUsedAsync(resetCode);
+            return true;
+        }
+
+        private static string GenerateCode() =>
+            Random.Shared.Next(100000, 999999).ToString();
 
 
 

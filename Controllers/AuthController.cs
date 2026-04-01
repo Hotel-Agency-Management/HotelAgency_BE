@@ -55,7 +55,8 @@ namespace Booking.Controllers
                 LastName = result.LastName ?? string.Empty,
                 PhoneNumber = result.PhoneNumber,
                 UpdatedAt = result.UpdatedAt ?? DateTime.UtcNow,
-                DateOfBirth = result.DateOfBirth
+                DateOfBirth = result.DateOfBirth,
+                Gender = result.Gender
             });
         }
 
@@ -76,7 +77,98 @@ namespace Booking.Controllers
                 LastName = user.LastName ?? string.Empty,
                 PhoneNumber = user.PhoneNumber,
                 UpdatedAt = user.UpdatedAt ?? DateTime.UtcNow,
-                DateOfBirth = user.DateOfBirth
+                DateOfBirth = user.DateOfBirth,
+                Gender = user.Gender
+            });
+        }
+
+        
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user is null)
+                return Unauthorized();
+
+            var result = await _authService.ChangePasswordAsync(user, dto);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new ChangePasswordResponseDto
+                {
+                    Success = false,
+                    Message = "Password change failed",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                });
+            }
+
+            return Ok(new ChangePasswordResponseDto
+            {
+                Success = true,
+                Message = "Password changed successfully"
+            });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user is null)
+                return NotFound(new PasswordResetResponseDto
+                {
+                    Success = false,
+                    Message = "No account associated with this email"
+                });
+
+            var sent = await _authService.SendResetPasswordEmailAsync(dto.Email);
+            if (!sent)
+                return BadRequest(new PasswordResetResponseDto
+                {
+                    Success = false,
+                    Message = "Failed to send reset email, please try again"
+                });
+
+            return Ok(new PasswordResetResponseDto
+            {
+                Success = true,
+                Message = "Password reset email sent"
+            });
+        }
+
+        [HttpPost("validate-reset-code")]
+        public async Task<IActionResult> ValidateResetCode([FromBody] ValidateResetCodeDto dto)
+        {
+            var isValid = await _authService.ValidateResetCodeAsync(dto.Email, dto.Code);
+            if (!isValid)
+                return BadRequest(new PasswordResetResponseDto
+                {
+                    Success = false,
+                    Message = "Invalid or expired reset code"
+                });
+
+            return Ok(new PasswordResetResponseDto
+            {
+                Success = true,
+                Message = "Code is valid"
+            });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var reset = await _authService.ResetPasswordAsync(dto.Email, dto.NewPassword);
+            if (!reset)
+                return BadRequest(new PasswordResetResponseDto
+                {
+                    Success = false,
+                    Message = "Failed to reset password"
+                });
+
+            return Ok(new PasswordResetResponseDto
+            {
+                Success = true,
+                Message = "Password reset successfully"
             });
         }
 

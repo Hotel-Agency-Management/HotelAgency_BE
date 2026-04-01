@@ -14,6 +14,8 @@ namespace Booking.Data
         }
 
         public DbSet<Agency> Agencies { get; set; }
+        public DbSet<AgencyDocument> AgencyDocuments { get; set; }
+        public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
