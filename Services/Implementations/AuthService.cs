@@ -23,6 +23,10 @@ namespace Booking.Services
             var role = await _authRepository.GetRoleAsync(user);
             var token = _jwtService.GenerateToken(user, role);
 
+            user.LastLogin = DateTime.UtcNow;
+            if (!await _authRepository.UpdateUserAsync(user))
+                throw new InvalidOperationException("Failed to update profile.");
+
             return new AuthResponseDto
             {
                 Token = token,
@@ -70,6 +74,28 @@ namespace Booking.Services
 
             if (!roleResult.Succeeded)
                 throw new RegistrationFailedException("User created but assigning role failed.");
+
+            return user;
+        }
+
+        public async Task<ApplicationUser> UpdateProfileAsync(ApplicationUser user, UpdateProfileDto dto)
+        {
+            if (!string.IsNullOrWhiteSpace(dto.FirstName))
+                user.FirstName = dto.FirstName.Trim();
+
+            if (!string.IsNullOrWhiteSpace(dto.LastName))
+                user.LastName = dto.LastName.Trim();
+
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                user.PhoneNumber = dto.PhoneNumber.Trim();
+
+            if (dto.DateOfBirth.HasValue)
+                user.DateOfBirth = dto.DateOfBirth.Value;
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            if (!await _authRepository.UpdateUserAsync(user))
+                throw new InvalidOperationException("Failed to update profile.");
 
             return user;
         }

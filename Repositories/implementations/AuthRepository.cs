@@ -31,5 +31,11 @@ namespace Booking.Repositories
         {
             return await _userManager.AddToRoleAsync(user, role);
         }
+
+        public async Task<bool> UpdateUserAsync(ApplicationUser user)
+        {
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
     }
 }

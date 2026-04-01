@@ -7,6 +7,7 @@ namespace Booking.Interfaces.Services
     {
         Task<AuthResponseDto?> LoginAsync(LoginDto loginDto);
         Task<ApplicationUser> RegisterAsync(RegisterRequest request);
+        Task<ApplicationUser> UpdateProfileAsync(ApplicationUser user, UpdateProfileDto dto);
 
     }
 }
