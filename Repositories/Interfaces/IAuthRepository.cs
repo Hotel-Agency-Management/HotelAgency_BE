@@ -7,6 +7,7 @@ namespace Booking.Interfaces.Repositories
     public interface IAuthRepository
     {
         Task<ApplicationUser?> FindByEmailAsync(string email);
+        Task<ApplicationUser?> FindByIdAsync(string id);
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
         Task<string> GetRoleAsync(ApplicationUser user);
         Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password);
@@ -17,6 +18,11 @@ namespace Booking.Interfaces.Repositories
         Task SaveResetCodeAsync(PasswordResetCode resetCode);
         Task<PasswordResetCode?> GetValidResetCodeAsync(int userId, string code);
         Task MarkCodeAsUsedAsync(PasswordResetCode resetCode);
+        Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string newPassword);
+        Task SaveRefreshTokenAsync(RefreshToken refreshToken);
+        Task<RefreshToken?> GetValidRefreshTokenAsync(string token);
+        Task RevokeRefreshTokenAsync(RefreshToken refreshToken);
+        Task DeleteUserRefreshTokensAsync(int userId);
 
     }
 }

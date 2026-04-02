@@ -1,3 +1,4 @@
+using Booking.Enums;
 using Microsoft.AspNetCore.Identity;
 using System;
 

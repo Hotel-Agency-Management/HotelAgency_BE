@@ -45,7 +45,7 @@ namespace Booking.Repositories
         public async Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, string currentPassword, string newPassword)
         {
             var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-            
+
             if (result.Succeeded)
                 await _userManager.UpdateSecurityStampAsync(user);
 
@@ -80,6 +80,46 @@ namespace Booking.Repositories
         {
             resetCode.IsUsed = true;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(ApplicationUser user, string newPassword)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            return await _userManager.ResetPasswordAsync(user, token, newPassword);
+        }
+
+        public async Task SaveRefreshTokenAsync(RefreshToken refreshToken)
+        {
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<RefreshToken?> GetValidRefreshTokenAsync(string token)
+        {
+            return await _context.RefreshTokens
+                .FirstOrDefaultAsync(x =>
+                    x.Token == token &&
+                    !x.IsRevoked &&
+                    x.ExpiresAt > DateTime.UtcNow);
+        }
+
+        public async Task RevokeRefreshTokenAsync(RefreshToken refreshToken)
+        {
+            refreshToken.IsRevoked = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteUserRefreshTokensAsync(int userId)
+        {
+            var tokens = _context.RefreshTokens
+                .Where(x => x.UserId == userId);
+            _context.RefreshTokens.RemoveRange(tokens);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<ApplicationUser?> FindByIdAsync(string id)
+        {
+            return await _userManager.FindByIdAsync(id);
         }
     }
 }

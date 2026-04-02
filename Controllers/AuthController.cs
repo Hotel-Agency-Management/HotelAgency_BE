@@ -82,7 +82,7 @@ namespace Booking.Controllers
             });
         }
 
-        
+
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
@@ -157,19 +157,36 @@ namespace Booking.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
-            var reset = await _authService.ResetPasswordAsync(dto.Email, dto.NewPassword);
-            if (!reset)
-                return BadRequest(new PasswordResetResponseDto
-                {
-                    Success = false,
-                    Message = "Failed to reset password"
-                });
+            await _authService.ResetPasswordAsync(
+                dto.Email,
+                dto.Code,
+                dto.NewPassword
+            );
 
             return Ok(new PasswordResetResponseDto
             {
                 Success = true,
                 Message = "Password reset successfully"
             });
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto dto)
+        {
+            var result = await _authService.RefreshTokenAsync(dto.RefreshToken);
+            return Ok(result);
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user is null)
+                return Unauthorized();
+
+            await _authService.LogoutAsync(user.Id);
+            return NoContent();
         }
 
 

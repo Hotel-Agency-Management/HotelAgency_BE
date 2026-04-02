@@ -28,4 +28,22 @@ namespace Booking.Exceptions
 
     }
 
+    public class InvalidRefreshTokenException : AppException
+    {
+        public InvalidRefreshTokenException()
+            : base("Invalid or expired refresh token.", 401) { }
+    }
+
+    public class InvalidResetCodeException : AppException
+    {
+        public InvalidResetCodeException()
+            : base("Invalid or expired reset code", 400) { }
+    }
+
+    public class EmailNotConfirmedException : AppException
+    {
+        public EmailNotConfirmedException(string email)
+            : base($"Email '{email}' is not confirmed.", 403) { }
+    }
+
 }

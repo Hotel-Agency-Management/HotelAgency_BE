@@ -7,6 +7,7 @@ using Booking.Enums;
 using Booking.Constants;
 using Microsoft.AspNetCore.Identity;
 using Booking.Clients;
+using System.Security.Cryptography;
 
 
 namespace Booking.Services
@@ -21,13 +22,28 @@ namespace Booking.Services
             var user = await _authRepository.FindByEmailAsync(loginDto.Email)
                 ?? throw new UserNotFoundException(loginDto.Email);
 
-            var isPasswordValid = await _authRepository.CheckPasswordAsync(user, loginDto.Password);
+            if (!user.EmailConfirmed)
+                throw new EmailNotConfirmedException(loginDto.Email);
 
+            var isPasswordValid = await _authRepository.CheckPasswordAsync(user, loginDto.Password);
             if (!isPasswordValid)
                 throw new InvalidCredentialsException();
 
+            await _authRepository.DeleteUserRefreshTokensAsync(user.Id);
+
             var role = await _authRepository.GetRoleAsync(user);
             var token = _jwtService.GenerateToken(user, role);
+
+            var refreshToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
+            };
+
+            await _authRepository.SaveRefreshTokenAsync(refreshToken);
 
             user.LastLogin = DateTime.UtcNow;
             if (!await _authRepository.UpdateUserAsync(user))
@@ -37,6 +53,7 @@ namespace Booking.Services
             {
                 Token = token,
                 Email = user.Email ?? string.Empty,
+                RefreshToken = refreshToken.Token,
                 FirstName = user.FirstName ?? string.Empty,
                 LastName = user.LastName ?? string.Empty,
                 Role = role
@@ -116,53 +133,86 @@ namespace Booking.Services
 
         public async Task<bool> SendResetPasswordEmailAsync(string email)
         {
-            var user = await _authRepository.FindByEmailAsync(email);
-            if (user is null) return false;
+            var user = await _authRepository.FindByEmailAsync(email)
+                ?? throw new UserNotFoundException(email);
+
 
             await _authRepository.DeleteExistingCodesAsync(user.Id);
 
             var resetCode = new PasswordResetCode
             {
                 UserId = user.Id,
-                Code = GenerateCode(),
+                Code = Random.Shared.Next(100000, 999999).ToString(),
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
             };
 
             await _authRepository.SaveResetCodeAsync(resetCode);
-            // await _emailService.SendAsync(email, "Password Reset", $"Your reset code is: {resetCode.Code}");
+            await _emailService.SendEmailAsync(email, "Password Reset", $"Your reset code is: {resetCode.Code}", string.Empty);
 
             return true;
         }
 
         public async Task<bool> ValidateResetCodeAsync(string email, string code)
         {
-            var user = await _authRepository.FindByEmailAsync(email);
-            if (user is null) return false;
+            var user = await _authRepository.FindByEmailAsync(email)
+                ?? throw new UserNotFoundException(email);
 
             var resetCode = await _authRepository.GetValidResetCodeAsync(user.Id, code);
             return resetCode is not null;
         }
 
-        public async Task<bool> ResetPasswordAsync(string email, string newPassword)
+        public async Task ResetPasswordAsync(string email, string code, string newPassword)
         {
-            var user = await _authRepository.FindByEmailAsync(email);
-            if (user is null) return false;
+            var user = await _authRepository.FindByEmailAsync(email)
+                ?? throw new UserNotFoundException(email);
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-            if (!result.Succeeded) return false;
+            var resetCode = await _authRepository.GetValidResetCodeAsync(user.Id, code)
+                ?? throw new InvalidResetCodeException();
+
+            var result = await _authRepository.ResetPasswordAsync(user, newPassword);
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Failed to reset password");
 
             await _authRepository.MarkCodeAsUsedAsync(resetCode);
-            return true;
         }
 
-        private static string GenerateCode() =>
-            Random.Shared.Next(100000, 999999).ToString();
+        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(string token)
+        {
+            var refreshToken = await _authRepository.GetValidRefreshTokenAsync(token)
+                ?? throw new InvalidRefreshTokenException();
+
+            var user = await _authRepository.FindByIdAsync(refreshToken.UserId.ToString())
+                ?? throw new UserNotFoundException($"ID: {refreshToken.UserId}");
+
+            await _authRepository.RevokeRefreshTokenAsync(refreshToken);
+
+            var role = await _authRepository.GetRoleAsync(user);
+            var newAccessToken = _jwtService.GenerateToken(user, role);
+
+            var newRefreshToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
+            };
+
+            await _authRepository.SaveRefreshTokenAsync(newRefreshToken);
+
+            return new RefreshTokenResponseDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken.Token
+            };
+        }
 
 
-
-
+        public async Task LogoutAsync(int userId)
+        {
+            await _authRepository.DeleteUserRefreshTokensAsync(userId);
+        }
 
     }
 }

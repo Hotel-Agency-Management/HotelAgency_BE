@@ -31,6 +31,7 @@ namespace Booking.DTO.Auth
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
     }
 
     public class RegisterResponseDto
@@ -107,12 +108,27 @@ namespace Booking.DTO.Auth
         [StringLength(15, MinimumLength = 8)]
         public required string NewPassword { get; set; }
 
+        [Required]
+        public required string Code { get; set; }
+
     }
 
     public class PasswordResetResponseDto
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
+    }
+
+    public class RefreshTokenDto
+    {
+        [Required]
+        public required string RefreshToken { get; set; }
+    }
+
+    public class RefreshTokenResponseDto
+    {
+        public string AccessToken { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
     }
 
 }
