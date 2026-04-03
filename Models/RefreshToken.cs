@@ -8,8 +8,6 @@ namespace Booking.Models
         public DateTime ExpiresAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsRevoked { get; set; }
-
-        // Navigation property
         public ApplicationUser User { get; set; } = null!;
     }
 }

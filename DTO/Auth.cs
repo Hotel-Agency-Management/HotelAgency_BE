@@ -15,7 +15,6 @@ namespace Booking.DTO.Auth
     }
 
 
-
     public class LoginDto
     {
         [Required][EmailAddress] public string Email { get; set; } = string.Empty;
@@ -34,12 +33,14 @@ namespace Booking.DTO.Auth
         public string RefreshToken { get; set; } = string.Empty;
     }
 
+
     public class RegisterResponseDto
     {
         public int UserId { get; set; }
         public string Email { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
     }
+
 
     public class UpdateProfileDto
     {
@@ -49,6 +50,7 @@ namespace Booking.DTO.Auth
         public DateTime? DateOfBirth { get; set; }
         public string? Gender { get; set; } = string.Empty;
     }
+
 
     public class UpdateProfileResponseDto
     {
@@ -60,6 +62,7 @@ namespace Booking.DTO.Auth
         public DateTime? DateOfBirth { get; set; }
         public string? Gender { get; set; }
     }
+
 
     public class ChangePasswordDto
     {
@@ -81,12 +84,14 @@ namespace Booking.DTO.Auth
         public List<string> Errors { get; set; } = [];
     }
 
+
     public class ForgotPasswordDto
     {
         [Required]
         [EmailAddress]
         public required string Email { get; set; }
     }
+
 
     public class ValidateResetCodeDto
     {
@@ -97,6 +102,7 @@ namespace Booking.DTO.Auth
         [Required]
         public required string Code { get; set; }
     }
+
 
     public class ResetPasswordDto
     {
@@ -113,11 +119,13 @@ namespace Booking.DTO.Auth
 
     }
 
+
     public class PasswordResetResponseDto
     {
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
     }
+
 
     public class RefreshTokenDto
     {
@@ -125,11 +133,13 @@ namespace Booking.DTO.Auth
         public required string RefreshToken { get; set; }
     }
 
+
     public class RefreshTokenResponseDto
     {
         public string AccessToken { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
     }
+
 
     public class ResendVerificationEmailDto
     {

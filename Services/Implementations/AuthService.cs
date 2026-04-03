@@ -162,9 +162,9 @@ namespace Booking.Services
                     { "USER_NAME", userName },
                     { "RESET_CODE", resetCode.Code },
                     { "EXPIRATION_TIME", "15 minutes" },
-                    { "HELP_LINK", "https://yourdomain.com/help" },
-                    { "SUPPORT_LINK", "https://yourdomain.com/support" },
-                    { "PRIVACY_LINK", "https://yourdomain.com/privacy" },
+                    { "HELP_LINK", "http://localhost:3000/help" },
+                    { "SUPPORT_LINK", "http://localhost:3000/support" },
+                    { "PRIVACY_LINK", "http://localhost:3000/privacy" },
                     { "AGENCY_NAME", "HotelAgency" }
                 });
 
@@ -263,7 +263,7 @@ namespace Booking.Services
             await _authRepository.SaveEmailVerificationTokenAsync(verificationToken);
 
             var verificationLink =
-                $"https://your-frontend.com/verify-email?userId={user.Id}&token={Uri.EscapeDataString(rawToken)}";
+                $"http://localhost:3000/verify-email?userId={user.Id}&token={Uri.EscapeDataString(rawToken)}";
 
             await _emailJobService.EnqueueVerificationEmailAsync(user, verificationLink);
         }
