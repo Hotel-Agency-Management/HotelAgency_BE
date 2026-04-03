@@ -37,4 +37,15 @@ public class EmailService(IOptions<EmailOptions> options) : IEmailService
         using var reader = new StreamReader(stream);
         return await reader.ReadToEndAsync();
     }
+    public string RenderTemplate(string template, Dictionary<string, string> placeholders)
+    {
+        placeholders.TryAdd("YEAR", DateTime.UtcNow.Year.ToString());
+
+        foreach (var item in placeholders)
+        {
+            template = template.Replace($"{{{{{item.Key}}}}}", item.Value);
+        }
+
+        return template;
+    }
 }

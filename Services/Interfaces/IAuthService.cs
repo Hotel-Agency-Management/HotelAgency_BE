@@ -16,6 +16,9 @@ namespace Booking.Interfaces.Services
         Task<bool> ValidateResetCodeAsync(string email, string code);
         Task<RefreshTokenResponseDto> RefreshTokenAsync(string refreshToken);
         Task LogoutAsync(int userId);
+        Task ResendVerificationEmailAsync(string email);
+        Task VerifyEmailAsync(int userId, string token);
+        Task SendVerificationEmailAsync(ApplicationUser user);
 
     }
 }

@@ -14,14 +14,11 @@ using Booking.Data.Seeders;
 using Booking.Middleware;
 using Booking.Clients;
 using Hangfire;
-using Hangfire.SqlServer;
+using Hangfire.MySql;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
-
-// Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
@@ -46,11 +43,10 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Bind JwtSettings from appsettings.json
+// JWT
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
 
-// JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
 
 builder.Services
@@ -74,30 +70,39 @@ builder.Services
         };
     });
 
-// Repositories
+// Repositories & Services
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-
-// Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
-
-
 // Email
 builder.Services.Configure<EmailOptions>(
-    builder.Configuration.GetSection("Email"));
+    builder.Configuration.GetSection("EmailOptions"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
-//builder.Services.AddScoped<IEmailJobService, EmailJobService>();
+builder.Services.AddScoped<IEmailJobService, EmailJobService>();
 
-// Hangfire
+// Hangfire with MySQL
+var hangfireConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
+
 builder.Services.AddHangfire(config =>
-    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("Default")));
+    config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseStorage(new MySqlStorage(hangfireConnection, new MySqlStorageOptions
+        {
+            TablesPrefix = "Hangfire",
+            QueuePollInterval = TimeSpan.FromSeconds(15),
+            JobExpirationCheckInterval = TimeSpan.FromHours(1),
+            CountersAggregateInterval = TimeSpan.FromMinutes(5),
+            PrepareSchemaIfNecessary = true,
+            TransactionTimeout = TimeSpan.FromMinutes(1)
+        }))
+);
 
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(options => options.WorkerCount = 2);
 
-
-// Authorization
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -108,10 +113,12 @@ using (var scope = app.Services.CreateScope())
     await RoleSeeder.SeedAsync(roleManager);
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    // Hangfire Dashboard — only in dev, no auth needed
+    app.UseHangfireDashboard("/hangfire");
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();

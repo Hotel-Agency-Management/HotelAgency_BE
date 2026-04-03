@@ -8,6 +8,7 @@ using Booking.Constants;
 using Microsoft.AspNetCore.Identity;
 using Booking.Clients;
 using System.Security.Cryptography;
+using Booking.Utils;
 
 
 namespace Booking.Services
@@ -15,7 +16,8 @@ namespace Booking.Services
     public class AuthService(
         IAuthRepository _authRepository,
         IJwtService _jwtService,
-        IEmailService _emailService) : IAuthService
+        IEmailService _emailService,
+        IEmailJobService _emailJobService) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -98,6 +100,7 @@ namespace Booking.Services
             if (!roleResult.Succeeded)
                 throw new RegistrationFailedException("User created but assigning role failed.");
 
+            await SendVerificationEmailAsync(user);
             return user;
         }
 
@@ -136,7 +139,6 @@ namespace Booking.Services
             var user = await _authRepository.FindByEmailAsync(email)
                 ?? throw new UserNotFoundException(email);
 
-
             await _authRepository.DeleteExistingCodesAsync(user.Id);
 
             var resetCode = new PasswordResetCode
@@ -148,7 +150,34 @@ namespace Booking.Services
             };
 
             await _authRepository.SaveResetCodeAsync(resetCode);
-            await _emailService.SendEmailAsync(email, "Password Reset", $"Your reset code is: {resetCode.Code}", string.Empty);
+
+            var template = await _emailService.LoadTemplateAsync("VerificationCodeTemplate.html");
+
+            var userName = string.IsNullOrWhiteSpace($"{user.FirstName} {user.LastName}".Trim())
+                ? "User"
+                : $"{user.FirstName} {user.LastName}".Trim();
+
+            var htmlBody = _emailService.RenderTemplate(template, new Dictionary<string, string>
+                {
+                    { "USER_NAME", userName },
+                    { "RESET_CODE", resetCode.Code },
+                    { "EXPIRATION_TIME", "15 minutes" },
+                    { "HELP_LINK", "https://yourdomain.com/help" },
+                    { "SUPPORT_LINK", "https://yourdomain.com/support" },
+                    { "PRIVACY_LINK", "https://yourdomain.com/privacy" },
+                    { "AGENCY_NAME", "HotelAgency" }
+                });
+
+            var plainText =
+                $"Hi {userName}, use the following code to reset your password: {resetCode.Code}. " +
+                "This code expires in 15 minutes. If you didn’t request this, you can safely ignore this email.";
+
+            await _emailService.SendEmailAsync(
+                email,
+                "Password Reset Verification Code",
+                plainText,
+                htmlBody
+            );
 
             return true;
         }
@@ -208,10 +237,68 @@ namespace Booking.Services
             };
         }
 
-
         public async Task LogoutAsync(int userId)
         {
             await _authRepository.DeleteUserRefreshTokensAsync(userId);
+        }
+
+        public async Task SendVerificationEmailAsync(ApplicationUser user)
+        {
+            if (user.EmailConfirmed)
+                return;
+
+            await _authRepository.DeleteExistingEmailVerificationTokensAsync(user.Id);
+
+            var rawToken = AuthUtils.GenerateSecureToken();
+            var hashedToken = AuthUtils.HashToken(rawToken);
+
+            var verificationToken = new EmailVerificationToken
+            {
+                UserId = user.Id,
+                TokenHash = hashedToken,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false
+            };
+
+            await _authRepository.SaveEmailVerificationTokenAsync(verificationToken);
+
+            var verificationLink =
+                $"https://your-frontend.com/verify-email?userId={user.Id}&token={Uri.EscapeDataString(rawToken)}";
+
+            await _emailJobService.EnqueueVerificationEmailAsync(user, verificationLink);
+        }
+
+        public async Task VerifyEmailAsync(int userId, string token)
+        {
+            var user = await _authRepository.FindByIdAsync(userId.ToString())
+                ?? throw new UserNotFoundException($"ID: {userId}");
+
+            if (user.EmailConfirmed)
+                return;
+
+            var tokenHash = AuthUtils.HashToken(token);
+
+            var verificationToken = await _authRepository
+                .GetValidEmailVerificationTokenAsync(user.Id, tokenHash)
+                ?? throw new InvalidOperationException("Invalid or expired token");
+
+            var confirmed = await _authRepository.ConfirmEmailAsync(user);
+
+            if (!confirmed)
+                throw new InvalidOperationException("Failed to confirm email");
+
+            await _authRepository.MarkEmailVerificationTokenAsUsedAsync(verificationToken);
+        }
+
+        public async Task ResendVerificationEmailAsync(string email)
+        {
+            var user = await _authRepository.FindByEmailAsync(email)
+                ?? throw new UserNotFoundException(email);
+
+            if (user.EmailConfirmed)
+                throw new InvalidOperationException("Email already verified");
+
+            await SendVerificationEmailAsync(user);
         }
 
     }

@@ -23,6 +23,11 @@ namespace Booking.Interfaces.Repositories
         Task<RefreshToken?> GetValidRefreshTokenAsync(string token);
         Task RevokeRefreshTokenAsync(RefreshToken refreshToken);
         Task DeleteUserRefreshTokensAsync(int userId);
+        Task SaveEmailVerificationTokenAsync(EmailVerificationToken token);
+        Task DeleteExistingEmailVerificationTokensAsync(int userId);
+        Task<EmailVerificationToken?> GetValidEmailVerificationTokenAsync(int userId, string tokenHash);
+        Task MarkEmailVerificationTokenAsUsedAsync(EmailVerificationToken token);
+        Task<bool> ConfirmEmailAsync(ApplicationUser user);
 
     }
 }

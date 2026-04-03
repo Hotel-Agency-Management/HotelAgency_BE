@@ -131,4 +131,9 @@ namespace Booking.DTO.Auth
         public string RefreshToken { get; set; } = string.Empty;
     }
 
+    public class ResendVerificationEmailDto
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+
 }

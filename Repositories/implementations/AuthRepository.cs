@@ -121,5 +121,43 @@ namespace Booking.Repositories
         {
             return await _userManager.FindByIdAsync(id);
         }
+        public async Task SaveEmailVerificationTokenAsync(EmailVerificationToken token)
+        {
+            _context.EmailVerificationTokens.Add(token);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteExistingEmailVerificationTokensAsync(int userId)
+        {
+            var tokens = _context.EmailVerificationTokens
+                .Where(x => x.UserId == userId && !x.IsUsed);
+
+            _context.EmailVerificationTokens.RemoveRange(tokens);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<EmailVerificationToken?> GetValidEmailVerificationTokenAsync(int userId, string tokenHash)
+        {
+            return await _context.EmailVerificationTokens
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == userId &&
+                    x.TokenHash == tokenHash &&
+                    !x.IsUsed &&
+                    x.ExpiresAt > DateTime.UtcNow);
+        }
+
+        public async Task MarkEmailVerificationTokenAsUsedAsync(EmailVerificationToken token)
+        {
+            token.IsUsed = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ConfirmEmailAsync(ApplicationUser user)
+        {
+            user.EmailConfirmed = true;
+            user.UpdatedAt = DateTime.UtcNow;
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
     }
 }

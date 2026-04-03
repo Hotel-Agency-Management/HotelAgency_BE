@@ -189,6 +189,30 @@ namespace Booking.Controllers
             return NoContent();
         }
 
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromQuery] int userId, [FromQuery] string token)
+        {
+            await _authService.VerifyEmailAsync(userId, token);
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "Email verified successfully"
+            });
+        }
+
+        [HttpPost("resend-verification-email")]
+        public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendVerificationEmailDto dto)
+        {
+            await _authService.ResendVerificationEmailAsync(dto.Email);
+
+            return Ok(new
+            {
+                Success = true,
+                Message = "Verification email sent"
+            });
+        }
+
 
     }
 }

@@ -1,6 +1,6 @@
 using Booking.Clients;
-//using Booking.DTO.Email;
 using Hangfire;
+using Booking.Models;
 
 namespace Booking.Clients;
 
@@ -8,6 +8,30 @@ public class EmailJobService(
     IBackgroundJobClient _jobs,
     IEmailService _emailService) : IEmailJobService
 {
+
+    public async Task EnqueueVerificationEmailAsync(ApplicationUser user, string verificationLink)
+    {
+        var userName = $"{user.FirstName} {user.LastName}".Trim();
+        if (string.IsNullOrWhiteSpace(userName))
+            userName = "User";
+
+        await EnqueueAsync(
+            templateFile: "verify-email.html",
+            to: user.Email!,
+            subject: "Verify Your Email",
+            plainText: $"Verify your email using this link: {verificationLink}",
+            placeholders: new Dictionary<string, string>
+            {
+                { "USER_NAME", userName },
+                { "VERIFY_LINK", verificationLink },
+                { "HELP_LINK", "https://yourdomain.com/help" },
+                { "SUPPORT_LINK", "https://yourdomain.com/support" },
+                { "PRIVACY_LINK", "https://yourdomain.com/privacy" },
+                { "AGENCY_NAME", "HotelAgency" }
+            }
+        );
+    }
+
     private async Task EnqueueAsync(
         string templateFile,
         string to,
