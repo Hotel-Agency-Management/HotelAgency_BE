@@ -211,7 +211,7 @@ namespace Booking.Services
             var refreshToken = await _authRepository.GetValidRefreshTokenAsync(token)
                 ?? throw new InvalidRefreshTokenException();
 
-            var user = await _authRepository.FindByIdAsync(refreshToken.UserId.ToString())
+            var user = await _authRepository.FindByIdAsync(refreshToken.UserId)
                 ?? throw new UserNotFoundException($"ID: {refreshToken.UserId}");
 
             await _authRepository.RevokeRefreshTokenAsync(refreshToken);
@@ -270,7 +270,7 @@ namespace Booking.Services
 
         public async Task VerifyEmailAsync(int userId, string token)
         {
-            var user = await _authRepository.FindByIdAsync(userId.ToString())
+            var user = await _authRepository.FindByIdAsync(userId)
                 ?? throw new UserNotFoundException($"ID: {userId}");
 
             if (user.EmailConfirmed)

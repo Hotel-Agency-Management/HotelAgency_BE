@@ -81,6 +81,7 @@ builder.Services.Configure<EmailOptions>(
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailJobService, EmailJobService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 // Hangfire with MySQL
 var hangfireConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;

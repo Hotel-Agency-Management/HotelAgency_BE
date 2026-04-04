@@ -117,9 +117,9 @@ namespace Booking.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<ApplicationUser?> FindByIdAsync(string id)
+        public async Task<ApplicationUser?> FindByIdAsync(int id)
         {
-            return await _userManager.FindByIdAsync(id);
+            return await _userManager.FindByIdAsync(id.ToString());
         }
         public async Task SaveEmailVerificationTokenAsync(EmailVerificationToken token)
         {
