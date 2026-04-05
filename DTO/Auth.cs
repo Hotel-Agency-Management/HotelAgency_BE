@@ -1,17 +1,21 @@
 using System.ComponentModel.DataAnnotations;
 using Booking.Enums;
 
-namespace Booking.DTO.Auth
+namespace Booking.DTO
 {
-
     public class RegisterRequest
     {
-        [Required] public string FirstName { get; set; } = string.Empty;
-        [Required] public string LastName { get; set; } = string.Empty;
-        [Required][EmailAddress] public string Email { get; set; } = string.Empty;
-        [Required] public string PhoneNumber { get; set; } = string.Empty;
-        [Required] public string Password { get; set; } = string.Empty;
-        [Required] public AccountType AccountType { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string PhoneNumber { get; set; }
+        public AccountType AccountType { get; set; }
+
+        public string? AgencyName { get; set; }
+        public string? Country { get; set; }
+        public string? City { get; set; }
+        public string? Phone { get; set; }
     }
 
 

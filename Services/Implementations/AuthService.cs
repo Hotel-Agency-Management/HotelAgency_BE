@@ -1,4 +1,4 @@
-using Booking.DTO.Auth;
+using Booking.DTO;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Exceptions;
@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Booking.Clients;
 using System.Security.Cryptography;
 using Booking.Utils;
+using Booking.Strategies;
+using Booking.Factories;
 
 
 namespace Booking.Services
@@ -17,7 +19,8 @@ namespace Booking.Services
         IAuthRepository _authRepository,
         IJwtService _jwtService,
         IEmailService _emailService,
-        IEmailJobService _emailJobService) : IAuthService
+        IEmailJobService _emailJobService,
+        IRegistrationStrategyFactory _strategyFactory) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -62,7 +65,7 @@ namespace Booking.Services
             };
         }
 
-        public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
+        /*public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
         {
 
             var email = request.Email.Trim();
@@ -102,7 +105,19 @@ namespace Booking.Services
 
             await SendVerificationEmailAsync(user);
             return user;
+        }*/
+        public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
+        {
+            if (await _authRepository.FindByEmailAsync(request.Email.Trim()) is not null)
+                throw new EmailAlreadyExistsException(request.Email);
+
+            var strategy = _strategyFactory.GetStrategy(request.AccountType);
+            var user = await strategy.ExecuteAsync(request);
+
+            await SendVerificationEmailAsync(user);
+            return user;
         }
+
 
         public async Task<ApplicationUser> UpdateProfileAsync(ApplicationUser user, UpdateProfileDto dto)
         {

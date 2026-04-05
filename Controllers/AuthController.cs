@@ -1,4 +1,4 @@
-using Booking.DTO.Auth;
+using Booking.DTO;
 using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
