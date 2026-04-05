@@ -108,11 +108,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-    await RoleSeeder.SeedAsync(roleManager);
-}
+await SeedManager.SeedAsync(app.Services);
 
 if (app.Environment.IsDevelopment())
 {

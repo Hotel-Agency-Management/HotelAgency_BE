@@ -43,7 +43,7 @@ public class EmailService(IOptions<EmailOptions> options) : IEmailService
 
         foreach (var item in placeholders)
         {
-            template = template.Replace($"{{{{{item.Key}}}}}", item.Value);
+            template = template.Replace("{{" + item.Key + "}}", item.Value);
         }
 
         return template;

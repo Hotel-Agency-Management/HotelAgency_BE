@@ -168,9 +168,11 @@ namespace Booking.Services
                     { "AGENCY_NAME", "HotelAgency" }
                 });
 
-            var plainText =
-                $"Hi {userName}, use the following code to reset your password: {resetCode.Code}. " +
-                "This code expires in 15 minutes. If you didn’t request this, you can safely ignore this email.";
+            var plainText = string.Format(
+                EmailTemplates.ResetPassword,
+                userName,
+                resetCode.Code
+            );
 
             await _emailService.SendEmailAsync(
                 email,

@@ -1,14 +1,14 @@
-using Booking.Clients;
+using Booking.Constants;
 using Hangfire;
 using Booking.Models;
 
 namespace Booking.Clients;
 
+//TODO: support FE Base url in the appsettings.
 public class EmailJobService(
     IBackgroundJobClient _jobs,
     IEmailService _emailService) : IEmailJobService
 {
-
     public async Task EnqueueVerificationEmailAsync(ApplicationUser user, string verificationLink)
     {
         var userName = $"{user.FirstName} {user.LastName}".Trim();
@@ -19,7 +19,10 @@ public class EmailJobService(
             templateFile: "verify-email.html",
             to: user.Email!,
             subject: "Verify Your Email",
-            plainText: $"Verify your email using this link: {verificationLink}",
+            plainText: string.Format(
+                EmailTemplates.VerifyEmail,
+                verificationLink
+            ),
             placeholders: new Dictionary<string, string>
             {
                 { "USER_NAME", userName },
@@ -52,8 +55,7 @@ public class EmailJobService(
 
         return placeholders.Aggregate(
             template,
-            (current, kv) => current.Replace($"{{{{{kv.Key}}}}}", kv.Value)
+            (current, kv) => current.Replace("{{" + kv.Key + "}}", kv.Value)
         );
     }
-
 }

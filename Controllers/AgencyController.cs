@@ -1,5 +1,7 @@
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.Controllers
@@ -21,28 +23,16 @@ namespace Booking.Controllers
             });
         }
 
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
         [HttpGet("{agencyId}")]
         public async Task<IActionResult> GetAgencyProfile(int agencyId)
         {
             var result = await _agencyService.GetAgencyProfileAsync(agencyId);
-            return Ok(new AgencyProfileResponse
-            {
-                Id = result.Id,
-                OwnerId = result.OwnerId,
-                Name = result.AgencyName,
-                Phone = result.Phone,
-                Country = result.Country,
-                City = result.City,
-                LogoUrl = result.LogoUrl,
-                PrimaryColor = result.PrimaryColor,
-                SecondaryColor = result.SecondaryColor,
-                TertiaryColor = result.TertiaryColor,
-                CreatedAt = result.CreatedAt,
-                UpdatedAt = result.UpdatedAt ?? DateTime.UtcNow
-            });
+            return Ok(new AgencyProfileResponse(result));
 
         }
 
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
         [HttpPatch("{agencyId}")]
         public async Task<IActionResult> UpdateAgency(int agencyId, [FromBody] UpdateAgencyRequest request)
         {
@@ -53,7 +43,7 @@ namespace Booking.Controllers
             });
         }
 
-
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
         [HttpPatch("{agencyId}/update-logo")]
         public async Task<IActionResult> UpdateAgencyLogo([FromRoute] int agencyId, [FromForm] IFormFile file)
         {

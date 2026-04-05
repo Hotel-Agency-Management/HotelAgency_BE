@@ -19,11 +19,5 @@ namespace Booking.Repositories
                 .Where(d => d.AgencyId == agencyId)
                 .ToListAsync();
         }
-
-        public async Task DeleteRangeAsync(List<AgencyDocument> documents)
-        {
-            _context.AgencyDocuments.RemoveRange(documents);
-            await _context.SaveChangesAsync();
-        }
     }
 }

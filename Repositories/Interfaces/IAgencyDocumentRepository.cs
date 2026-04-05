@@ -6,6 +6,5 @@ namespace Booking.Interfaces.Repositories
     {
         Task AddAsync(AgencyDocument document);
         Task<List<AgencyDocument>> GetByAgencyIdAsync(int agencyId);
-        Task DeleteRangeAsync(List<AgencyDocument> documents);
     }
 }

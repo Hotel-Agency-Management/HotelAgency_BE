@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Booking.Models;
 namespace Booking.DTO
 {
     public class CreateAgencyRequest
@@ -7,7 +8,7 @@ namespace Booking.DTO
         public string Country { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
-        public int OwnerId { get; set; } 
+        public int OwnerId { get; set; }
     }
 
     public class CreateAgencyResponse
@@ -41,10 +42,23 @@ namespace Booking.DTO
         public string? PrimaryColor { get; set; }
         public string? SecondaryColor { get; set; }
         public string? TertiaryColor { get; set; }
-        public string? ReviewedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-
+        public AgencyProfileResponse(Agency agency)
+        {
+            Id = agency.Id;
+            OwnerId = agency.OwnerId;
+            Name = agency.AgencyName;
+            Phone = agency.Phone;
+            Country = agency.Country;
+            City = agency.City;
+            LogoUrl = agency.LogoUrl;
+            PrimaryColor = agency.PrimaryColor;
+            SecondaryColor = agency.SecondaryColor;
+            TertiaryColor = agency.TertiaryColor;
+            CreatedAt = agency.CreatedAt;
+            UpdatedAt = agency.UpdatedAt ?? agency.CreatedAt;
+        }
     }
 
     public class UpdateAgencyRequest
