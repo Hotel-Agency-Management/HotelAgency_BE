@@ -6,6 +6,7 @@ using Booking.Interfaces.Services;
 using Booking.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Booking.Constants;
 
 namespace Booking.Services
 {
@@ -25,8 +26,8 @@ namespace Booking.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("firstName", user.FirstName ?? string.Empty),
-                new Claim("lastName", user.LastName ?? string.Empty),
+                new Claim(ClaimConstant.FIRST_NAME, user.FirstName ?? string.Empty),
+                new Claim(ClaimConstant.LAST_NAME, user.LastName ?? string.Empty),
                 new Claim(ClaimTypes.Role, role)
             };
 
@@ -37,7 +38,7 @@ namespace Booking.Services
 
             if (user.AgencyId.HasValue)
             {
-                claims.Add(new Claim("agencyId", user.AgencyId.Value.ToString()));
+                claims.Add(new Claim(ClaimConstant.AGENCY_Id, user.AgencyId.Value.ToString()));
             }
 
             var key = new SymmetricSecurityKey(
