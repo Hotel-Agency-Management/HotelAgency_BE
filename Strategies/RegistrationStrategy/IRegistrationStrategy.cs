@@ -4,6 +4,6 @@ namespace Booking.Strategies
 {
     public interface IRegistrationStrategy
     {
-        Task <ApplicationUser> ExecuteAsync(RegisterRequest request);
+        Task<ApplicationUser> ExecuteAsync(RegisterRequest request);
     }
 }

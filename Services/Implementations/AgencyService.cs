@@ -11,35 +11,8 @@ namespace Booking.Services
 {
     public class AgencyService(
         IAgencyRepository _agencyRepository,
-        IAuthRepository _authRepository,
         IBlobStorageService _blobStorageService) : IAgencyService
     {
-        public async Task<Agency> CreateAgencyAsync(CreateAgencyRequest request)
-        {
-            var owner = await _authRepository.FindByIdAsync(request.OwnerId);
-            if (owner is null)
-                throw new AgencyOwnerNotFoundException(request.OwnerId);
-
-            var exists = await _agencyRepository.ExistsByNameAsync(request.Name);
-            if (exists)
-                throw new AgencyAlreadyExistsException(request.Name);
-
-            var agency = new Agency
-            {
-                AgencyName = request.Name.Trim(),
-                Country = request.Country.Trim(),
-                City = request.City.Trim(),
-                Phone = request.Phone.Trim(),
-                OwnerId = request.OwnerId,
-                Status = AgencyStatus.Pending,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _agencyRepository.AddAsync(agency);
-
-            return agency;
-        }
-
         public async Task<Agency> GetAgencyProfileAsync(int agencyId)
         {
             var agency = await _agencyRepository.GetByIdAsync(agencyId);

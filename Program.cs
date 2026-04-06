@@ -73,11 +73,15 @@ builder.Services
         };
     });
 
-// Repositories & Services
+// Repositories 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
+
+//Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
+builder.Services.AddScoped<IAgencyService, AgencyService>();
+
 
 
 // Strategies

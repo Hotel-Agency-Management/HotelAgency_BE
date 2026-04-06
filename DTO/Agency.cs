@@ -17,17 +17,18 @@ namespace Booking.DTO
         public string Message { get; set; } = string.Empty;
     }
 
-    public class UploadDocumentRequest
+    public class UploadAgencyDocumentRequest
     {
+        public string DocumentType { get; set; } = string.Empty;
         public IFormFile File { get; set; } = null!;
-        public string FileName { get; set; } = string.Empty;
     }
 
     public class AgencyDocumentResponse
     {
         public int Id { get; set; }
-        public string FileName { get; set; } = string.Empty;
+        public string DocumentType { get; set; } = string.Empty;
         public string FilePath { get; set; } = string.Empty;
+        public DateTime UploadedAt { get; set; }
     }
 
     public class AgencyProfileResponse

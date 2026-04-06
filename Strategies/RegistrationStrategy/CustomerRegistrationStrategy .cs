@@ -7,9 +7,9 @@ using Booking.Constants;
 using Booking.Enums;
 namespace Booking.Strategies
 {
-    public class CustomerRegistrationStrategy (IAuthRepository _authRepository): IRegistrationStrategy
+    public class CustomerRegistrationStrategy(IAuthRepository _authRepository) : IRegistrationStrategy
     {
-        public async Task <ApplicationUser> ExecuteAsync(RegisterRequest request)
+        public async Task<ApplicationUser> ExecuteAsync(RegisterRequest request)
         {
             var user = BuildUser(request);
 
@@ -35,5 +35,4 @@ namespace Booking.Strategies
             UpdatedAt = DateTime.UtcNow
         };
     }
-
 }

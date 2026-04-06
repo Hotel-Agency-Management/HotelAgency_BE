@@ -26,6 +26,7 @@ namespace Booking.Strategies
 
             await BuildAgencyAsync(user, request);
 
+
             return user;
         }
 
@@ -47,7 +48,7 @@ namespace Booking.Strategies
             if (exists)
                 throw new AgencyAlreadyExistsException(request.AgencyName!);
 
-            await _agencyRepository.AddAsync(new Agency
+            var agency = new Agency
             {
                 AgencyName = request.AgencyName!.Trim(),
                 Country = request.Country!.Trim(),
@@ -56,7 +57,14 @@ namespace Booking.Strategies
                 OwnerId = user.Id,
                 Status = AgencyStatus.Pending,
                 CreatedAt = DateTime.UtcNow
-            });
+            };
+
+            await _agencyRepository.AddAsync(agency);
+
+            user.AgencyId = agency.Id;
+            var updated = await _authRepository.UpdateUserAsync(user);
+            if (!updated)
+                throw new RegistrationFailedException("Failed to link agency to user.");
         }
     }
 

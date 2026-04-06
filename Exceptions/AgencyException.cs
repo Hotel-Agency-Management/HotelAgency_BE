@@ -49,4 +49,12 @@ namespace Booking.Exceptions
         {
         }
     }
+
+    public class AgencyNotAssignedException : AppException
+    {
+        public AgencyNotAssignedException()
+            : base("User has no agency assigned.", StatusCodes.Status400BadRequest)
+        {
+        }
+    }
 }
