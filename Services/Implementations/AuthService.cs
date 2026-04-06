@@ -166,7 +166,7 @@ namespace Booking.Services
 
             await _authRepository.SaveResetCodeAsync(resetCode);
 
-            var template = await _emailService.LoadTemplateAsync("VerificationCodeTemplate.html");
+            var template = await _emailService.LoadTemplateAsync("verification-code-template.html");
 
             var userName = string.IsNullOrWhiteSpace($"{user.FirstName} {user.LastName}".Trim())
                 ? "User"
