@@ -52,7 +52,7 @@ namespace Booking.Controllers
             });
         }
 
-        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}")]
         [HttpPatch("update-logo")]
         public async Task<IActionResult> UpdateAgencyLogo([FromForm] IFormFile file)
         {
