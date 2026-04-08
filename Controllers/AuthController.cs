@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Booking.Models;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 namespace Booking.Controllers
 {
     [ApiController]
@@ -61,7 +62,7 @@ namespace Booking.Controllers
         }
 
 
-        [HttpGet("profile")]
+        /*[HttpGet("profile")]
         [Authorize]
         public async Task<IActionResult> GetProfile()
         {
@@ -80,6 +81,20 @@ namespace Booking.Controllers
                 DateOfBirth = user.DateOfBirth,
                 Gender = user.Gender
             });
+        }*/
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var role = User.FindFirstValue(ClaimTypes.Role)
+                ?? throw new InvalidOperationException("Role claim not found.");
+
+            var result = await _authService.GetProfileAsync(user, role);
+
+            return Ok(result);
         }
 
 

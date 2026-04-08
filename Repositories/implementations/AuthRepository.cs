@@ -3,6 +3,7 @@ using Booking.Models;
 using Microsoft.AspNetCore.Identity;
 using Booking.Data;
 using Microsoft.EntityFrameworkCore;
+using Booking.Exceptions;
 
 namespace Booking.Repositories
 {
@@ -158,6 +159,15 @@ namespace Booking.Repositories
             user.UpdatedAt = DateTime.UtcNow;
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
+        }
+
+        public async Task<ApplicationUser> GetUserWithAgencyAsync(int userId)
+        {
+            return await _context.Users
+                .Include(u => u.Agency)
+                .FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new UserNotFoundException($"User with id {userId} not found.");
+
         }
     }
 }

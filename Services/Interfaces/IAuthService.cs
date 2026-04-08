@@ -19,6 +19,7 @@ namespace Booking.Interfaces.Services
         Task ResendVerificationEmailAsync(string email);
         Task VerifyEmailAsync(int userId, string token);
         Task SendVerificationEmailAsync(ApplicationUser user);
+        Task<BaseProfileResponseDto> GetProfileAsync(ApplicationUser user, string role);
 
     }
 }

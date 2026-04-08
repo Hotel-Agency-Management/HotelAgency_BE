@@ -20,7 +20,8 @@ namespace Booking.Services
         IJwtService _jwtService,
         IEmailService _emailService,
         IEmailJobService _emailJobService,
-        IRegistrationStrategyFactory _strategyFactory) : IAuthService
+        IRegistrationStrategyFactory _strategyFactory,
+        IProfileStrategyFactory _profileFactory) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -274,6 +275,12 @@ namespace Booking.Services
                 throw new InvalidOperationException("Email already verified");
 
             await SendVerificationEmailAsync(user);
+        }
+
+        public Task<BaseProfileResponseDto> GetProfileAsync(ApplicationUser user, string role)
+        {
+            var strategy = _profileFactory.Create(role);
+            return strategy.BuildProfileAsync(user);
         }
 
     }

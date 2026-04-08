@@ -17,7 +17,7 @@ namespace Booking.Controllers
     {
 
         [Authorize(Roles = $"{Roles.AgencyOwner}")]
-        [HttpGet]
+        [HttpGet("me")]
         public async Task<IActionResult> GetAgencyProfile()
         {
             var user = await _userManager.GetUserAsync(User);

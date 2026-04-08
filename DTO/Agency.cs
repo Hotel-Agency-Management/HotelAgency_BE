@@ -83,4 +83,22 @@ namespace Booking.DTO
         public string Message { get; set; } = string.Empty;
     }
 
+    public class AgencyInfoDto
+    {
+        public string? AgencyName { get; set; }
+        public string? AgencyLogo { get; set; }
+        public string? AgencyPhone { get; set; }
+        public string? AgencyCountry { get; set; }
+        public string? AgencyCity { get; set; }
+
+        public AgencyInfoDto(Agency agency)
+        {
+            AgencyName    = agency.AgencyName;
+            AgencyLogo    = agency.LogoUrl;
+            AgencyPhone   = agency.Phone;
+            AgencyCountry = agency.Country;
+            AgencyCity    = agency.City;
+        }
+    }
+
 }
