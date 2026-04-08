@@ -6,7 +6,7 @@ using Booking.Models;
 
 namespace Booking.Repositories
 {
-    public class PlanRepository (ApplicationDbContext _context) : IPlanRepository
+    public class PlanRepository(ApplicationDbContext _context) : IPlanRepository
     {
         public async Task<IEnumerable<Plan>> GetPlansAsync(bool includeInactive = false)
         {
