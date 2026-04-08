@@ -1,4 +1,4 @@
-using Booking.DTO.Auth;
+using Booking.DTO;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Exceptions;
@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Booking.Clients;
 using System.Security.Cryptography;
 using Booking.Utils;
+using Booking.Strategies;
+using Booking.Factories;
 
 
 namespace Booking.Services
@@ -17,7 +19,8 @@ namespace Booking.Services
         IAuthRepository _authRepository,
         IJwtService _jwtService,
         IEmailService _emailService,
-        IEmailJobService _emailJobService) : IAuthService
+        IEmailJobService _emailJobService,
+        IRegistrationStrategyFactory _strategyFactory) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -61,48 +64,18 @@ namespace Booking.Services
                 Role = role
             };
         }
-
         public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
         {
+            if (await _authRepository.FindByEmailAsync(request.Email.Trim()) is not null)
+                throw new EmailAlreadyExistsException(request.Email);
 
-            var email = request.Email.Trim();
-
-            var existingUser = await _authRepository.FindByEmailAsync(email);
-            if (existingUser != null)
-                throw new EmailAlreadyExistsException(email);
-
-            var user = new ApplicationUser
-            {
-                UserName = email,
-                EmailConfirmed = false,
-                Email = email,
-                PhoneNumber = request.PhoneNumber,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var result = await _authRepository.CreateUserAsync(user, request.Password);
-
-            if (!result.Succeeded)
-                throw new RegistrationFailedException("Registration failed.");
-
-            string role = request.AccountType switch
-            {
-                AccountType.Customer => Roles.Customer,
-                AccountType.AgencyOwner => Roles.AgencyOwner,
-                _ => throw new InvalidOperationException("Invalid account type.")
-            };
-
-            var roleResult = await _authRepository.AddToRoleAsync(user, role);
-
-            if (!roleResult.Succeeded)
-                throw new RegistrationFailedException("User created but assigning role failed.");
+            var strategy = _strategyFactory.GetStrategy(request.AccountType);
+            var user = await strategy.ExecuteAsync(request);
 
             await SendVerificationEmailAsync(user);
             return user;
         }
+
 
         public async Task<ApplicationUser> UpdateProfileAsync(ApplicationUser user, UpdateProfileDto dto)
         {
@@ -151,7 +124,7 @@ namespace Booking.Services
 
             await _authRepository.SaveResetCodeAsync(resetCode);
 
-            var template = await _emailService.LoadTemplateAsync("VerificationCodeTemplate.html");
+            var template = await _emailService.LoadTemplateAsync("verification-code-template.html");
 
             var userName = string.IsNullOrWhiteSpace($"{user.FirstName} {user.LastName}".Trim())
                 ? "User"
@@ -168,9 +141,11 @@ namespace Booking.Services
                     { "AGENCY_NAME", "HotelAgency" }
                 });
 
-            var plainText =
-                $"Hi {userName}, use the following code to reset your password: {resetCode.Code}. " +
-                "This code expires in 15 minutes. If you didn’t request this, you can safely ignore this email.";
+            var plainText = string.Format(
+                EmailTemplates.ResetPassword,
+                userName,
+                resetCode.Code
+            );
 
             await _emailService.SendEmailAsync(
                 email,
@@ -211,7 +186,7 @@ namespace Booking.Services
             var refreshToken = await _authRepository.GetValidRefreshTokenAsync(token)
                 ?? throw new InvalidRefreshTokenException();
 
-            var user = await _authRepository.FindByIdAsync(refreshToken.UserId.ToString())
+            var user = await _authRepository.FindByIdAsync(refreshToken.UserId)
                 ?? throw new UserNotFoundException($"ID: {refreshToken.UserId}");
 
             await _authRepository.RevokeRefreshTokenAsync(refreshToken);
@@ -270,7 +245,7 @@ namespace Booking.Services
 
         public async Task VerifyEmailAsync(int userId, string token)
         {
-            var user = await _authRepository.FindByIdAsync(userId.ToString())
+            var user = await _authRepository.FindByIdAsync(userId)
                 ?? throw new UserNotFoundException($"ID: {userId}");
 
             if (user.EmailConfirmed)

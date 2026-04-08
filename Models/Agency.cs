@@ -11,7 +11,7 @@ namespace Booking.Models
         //public Plan Plan { get; set; } = null!;
         public int OwnerId { get; set; }
         public ApplicationUser Owner { get; set; } = null!;
-        public AgencyStatus Status { get; set; } = AgencyStatus.PENDING;
+        public AgencyStatus Status { get; set; } = AgencyStatus.Pending;
 
         public string AgencyName { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;

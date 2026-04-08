@@ -7,7 +7,7 @@ namespace Booking.Interfaces.Repositories
     public interface IAuthRepository
     {
         Task<ApplicationUser?> FindByEmailAsync(string email);
-        Task<ApplicationUser?> FindByIdAsync(string id);
+        Task<ApplicationUser?> FindByIdAsync(int id);
         Task<bool> CheckPasswordAsync(ApplicationUser user, string password);
         Task<string> GetRoleAsync(ApplicationUser user);
         Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password);

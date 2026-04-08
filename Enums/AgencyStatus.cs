@@ -2,8 +2,10 @@ namespace Booking.Enums
 {
     public enum AgencyStatus
     {
-        PENDING = 1,
-        ACTIVE = 2,
-        REJECTED = 3
+        Active = 1,
+        Rejected = 2,
+        Pending = 3,
+        Deactivated = 4,
+        InComplete = 5
     }
 }

@@ -15,12 +15,24 @@ using Booking.Middleware;
 using Booking.Clients;
 using Hangfire;
 using Hangfire.MySql;
+using Booking.Strategies;
+using Booking.Factories;
+using System.Text.Json.Serialization;
+using Booking.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters
+               .Add(new RegisterRequestJsonConverter());
+    });
+
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -70,10 +82,22 @@ builder.Services
         };
     });
 
-// Repositories & Services
+// Repositories 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
+
+//Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAgencyService, AgencyService>();
+
+
+
+// Strategies
+builder.Services.AddScoped<CustomerRegistrationStrategy>();
+builder.Services.AddScoped<AgencyOwnerRegistrationStrategy>();
+builder.Services.AddScoped<IRegistrationStrategyFactory, RegistrationStrategyFactory>();
+
 
 // Email
 builder.Services.Configure<EmailOptions>(
@@ -81,6 +105,7 @@ builder.Services.Configure<EmailOptions>(
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailJobService, EmailJobService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 // Hangfire with MySQL
 var hangfireConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
@@ -100,6 +125,11 @@ builder.Services.AddHangfire(config =>
             TransactionTimeout = TimeSpan.FromMinutes(1)
         }))
 );
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 builder.Services.AddHangfireServer(options => options.WorkerCount = 2);
 
@@ -107,11 +137,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-    await RoleSeeder.SeedAsync(roleManager);
-}
+await SeedManager.SeedAsync(app.Services);
 
 if (app.Environment.IsDevelopment())
 {
