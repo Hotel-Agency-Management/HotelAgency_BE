@@ -3,20 +3,31 @@ using Booking.Enums;
 
 namespace Booking.DTO
 {
-    public class RegisterRequest
+
+    public abstract class RegisterRequest
     {
         public required string Email { get; set; }
         public required string Password { get; set; }
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
         public required string PhoneNumber { get; set; }
-        public AccountType AccountType { get; set; }
-
-        public string? AgencyName { get; set; }
-        public string? Country { get; set; }
-        public string? City { get; set; }
-        public string? Phone { get; set; }
+        public abstract AccountType AccountType { get; }
     }
+
+    public class CustomerRegisterRequest : RegisterRequest
+    {
+        public override AccountType AccountType => AccountType.Customer;
+    }
+
+    public class AgencyOwnerRegisterRequest : RegisterRequest
+    {
+        public override AccountType AccountType => AccountType.AgencyOwner;
+        public required string AgencyName { get; set; }
+        public required string Country { get; set; }
+        public required string City { get; set; }
+        public required string Phone { get; set; }
+    }
+
 
 
     public class LoginDto

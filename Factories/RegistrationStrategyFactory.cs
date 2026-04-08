@@ -3,24 +3,22 @@ using Booking.Strategies;
 
 namespace Booking.Factories
 {
-    public class RegistrationStrategyFactory : IRegistrationStrategyFactory
+    public class RegistrationStrategyFactory(
+        CustomerRegistrationStrategy _customerStrategy,
+        AgencyOwnerRegistrationStrategy _agencyOwnerStrategy
+    ) : IRegistrationStrategyFactory
     {
-        private readonly Dictionary<AccountType, IRegistrationStrategy> _strategyMap;
-
-        public RegistrationStrategyFactory(
-            CustomerRegistrationStrategy customerStrategy,
-            AgencyOwnerRegistrationStrategy agencyOwnerStrategy)
+        private Dictionary<AccountType, IRegistrationStrategy> BuildMap() => new()
         {
-            _strategyMap = new()
-        {
-            { AccountType.Customer,    customerStrategy    },
-            { AccountType.AgencyOwner, agencyOwnerStrategy },
+            { AccountType.Customer,    _customerStrategy    },
+            { AccountType.AgencyOwner, _agencyOwnerStrategy },
         };
-        }
 
         public IRegistrationStrategy GetStrategy(AccountType accountType)
         {
-            if (!_strategyMap.TryGetValue(accountType, out var strategy))
+            var map = BuildMap();
+
+            if (!map.TryGetValue(accountType, out var strategy))
                 throw new InvalidOperationException($"Unsupported account type: {accountType}");
 
             return strategy;

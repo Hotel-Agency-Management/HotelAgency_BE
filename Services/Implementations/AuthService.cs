@@ -64,48 +64,6 @@ namespace Booking.Services
                 Role = role
             };
         }
-
-        /*public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
-        {
-
-            var email = request.Email.Trim();
-
-            var existingUser = await _authRepository.FindByEmailAsync(email);
-            if (existingUser != null)
-                throw new EmailAlreadyExistsException(email);
-
-            var user = new ApplicationUser
-            {
-                UserName = email,
-                EmailConfirmed = false,
-                Email = email,
-                PhoneNumber = request.PhoneNumber,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var result = await _authRepository.CreateUserAsync(user, request.Password);
-
-            if (!result.Succeeded)
-                throw new RegistrationFailedException("Registration failed.");
-
-            string role = request.AccountType switch
-            {
-                AccountType.Customer => Roles.Customer,
-                AccountType.AgencyOwner => Roles.AgencyOwner,
-                _ => throw new InvalidOperationException("Invalid account type.")
-            };
-
-            var roleResult = await _authRepository.AddToRoleAsync(user, role);
-
-            if (!roleResult.Succeeded)
-                throw new RegistrationFailedException("User created but assigning role failed.");
-
-            await SendVerificationEmailAsync(user);
-            return user;
-        }*/
         public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
         {
             if (await _authRepository.FindByEmailAsync(request.Email.Trim()) is not null)

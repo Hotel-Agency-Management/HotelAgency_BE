@@ -18,12 +18,21 @@ using Hangfire.MySql;
 using Booking.Strategies;
 using Booking.Factories;
 using System.Text.Json.Serialization;
+using Booking.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters
+               .Add(new RegisterRequestJsonConverter());
+    });
+
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

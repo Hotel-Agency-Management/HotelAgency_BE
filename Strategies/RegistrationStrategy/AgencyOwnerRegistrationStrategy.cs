@@ -1,8 +1,9 @@
-using Booking.Interfaces.Repositories;
-using Booking.Models;
+// AgencyOwnerRegistrationStrategy.cs
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Exceptions;
-using Booking.Constants;
+using Booking.Interfaces.Repositories;
+using Booking.Models;
 using Booking.Enums;
 
 namespace Booking.Strategies
@@ -14,9 +15,11 @@ namespace Booking.Strategies
     {
         public async Task<ApplicationUser> ExecuteAsync(RegisterRequest request)
         {
-            var user = BuildUser(request);
+            var agencyRequest = (AgencyOwnerRegisterRequest)request;
 
-            var result = await _authRepository.CreateUserAsync(user, request.Password);
+            var user = BuildUser(agencyRequest);
+
+            var result = await _authRepository.CreateUserAsync(user, agencyRequest.Password);
             if (!result.Succeeded)
                 throw new RegistrationFailedException("Registration failed.");
 
@@ -24,13 +27,12 @@ namespace Booking.Strategies
             if (!roleResult.Succeeded)
                 throw new RegistrationFailedException("User created but assigning role failed.");
 
-            await BuildAgencyAsync(user, request);
-
+            await BuildAgencyAsync(user, agencyRequest);
 
             return user;
         }
 
-        private static ApplicationUser BuildUser(RegisterRequest request) => new()
+        private static ApplicationUser BuildUser(AgencyOwnerRegisterRequest request) => new()
         {
             UserName = request.Email.Trim(),
             Email = request.Email.Trim(),
@@ -42,18 +44,18 @@ namespace Booking.Strategies
             UpdatedAt = DateTime.UtcNow
         };
 
-        private async Task BuildAgencyAsync(ApplicationUser user, RegisterRequest request)
+        private async Task BuildAgencyAsync(ApplicationUser user, AgencyOwnerRegisterRequest request)
         {
-            var exists = await _agencyRepository.ExistsByNameAsync(request.AgencyName!);
+            var exists = await _agencyRepository.ExistsByNameAsync(request.AgencyName);
             if (exists)
-                throw new AgencyAlreadyExistsException(request.AgencyName!);
+                throw new AgencyAlreadyExistsException(request.AgencyName);
 
             var agency = new Agency
             {
-                AgencyName = request.AgencyName!.Trim(),
-                Country = request.Country!.Trim(),
-                City = request.City!.Trim(),
-                Phone = request.Phone!.Trim(),
+                AgencyName = request.AgencyName.Trim(),
+                Country = request.Country.Trim(),
+                City = request.City.Trim(),
+                Phone = request.Phone.Trim(),
                 OwnerId = user.Id,
                 Status = AgencyStatus.Pending,
                 CreatedAt = DateTime.UtcNow
@@ -67,5 +69,4 @@ namespace Booking.Strategies
                 throw new RegistrationFailedException("Failed to link agency to user.");
         }
     }
-
 }

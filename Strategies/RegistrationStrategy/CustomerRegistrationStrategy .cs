@@ -1,13 +1,15 @@
-
-using Booking.Interfaces.Repositories;
-using Booking.Models;
+// CustomerRegistrationStrategy.cs
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Exceptions;
-using Booking.Constants;
-using Booking.Enums;
+using Booking.Interfaces.Repositories;
+using Booking.Models;
+
 namespace Booking.Strategies
 {
-    public class CustomerRegistrationStrategy(IAuthRepository _authRepository) : IRegistrationStrategy
+    public class CustomerRegistrationStrategy(
+        IAuthRepository _authRepository
+    ) : IRegistrationStrategy
     {
         public async Task<ApplicationUser> ExecuteAsync(RegisterRequest request)
         {
@@ -20,6 +22,7 @@ namespace Booking.Strategies
             var roleResult = await _authRepository.AddToRoleAsync(user, Roles.Customer);
             if (!roleResult.Succeeded)
                 throw new RegistrationFailedException("User created but assigning role failed.");
+
             return user;
         }
 
