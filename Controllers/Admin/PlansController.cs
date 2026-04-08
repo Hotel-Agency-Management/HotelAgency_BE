@@ -13,7 +13,6 @@ namespace Booking.Controllers
 
     public class PlansController(IPlanService _planService) : ControllerBase
     {
-        [Authorize(Roles = $"{Roles.SuperAdmin}, {Roles.AgencyOwner}")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
         {
@@ -21,7 +20,6 @@ namespace Booking.Controllers
             return Ok(plans);
         }
 
-        [Authorize(Roles = $"{Roles.SuperAdmin}, {Roles.AgencyOwner}")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
