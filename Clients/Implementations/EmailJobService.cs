@@ -16,9 +16,9 @@ public class EmailJobService(
             userName = "User";
 
         await EnqueueAsync(
-            templateFile: "verify-email.html",
+            templateFile: EmailTemplateFiles.VerifyEmail,
             to: user.Email!,
-            subject: "Verify Your Email",
+            subject: EmailSubjects.VerifyEmail,
             plainText: string.Format(
                 EmailTemplates.VerifyEmail,
                 verificationLink
@@ -42,10 +42,13 @@ public class EmailJobService(
             userName = "User";
 
         await EnqueueAsync(
-            templateFile: "agency-under-review.html",
+            templateFile: EmailTemplateFiles.AgencyUnderReview,
             to: user.Email!,
-            subject: "Your Agency is Under Review",
-            plainText: $"Hi {userName}, your agency is currently under review. You will be notified once it has been approved or rejected.",
+            subject: EmailSubjects.AgencyUnderReview,
+            plainText: string.Format(
+            EmailTemplates.AgencyUnderReview,
+            userName
+        ),
             placeholders: new Dictionary<string, string>
             {
             { "AGENCY_NAME", userName },

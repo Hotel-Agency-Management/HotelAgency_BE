@@ -6,6 +6,7 @@ using Booking.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using Booking.Enums;
+using Booking.Constants;
 namespace Booking.Controllers
 {
     [ApiController]
@@ -24,21 +25,6 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        /*[HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = await _authService.RegisterAsync(request);
-
-            return Ok(new RegisterResponseDto
-            {
-                UserId = user.Id,
-                Email = user.Email!,
-                Message = "Please check your email to verify your account"
-            });
-        }*/
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -52,8 +38,8 @@ namespace Booking.Controllers
                 UserId = user.Id,
                 Email = user.Email!,
                 Message = request.AccountType == AccountType.AgencyOwner
-                ? "Your agency is under review. You will receive an email once it has been approved. Please also check your inbox to verify your email address."
-                : "Please check your email to verify your account",
+                ? Messages.AgencyUnderReview
+                : Messages.VerifyEmail,
                 AgencyId = request.AccountType == AccountType.AgencyOwner ? user.AgencyId : null
             };
 
@@ -113,7 +99,7 @@ namespace Booking.Controllers
                 return BadRequest(new ChangePasswordResponseDto
                 {
                     Success = false,
-                    Message = "Password change failed",
+                    Message = Messages.PasswordChangeFailed,
                     Errors = result.Errors.Select(e => e.Description).ToList()
                 });
             }
@@ -121,7 +107,7 @@ namespace Booking.Controllers
             return Ok(new ChangePasswordResponseDto
             {
                 Success = true,
-                Message = "Password changed successfully"
+                Message = Messages.PasswordChangedSuccessfully
             });
         }
 
@@ -133,7 +119,7 @@ namespace Booking.Controllers
                 return NotFound(new PasswordResetResponseDto
                 {
                     Success = false,
-                    Message = "No account associated with this email"
+                    Message = Messages.NoAccountWithEmail
                 });
 
             var sent = await _authService.SendResetPasswordEmailAsync(dto.Email);
@@ -141,13 +127,13 @@ namespace Booking.Controllers
                 return BadRequest(new PasswordResetResponseDto
                 {
                     Success = false,
-                    Message = "Failed to send reset email, please try again"
+                    Message = Messages.FailedToSendResetEmail
                 });
 
             return Ok(new PasswordResetResponseDto
             {
                 Success = true,
-                Message = "Password reset email sent"
+                Message = Messages.PasswordResetEmailSent
             });
         }
 
@@ -159,13 +145,13 @@ namespace Booking.Controllers
                 return BadRequest(new PasswordResetResponseDto
                 {
                     Success = false,
-                    Message = "Invalid or expired reset code"
+                    Message = Messages.InvalidOrExpiredCode
                 });
 
             return Ok(new PasswordResetResponseDto
             {
                 Success = true,
-                Message = "Code is valid"
+                Message = Messages.CodeIsValid
             });
         }
 
@@ -181,7 +167,7 @@ namespace Booking.Controllers
             return Ok(new PasswordResetResponseDto
             {
                 Success = true,
-                Message = "Password reset successfully"
+                Message = Messages.PasswordResetSuccessfully
             });
         }
 
@@ -212,7 +198,7 @@ namespace Booking.Controllers
             return Ok(new
             {
                 Success = true,
-                Message = "Email verified successfully"
+                Message = Messages.EmailVerifiedSuccessfully
             });
         }
 
@@ -224,10 +210,8 @@ namespace Booking.Controllers
             return Ok(new
             {
                 Success = true,
-                Message = "Verification email sent"
+                Message = Messages.VerificationEmailSent
             });
         }
-
-
     }
 }
