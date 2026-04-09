@@ -9,5 +9,6 @@ namespace Booking.Interfaces.Repositories
         Task<AgencyDocument> AddAsync(AgencyDocument document);
         Task<AgencyDocument> UpdateAsync(AgencyDocument document);
         Task DeleteAsync(AgencyDocument document);
+        Task<int> CountByAgencyIdAsync(int agencyId);
     }
 }

@@ -4,12 +4,14 @@ using Booking.Exceptions;
 using Booking.Models;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
+using Booking.Enums;
 
 namespace Booking.Services
 {
     public class AgencyDocumentService(
         IAgencyDocumentRepository _documentRepository,
-        IBlobStorageService _blobStorageService) : IAgencyDocumentService
+        IBlobStorageService _blobStorageService,
+        IAgencyRepository _agencyRepository) : IAgencyDocumentService
     {
         public async Task<AgencyDocumentResponseDto> UploadDocumentAsync(int agencyId, UploadDocumentDto dto)
         {
@@ -24,6 +26,13 @@ namespace Booking.Services
             };
 
             var saved = await _documentRepository.AddAsync(document);
+
+            var documentCount = await _documentRepository.CountByAgencyIdAsync(agencyId);
+            if (documentCount == 1)
+            {
+                await _agencyRepository.UpdateStatusAsync(agencyId, AgencyStatus.Pending);
+            }
+
             return new AgencyDocumentResponseDto(saved);
         }
 

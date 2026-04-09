@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class AgencyDocumentRepository (ApplicationDbContext _context) : IAgencyDocumentRepository
+    public class AgencyDocumentRepository(ApplicationDbContext _context) : IAgencyDocumentRepository
     {
         public async Task<AgencyDocument?> GetByIdAsync(int id)
         {
@@ -39,6 +39,12 @@ namespace Booking.Repositories
         {
             _context.AgencyDocuments.Remove(document);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> CountByAgencyIdAsync(int agencyId)
+        {
+            return await _context.AgencyDocuments
+                .CountAsync(d => d.AgencyId == agencyId);
         }
     }
 }
