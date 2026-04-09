@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Booking.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using Booking.Enums;
 namespace Booking.Controllers
 {
     [ApiController]
@@ -23,7 +24,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [HttpPost("register")]
+        /*[HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid)
@@ -35,8 +36,28 @@ namespace Booking.Controllers
             {
                 UserId = user.Id,
                 Email = user.Email!,
-                Message = "User created successfully"
+                Message = "Please check your email to verify your account"
             });
+        }*/
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _authService.RegisterAsync(request);
+
+            var response = new RegisterResponseDto
+            {
+                UserId = user.Id,
+                Email = user.Email!,
+                Message = request.AccountType == AccountType.AgencyOwner
+                ? "Your agency is under review. You will receive an email once it has been approved. Please also check your inbox to verify your email address."
+                : "Please check your email to verify your account",
+                AgencyId = request.AccountType == AccountType.AgencyOwner ? user.AgencyId : null
+            };
+
+            return Ok(response);
         }
 
         [HttpPatch("profile")]

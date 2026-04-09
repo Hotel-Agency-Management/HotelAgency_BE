@@ -6,13 +6,15 @@ using Booking.Models;
 using Booking.Enums;
 using Booking.Data;
 using Microsoft.EntityFrameworkCore.Storage;
+using Booking.Clients;
 
 namespace Booking.Strategies
 {
     public class AgencyOwnerRegistrationStrategy(
         IAuthRepository _authRepository,
         IAgencyRepository _agencyRepository,
-        ApplicationDbContext _dbContext
+        ApplicationDbContext _dbContext,
+        IEmailJobService _emailJobService
     ) : IRegistrationStrategy
     {
         public async Task<ApplicationUser> ExecuteAsync(RegisterRequest request)
@@ -81,6 +83,8 @@ namespace Booking.Strategies
             var updated = await _authRepository.UpdateUserAsync(user);
             if (!updated)
                 throw new RegistrationFailedException("Failed to link agency to user.");
+
+            await _emailJobService.EnqueueAgencyUnderReviewEmailAsync(user);
         }
     }
 }

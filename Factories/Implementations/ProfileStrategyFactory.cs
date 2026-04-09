@@ -8,7 +8,7 @@ namespace Booking.Factories
         private readonly Dictionary<string, Func<IProfileStrategy>> _strategies;
 
         public ProfileStrategyFactory(
-            BasicProfileStrategy basic,
+            BaseProfileStrategy basic,
             AgencyOwnerProfileStrategy agencyOwner)
         {
             _strategies = new Dictionary<string, Func<IProfileStrategy>>

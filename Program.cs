@@ -98,7 +98,7 @@ builder.Services.AddScoped<IAgencyDocumentService, AgencyDocumentService>();
 // Strategies
 builder.Services.AddScoped<CustomerRegistrationStrategy>();
 builder.Services.AddScoped<AgencyOwnerRegistrationStrategy>();
-builder.Services.AddScoped<BasicProfileStrategy>();
+builder.Services.AddScoped<BaseProfileStrategy>();
 builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
 
 //Factories
