@@ -2,12 +2,13 @@ using Booking.DTOs;
 using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Booking.Constants;
 
 namespace Booking.Controllers
 {
     [ApiController]
+    [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.SuperAdmin}")]
     [Route("api/agencies/{agencyId}/documents")]
-    [Authorize]
     public class AgencyDocumentController(IAgencyDocumentService _documentService) : ControllerBase
     {
         [HttpGet]
@@ -18,7 +19,6 @@ namespace Booking.Controllers
         }
 
         [HttpPost]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadDocument(int agencyId, [FromForm] UploadDocumentDto dto)
         {
             var result = await _documentService.UploadDocumentAsync(agencyId, dto);
@@ -26,7 +26,6 @@ namespace Booking.Controllers
         }
 
         [HttpPut("{documentId}")]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateDocument(int agencyId, int documentId, [FromForm] UpdateDocumentDto dto)
         {
             var result = await _documentService.UpdateDocumentAsync(documentId, dto);
