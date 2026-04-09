@@ -73,7 +73,7 @@ namespace Booking.Strategies
                 City = request.City.Trim(),
                 Phone = request.Phone.Trim(),
                 OwnerId = user.Id,
-                Status = AgencyStatus.Pending,
+                Status = AgencyStatus.InComplete,
                 CreatedAt = DateTime.UtcNow
             };
 
