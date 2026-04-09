@@ -2,6 +2,8 @@ using Booking.Data;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
 using Microsoft.EntityFrameworkCore;
+using Booking.Exceptions;
+using Booking.Enums;
 
 namespace Booking.Repositories
 {
@@ -34,6 +36,16 @@ namespace Booking.Repositories
         public async Task DeleteAsync(Agency agency)
         {
             _context.Agencies.Remove(agency);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateStatusAsync(int agencyId, AgencyStatus status)
+        {
+            var agency = await _context.Agencies.FindAsync(agencyId);
+            if (agency == null) 
+            throw new AgencyNotFoundException(agencyId);
+
+            agency.Status = status;
             await _context.SaveChangesAsync();
         }
     }

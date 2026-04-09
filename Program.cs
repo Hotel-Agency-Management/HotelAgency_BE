@@ -85,11 +85,13 @@ builder.Services
 // Repositories 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
+builder.Services.AddScoped<IAgencyDocumentRepository, AgencyDocumentRepository>();
 
 //Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAgencyService, AgencyService>();
+builder.Services.AddScoped<IAgencyDocumentService, AgencyDocumentService>();
 
 
 
