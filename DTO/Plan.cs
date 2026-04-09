@@ -1,4 +1,5 @@
 using Booking.Models;
+using Booking.Enums;
 
 namespace Booking.DTO
 {
@@ -21,7 +22,7 @@ namespace Booking.DTO
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
-        public bool IsActive { get; set; }
+        public PlanStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public List<PlanFeatureDto> PlanFeatures { get; set; } = new();
@@ -32,7 +33,7 @@ namespace Booking.DTO
             Name = plan.Name;
             Description = plan.Description;
             Price = plan.Price;
-            IsActive = plan.IsActive;
+            Status = plan.Status;
             CreatedAt = plan.CreatedAt;
             UpdatedAt = plan.UpdatedAt;
             PlanFeatures = plan.PlanFeatures
@@ -75,7 +76,7 @@ namespace Booking.DTO
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
-        public bool IsActive { get; set; } = true;
+        public PlanStatus Status { get; set; }
         public List<CreatePlanFeatureDto> PlanFeatures { get; set; } = new();
     }
 
@@ -84,7 +85,7 @@ namespace Booking.DTO
         public string? Name { get; set; }
         public string? Description { get; set; }
         public decimal? Price { get; set; }
-        public bool? IsActive { get; set; }
+        public PlanStatus? Status { get; set; }
         public List<CreatePlanFeatureDto>? PlanFeatures { get; set; }
     }
 }

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Booking.Data;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
-
+using Booking.Enums;
 
 namespace Booking.Repositories
 {
@@ -16,7 +16,7 @@ namespace Booking.Repositories
                 .AsQueryable();
 
             if (!includeInactive)
-                query = query.Where(p => p.IsActive);
+                query = query.Where(p => p.Status == PlanStatus.Active);
 
             return await query.OrderBy(p => p.Price).ToListAsync();
         }

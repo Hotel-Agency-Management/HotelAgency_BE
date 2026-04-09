@@ -1,4 +1,5 @@
 using Booking.DTO;
+using Booking.Enums;
 
 namespace Booking.Interfaces.Services
 {
@@ -9,6 +10,5 @@ namespace Booking.Interfaces.Services
         Task<PlanDto> CreatePlanAsync(CreatePlanDto dto);
         Task<PlanDto> UpdatePlanAsync(int id, UpdatePlanDto dto);
         Task DeletePlanAsync(int id);
-        Task TogglePlanStatusAsync(int id);
     }
 }

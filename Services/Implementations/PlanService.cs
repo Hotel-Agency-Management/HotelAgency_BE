@@ -2,6 +2,7 @@ using Booking.DTO;
 using Booking.Models;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
+using Booking.Enums;
 
 namespace Booking.Interfaces.Services
 {
@@ -30,7 +31,7 @@ namespace Booking.Interfaces.Services
                 Name = dto.Name,
                 Description = dto.Description,
                 Price = dto.Price,
-                IsActive = dto.IsActive,
+                Status = dto.Status,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 PlanFeatures = dto.PlanFeatures.Select(f => new PlanFeature
@@ -62,7 +63,7 @@ namespace Booking.Interfaces.Services
 
             if (dto.Description is not null) plan.Description = dto.Description;
             if (dto.Price.HasValue) plan.Price = dto.Price.Value;
-            if (dto.IsActive.HasValue) plan.IsActive = dto.IsActive.Value;
+            if (dto.Status.HasValue) plan.Status = dto.Status.Value;
 
             if (dto.PlanFeatures is not null)
             {
@@ -88,15 +89,6 @@ namespace Booking.Interfaces.Services
                 throw new PlanNotFoundException(id);
 
             await _planRepository.DeleteAsync(id);
-        }
-
-        public async Task TogglePlanStatusAsync(int id)
-        {
-            var plan = await _planRepository.GetByIdAsync(id);
-            if (plan is null) throw new PlanNotFoundException(id);
-
-            plan.IsActive = !plan.IsActive;
-            await _planRepository.UpdateAsync(plan);
         }
     }
 }
