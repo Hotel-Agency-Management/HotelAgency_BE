@@ -61,27 +61,6 @@ namespace Booking.Controllers
             });
         }
 
-
-        /*[HttpGet("profile")]
-        [Authorize]
-        public async Task<IActionResult> GetProfile()
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return Unauthorized();
-
-            return Ok(new UpdateProfileResponseDto
-            {
-                Email = user.Email ?? string.Empty,
-                FirstName = user.FirstName ?? string.Empty,
-                LastName = user.LastName ?? string.Empty,
-                PhoneNumber = user.PhoneNumber,
-                UpdatedAt = user.UpdatedAt ?? DateTime.UtcNow,
-                DateOfBirth = user.DateOfBirth,
-                Gender = user.Gender
-            });
-        }*/
         [HttpGet("profile")]
         [Authorize]
         public async Task<IActionResult> GetProfile()
