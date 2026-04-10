@@ -1,35 +1,51 @@
-// AgencyOwnerRegistrationStrategy.cs
 using Booking.Constants;
 using Booking.DTO;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
 using Booking.Enums;
+using Booking.Data;
+using Microsoft.EntityFrameworkCore.Storage;
+using Booking.Clients;
 
 namespace Booking.Strategies
 {
     public class AgencyOwnerRegistrationStrategy(
         IAuthRepository _authRepository,
-        IAgencyRepository _agencyRepository
+        IAgencyRepository _agencyRepository,
+        ApplicationDbContext _dbContext,
+        IEmailJobService _emailJobService
     ) : IRegistrationStrategy
     {
         public async Task<ApplicationUser> ExecuteAsync(RegisterRequest request)
         {
             var agencyRequest = (AgencyOwnerRegisterRequest)request;
 
-            var user = BuildUser(agencyRequest);
+            await using IDbContextTransaction transaction =
+                await _dbContext.Database.BeginTransactionAsync();
 
-            var result = await _authRepository.CreateUserAsync(user, agencyRequest.Password);
-            if (!result.Succeeded)
-                throw new RegistrationFailedException("Registration failed.");
+            try
+            {
+                var user = BuildUser(agencyRequest);
 
-            var roleResult = await _authRepository.AddToRoleAsync(user, Roles.AgencyOwner);
-            if (!roleResult.Succeeded)
-                throw new RegistrationFailedException("User created but assigning role failed.");
+                var result = await _authRepository.CreateUserAsync(user, agencyRequest.Password);
+                if (!result.Succeeded)
+                    throw new RegistrationFailedException("Registration failed.");
 
-            await BuildAgencyAsync(user, agencyRequest);
+                var roleResult = await _authRepository.AddToRoleAsync(user, Roles.AgencyOwner);
+                if (!roleResult.Succeeded)
+                    throw new RegistrationFailedException("User created but assigning role failed.");
 
-            return user;
+                await BuildAgencyAsync(user, agencyRequest);
+
+                await transaction.CommitAsync();
+                return user;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         private static ApplicationUser BuildUser(AgencyOwnerRegisterRequest request) => new()
@@ -57,7 +73,7 @@ namespace Booking.Strategies
                 City = request.City.Trim(),
                 Phone = request.Phone.Trim(),
                 OwnerId = user.Id,
-                Status = AgencyStatus.Pending,
+                Status = AgencyStatus.InComplete,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -67,6 +83,8 @@ namespace Booking.Strategies
             var updated = await _authRepository.UpdateUserAsync(user);
             if (!updated)
                 throw new RegistrationFailedException("Failed to link agency to user.");
+
+            await _emailJobService.EnqueueAgencyUnderReviewEmailAsync(user);
         }
     }
 }

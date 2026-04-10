@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Booking.Clients;
 using System.Security.Cryptography;
 using Booking.Utils;
-using Booking.Strategies;
 using Booking.Factories;
 
 
@@ -20,7 +19,9 @@ namespace Booking.Services
         IJwtService _jwtService,
         IEmailService _emailService,
         IEmailJobService _emailJobService,
-        IRegistrationStrategyFactory _strategyFactory) : IAuthService
+        IRegistrationStrategyFactory _strategyFactory,
+        IProfileStrategyFactory _profileFactory,
+        IAgencyRepository _agencyRepository) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -34,9 +35,22 @@ namespace Booking.Services
             if (!isPasswordValid)
                 throw new InvalidCredentialsException();
 
-            await _authRepository.DeleteUserRefreshTokensAsync(user.Id);
-
             var role = await _authRepository.GetRoleAsync(user);
+
+            AgencyStatus? agencyStatus = null;
+            if (role == Roles.AgencyOwner)
+            {
+                var agency = await _agencyRepository.GetAgencyByOwnerIdAsync(user.Id);
+                if (agency == null)
+                    throw new AgencyNotFoundException(user.Id);
+
+                agencyStatus = agency.Status;
+
+                if (agencyStatus == AgencyStatus.Pending)
+                    throw new AgencyUnderReviewException();
+            }
+
+            await _authRepository.DeleteUserRefreshTokensAsync(user.Id);
             var token = _jwtService.GenerateToken(user, role);
 
             var refreshToken = new RefreshToken
@@ -61,7 +75,9 @@ namespace Booking.Services
                 RefreshToken = refreshToken.Token,
                 FirstName = user.FirstName ?? string.Empty,
                 LastName = user.LastName ?? string.Empty,
-                Role = role
+                Role = role,
+                AgencyStatus = agencyStatus
+
             };
         }
         public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
@@ -274,6 +290,12 @@ namespace Booking.Services
                 throw new InvalidOperationException("Email already verified");
 
             await SendVerificationEmailAsync(user);
+        }
+
+        public Task<BaseProfileResponseDto> GetProfileAsync(ApplicationUser user, string role)
+        {
+            var strategy = _profileFactory.Create(role);
+            return strategy.BuildProfileAsync(user);
         }
 
     }

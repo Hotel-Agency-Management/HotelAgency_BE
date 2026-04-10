@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Booking.Models;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Booking.Enums;
+using Booking.Constants;
 namespace Booking.Controllers
 {
     [ApiController]
@@ -30,12 +33,17 @@ namespace Booking.Controllers
 
             var user = await _authService.RegisterAsync(request);
 
-            return Ok(new RegisterResponseDto
+            var response = new RegisterResponseDto
             {
                 UserId = user.Id,
                 Email = user.Email!,
-                Message = "User created successfully"
-            });
+                Message = request.AccountType == AccountType.AgencyOwner
+                ? Messages.AgencyUnderReview
+                : Messages.VerifyEmail,
+                AgencyId = request.AccountType == AccountType.AgencyOwner ? user.AgencyId : null
+            };
+
+            return Ok(response);
         }
 
         [HttpPatch("profile")]
@@ -60,26 +68,19 @@ namespace Booking.Controllers
             });
         }
 
-
         [HttpGet("profile")]
         [Authorize]
         public async Task<IActionResult> GetProfile()
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
 
-            if (user == null)
-                return Unauthorized();
+            var role = User.FindFirstValue(ClaimTypes.Role)
+                ?? throw new InvalidOperationException("Role claim not found.");
 
-            return Ok(new UpdateProfileResponseDto
-            {
-                Email = user.Email ?? string.Empty,
-                FirstName = user.FirstName ?? string.Empty,
-                LastName = user.LastName ?? string.Empty,
-                PhoneNumber = user.PhoneNumber,
-                UpdatedAt = user.UpdatedAt ?? DateTime.UtcNow,
-                DateOfBirth = user.DateOfBirth,
-                Gender = user.Gender
-            });
+            var result = await _authService.GetProfileAsync(user, role);
+
+            return Ok(result);
         }
 
 
@@ -98,7 +99,7 @@ namespace Booking.Controllers
                 return BadRequest(new ChangePasswordResponseDto
                 {
                     Success = false,
-                    Message = "Password change failed",
+                    Message = Messages.PasswordChangeFailed,
                     Errors = result.Errors.Select(e => e.Description).ToList()
                 });
             }
@@ -106,7 +107,7 @@ namespace Booking.Controllers
             return Ok(new ChangePasswordResponseDto
             {
                 Success = true,
-                Message = "Password changed successfully"
+                Message = Messages.PasswordChangedSuccessfully
             });
         }
 
@@ -118,7 +119,7 @@ namespace Booking.Controllers
                 return NotFound(new PasswordResetResponseDto
                 {
                     Success = false,
-                    Message = "No account associated with this email"
+                    Message = Messages.NoAccountWithEmail
                 });
 
             var sent = await _authService.SendResetPasswordEmailAsync(dto.Email);
@@ -126,13 +127,13 @@ namespace Booking.Controllers
                 return BadRequest(new PasswordResetResponseDto
                 {
                     Success = false,
-                    Message = "Failed to send reset email, please try again"
+                    Message = Messages.FailedToSendResetEmail
                 });
 
             return Ok(new PasswordResetResponseDto
             {
                 Success = true,
-                Message = "Password reset email sent"
+                Message = Messages.PasswordResetEmailSent
             });
         }
 
@@ -144,13 +145,13 @@ namespace Booking.Controllers
                 return BadRequest(new PasswordResetResponseDto
                 {
                     Success = false,
-                    Message = "Invalid or expired reset code"
+                    Message = Messages.InvalidOrExpiredCode
                 });
 
             return Ok(new PasswordResetResponseDto
             {
                 Success = true,
-                Message = "Code is valid"
+                Message = Messages.CodeIsValid
             });
         }
 
@@ -166,7 +167,7 @@ namespace Booking.Controllers
             return Ok(new PasswordResetResponseDto
             {
                 Success = true,
-                Message = "Password reset successfully"
+                Message = Messages.PasswordResetSuccessfully
             });
         }
 
@@ -197,7 +198,7 @@ namespace Booking.Controllers
             return Ok(new
             {
                 Success = true,
-                Message = "Email verified successfully"
+                Message = Messages.EmailVerifiedSuccessfully
             });
         }
 
@@ -209,10 +210,8 @@ namespace Booking.Controllers
             return Ok(new
             {
                 Success = true,
-                Message = "Verification email sent"
+                Message = Messages.VerificationEmailSent
             });
         }
-
-
     }
 }

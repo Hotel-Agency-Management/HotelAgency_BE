@@ -16,9 +16,9 @@ public class EmailJobService(
             userName = "User";
 
         await EnqueueAsync(
-            templateFile: "verify-email.html",
+            templateFile: EmailTemplateFiles.VerifyEmail,
             to: user.Email!,
-            subject: "Verify Your Email",
+            subject: EmailSubjects.VerifyEmail,
             plainText: string.Format(
                 EmailTemplates.VerifyEmail,
                 verificationLink
@@ -31,6 +31,30 @@ public class EmailJobService(
                 { "SUPPORT_LINK", "http://localhost:3000/support" },
                 { "PRIVACY_LINK", "http://localhost:3000/privacy" },
                 { "AGENCY_NAME", "HotelAgency" }
+            }
+        );
+    }
+
+    public async Task EnqueueAgencyUnderReviewEmailAsync(ApplicationUser user)
+    {
+        var userName = $"{user.FirstName} {user.LastName}".Trim();
+        if (string.IsNullOrWhiteSpace(userName))
+            userName = "User";
+
+        await EnqueueAsync(
+            templateFile: EmailTemplateFiles.AgencyUnderReview,
+            to: user.Email!,
+            subject: EmailSubjects.AgencyUnderReview,
+            plainText: string.Format(
+            EmailTemplates.AgencyUnderReview,
+            userName
+        ),
+            placeholders: new Dictionary<string, string>
+            {
+            { "AGENCY_NAME", userName },
+            { "HELP_LINK", "http://localhost:3000/help" },
+            { "SUPPORT_LINK", "http://localhost:3000/support" },
+            { "PRIVACY_LINK", "http://localhost:3000/privacy" },
             }
         );
     }

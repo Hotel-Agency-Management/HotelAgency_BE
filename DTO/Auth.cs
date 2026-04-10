@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Booking.Enums;
+using Booking.Models;
 
 namespace Booking.DTO
 {
@@ -46,6 +47,7 @@ namespace Booking.DTO
         public string LastName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
+        public AgencyStatus? AgencyStatus { get; set; }
     }
 
 
@@ -54,6 +56,7 @@ namespace Booking.DTO
         public int UserId { get; set; }
         public string Email { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
+        public int? AgencyId { get; set; }
     }
 
 
@@ -78,6 +81,36 @@ namespace Booking.DTO
         public string? Gender { get; set; }
     }
 
+    public class BaseProfileResponseDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public BaseProfileResponseDto(ApplicationUser user)
+        {
+            Email = user.Email ?? string.Empty;
+            FirstName = user.FirstName ?? string.Empty;
+            LastName = user.LastName ?? string.Empty;
+            PhoneNumber = user.PhoneNumber;
+            UpdatedAt = user.UpdatedAt ?? DateTime.UtcNow;
+            DateOfBirth = user.DateOfBirth;
+            Gender = user.Gender;
+        }
+    }
+
+    public class AgencyOwnerProfileResponseDto : BaseProfileResponseDto
+    {
+        public AgencyInfoDto Agency { get; set; }
+
+        public AgencyOwnerProfileResponseDto(ApplicationUser user) : base(user)
+        {
+            Agency = new AgencyInfoDto(user.Agency!);
+        }
+    }
 
     public class ChangePasswordDto
     {

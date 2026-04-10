@@ -18,6 +18,14 @@ namespace Booking.Exceptions
         }
     }
 
+    public class AgencyUnderReviewException : AgencyException
+    {
+        public AgencyUnderReviewException()
+            : base($"Your agency account is still under review. Please wait for approval before logging in.", (int)HttpStatusCode.Forbidden)
+        {
+        }
+    }
+
     public class AgencyAlreadyExistsException : AgencyException
     {
         public AgencyAlreadyExistsException(string agencyName)

@@ -17,7 +17,7 @@ namespace Booking.Controllers
     {
 
         [Authorize(Roles = $"{Roles.AgencyOwner}")]
-        [HttpGet]
+        [HttpGet("me")]
         public async Task<IActionResult> GetAgencyProfile()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -28,9 +28,9 @@ namespace Booking.Controllers
             if (!user.AgencyId.HasValue)
                 throw new AgencyNotAssignedException();
 
-            var result = await _agencyService.GetAgencyProfileAsync(user.AgencyId.Value);
+            var agency = await _agencyService.GetAgencyProfileAsync(user.AgencyId.Value);
 
-            return Ok(new AgencyProfileResponse(result));
+            return Ok(new AgencyProfileResponse(agency));
         }
 
         [Authorize(Roles = $"{Roles.AgencyOwner}")]
@@ -48,7 +48,7 @@ namespace Booking.Controllers
             await _agencyService.UpdateAgencyAsync(user.AgencyId.Value, request);
             return Ok(new AgencyResponseDto
             {
-                Message = "Agency Updated Successfully"
+                Message = Messages.AgencyUpdatedSuccessfully
             });
         }
 
@@ -67,8 +67,7 @@ namespace Booking.Controllers
             var result = await _agencyService.UpdateAgencyLogoAsync(user.AgencyId.Value, file);
             return Ok(new AgencyResponseDto
             {
-                Message = "Logo Updated Successfully"
-
+                Message = Messages.LogoUpdatedSuccessfully
             });
         }
     }
