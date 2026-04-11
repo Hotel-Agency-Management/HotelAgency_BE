@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Route("api/plans")]
+    [Route("api/public/plans")]
 
     public class PublicPlansController(IPlanService _planService) : ControllerBase
     {
