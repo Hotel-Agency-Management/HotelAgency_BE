@@ -1,4 +1,4 @@
-using Booking.DTOs;
+using Booking.DTO;
 
 namespace Booking.Interfaces.Services
 {
