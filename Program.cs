@@ -88,8 +88,7 @@ builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
 builder.Services.AddScoped<IAgencyDocumentRepository, AgencyDocumentRepository>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
-
-
+builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 
 //Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -98,7 +97,7 @@ builder.Services.AddScoped<IAgencyService, AgencyService>();
 builder.Services.AddScoped<IAgencyDocumentService, AgencyDocumentService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
-
+builder.Services.AddScoped<IHotelService, HotelService>();
 
 
 
