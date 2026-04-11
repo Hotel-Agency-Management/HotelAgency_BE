@@ -21,6 +21,7 @@ namespace Booking.Data
             public DbSet<Plan> Plans { get; set; }
             public DbSet<PlanFeature> PlanFeatures => Set<PlanFeature>();
             public DbSet<FeatureLimit> FeatureLimits => Set<FeatureLimit>();
+            public DbSet<Hotel> Hotels { get; set; }
 
             protected override void OnModelCreating(ModelBuilder builder)
             {

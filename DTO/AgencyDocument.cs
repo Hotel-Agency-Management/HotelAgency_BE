@@ -1,6 +1,6 @@
 using Booking.Models;
 
-namespace Booking.DTOs
+namespace Booking.DTO
 {
     public class UploadDocumentDto
     {

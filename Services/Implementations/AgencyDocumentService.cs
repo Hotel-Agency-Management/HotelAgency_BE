@@ -1,5 +1,5 @@
 using Booking.Clients;
-using Booking.DTOs;
+using Booking.DTO;
 using Booking.Exceptions;
 using Booking.Models;
 using Booking.Interfaces.Repositories;
