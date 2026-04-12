@@ -31,5 +31,7 @@ namespace Booking.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public Hotel? Hotel { get; set; }
+        public ICollection<FacilityPhoto> Photos { get; set; } = new List<FacilityPhoto>();
+
     }
 }
