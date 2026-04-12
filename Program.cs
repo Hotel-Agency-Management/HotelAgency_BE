@@ -19,6 +19,8 @@ using Booking.Strategies;
 using Booking.Factories;
 using System.Text.Json.Serialization;
 using Booking.Converters;
+using Booking.Repositories.Implementations;
+using Booking.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +89,9 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
 builder.Services.AddScoped<IAgencyDocumentRepository, AgencyDocumentRepository>();
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+builder.Services.AddScoped<IFacilityPhotoRepository, FacilityPhotoRepository>();
+builder.Services.AddScoped<IFacilityRepository, FacilityRepository>();
+
 
 
 //Services
@@ -95,7 +100,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAgencyService, AgencyService>();
 builder.Services.AddScoped<IAgencyDocumentService, AgencyDocumentService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
-
+builder.Services.AddScoped<IFacilityPhotoService, FacilityPhotoService>();
+builder.Services.AddScoped<IFacilityService, FacilityService>();
 
 
 // Strategies

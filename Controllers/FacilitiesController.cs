@@ -29,6 +29,7 @@ namespace Booking.Controllers
             return Ok(facilities);
         }
 
+        [HttpGet("{facilityId}")]
         public async Task<IActionResult> GetFacilityById(
             [FromRoute] int facilityId)
         {
@@ -36,6 +37,7 @@ namespace Booking.Controllers
             return Ok(facility);
         }
 
+        [HttpPut("{facilityId}")]
         public async Task<IActionResult> UpdateFacility(
             [FromRoute] int facilityId,
             [FromBody] UpdateFacilityRequest request)
@@ -47,6 +49,7 @@ namespace Booking.Controllers
             return Ok(updated);
         }
 
+        [HttpDelete("{facilityId}")]
         public async Task<IActionResult> DeleteFacility(
             [FromRoute] int facilityId)
         {

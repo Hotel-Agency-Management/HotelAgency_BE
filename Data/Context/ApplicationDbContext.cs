@@ -20,6 +20,8 @@ namespace Booking.Data
             public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
             public DbSet<Hotel> Hotels { get; set; }
             public DbSet<Facility> Facilities { get; set; }
+            public DbSet<FacilityPhoto> FacilityPhotos { get; set; }
+
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -174,8 +176,20 @@ namespace Booking.Data
                   builder.Entity<Facility>(entity =>
                   {
                         entity.HasOne(f => f.Hotel)
-                        .WithMany()
+                        .WithMany(h => h.Facilities)
                         .HasForeignKey(f => f.HotelId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.Property(f => f.Status)
+                        .HasConversion<string>()
+                        .HasMaxLength(30);
+                  });
+
+                  builder.Entity<FacilityPhoto>(entity =>
+                  {
+                        entity.HasOne(p => p.Facility)
+                        .WithMany(f => f.Photos)
+                        .HasForeignKey(p => p.FacilityId)
                         .OnDelete(DeleteBehavior.Cascade);
                   });
             }
