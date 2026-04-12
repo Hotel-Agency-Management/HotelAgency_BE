@@ -22,6 +22,7 @@ namespace Booking.Data
             public DbSet<PlanFeature> PlanFeatures => Set<PlanFeature>();
             public DbSet<FeatureLimit> FeatureLimits => Set<FeatureLimit>();
             public DbSet<Hotel> Hotels { get; set; }
+            public DbSet<Facility> Facilities { get; set; }
 
             protected override void OnModelCreating(ModelBuilder builder)
             {
@@ -197,7 +198,14 @@ namespace Booking.Data
                         e.HasKey(l => l.Id);
                         e.HasOne(l => l.PlanFeature)
                         .WithMany(f => f.FeatureLimits)
-                        .HasForeignKey(l => l.FeatureId)
+                        .HasForeignKey(l => l.FeatureId);
+                  });
+                  //Facility
+                  builder.Entity<Facility>(entity =>
+                  {
+                        entity.HasOne(f => f.Hotel)
+                        .WithMany()
+                        .HasForeignKey(f => f.HotelId)
                         .OnDelete(DeleteBehavior.Cascade);
                   });
             }
