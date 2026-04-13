@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
     [Route("api/agencies/{agencyId}/hotels")]
     public class HotelController(IHotelService _hotelService) : ControllerBase
     {
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
         [HttpPost]
         public async Task<IActionResult> CreateHotel(
             [FromRoute] int agencyId,
@@ -26,6 +26,7 @@ namespace Booking.Controllers
             return Ok(hotel);
         }
 
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
         [HttpGet]
         public async Task<IActionResult> GetHotelsByAgency([FromRoute] int agencyId)
         {
@@ -33,6 +34,7 @@ namespace Booking.Controllers
             return Ok(hotels);
         }
 
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}, {Roles.PropertyManager}")]
         [HttpGet("{hotelId}")]
         public async Task<IActionResult> GetHotelById([FromRoute] int hotelId)
         {
@@ -40,6 +42,7 @@ namespace Booking.Controllers
             return Ok(hotel);
         }
 
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
         [HttpPut("{hotelId}")]
         public async Task<IActionResult> UpdateHotel(
             [FromRoute] int hotelId,
@@ -52,6 +55,7 @@ namespace Booking.Controllers
             return Ok(updated);
         }
 
+        [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
         [HttpDelete("{hotelId}")]
         public async Task<IActionResult> DeleteHotel([FromRoute] int hotelId)
         {
