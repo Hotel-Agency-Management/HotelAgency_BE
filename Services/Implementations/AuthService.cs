@@ -80,16 +80,29 @@ namespace Booking.Services
 
             };
         }
-        public async Task<ApplicationUser> RegisterAsync(RegisterRequest request)
+        public async Task<(ApplicationUser user, string token, string refreshToken)> RegisterAsync(RegisterRequest request)
         {
             if (await _authRepository.FindByEmailAsync(request.Email.Trim()) is not null)
                 throw new EmailAlreadyExistsException(request.Email);
 
             var strategy = _strategyFactory.GetStrategy(request.AccountType);
             var user = await strategy.ExecuteAsync(request);
+            var role = await _authRepository.GetRoleAsync(user);
+            var token = _jwtService.GenerateToken(user, role);
+
+            var refreshToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
+            };
+
+            await _authRepository.SaveRefreshTokenAsync(refreshToken);
 
             await SendVerificationEmailAsync(user);
-            return user;
+            return (user, token, refreshToken.Token);
         }
 
 

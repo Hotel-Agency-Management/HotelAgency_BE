@@ -31,7 +31,7 @@ namespace Booking.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _authService.RegisterAsync(request);
+            var (user, Token, RefreshToken) = await _authService.RegisterAsync(request);
 
             var response = new RegisterResponseDto
             {
@@ -40,7 +40,9 @@ namespace Booking.Controllers
                 Message = request.AccountType == AccountType.AgencyOwner
                 ? Messages.AgencyUnderReview
                 : Messages.VerifyEmail,
-                AgencyId = request.AccountType == AccountType.AgencyOwner ? user.AgencyId : null
+                AgencyId = request.AccountType == AccountType.AgencyOwner ? user.AgencyId : null,
+                RefreshToken = RefreshToken,
+                Token = Token
             };
 
             return Ok(response);
