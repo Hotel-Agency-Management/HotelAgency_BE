@@ -1,7 +1,7 @@
 using System.Net;
 namespace Booking.Exceptions
 {
-     public class AuthException : AppException
+    public class AuthException : AppException
     {
         public AuthException(string message, int statusCode)
             : base(message, statusCode)
@@ -22,6 +22,13 @@ namespace Booking.Exceptions
             : base($"User with email '{email}' was not found.", (int)HttpStatusCode.NotFound) { }
     }
 
+    public class ManagerUserNotFoundException : HotelException
+    {
+        public ManagerUserNotFoundException(int userId)
+            : base($"Manager user with id '{userId}' was not found.", (int)HttpStatusCode.NotFound)
+        {
+        }
+    }
 
     public class EmailAlreadyExistsException : AuthException
     {

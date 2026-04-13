@@ -4,6 +4,7 @@ using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260411135740_AddHotelTable")]
+    partial class AddHotelTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,9 +63,6 @@ namespace Booking.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
-                    b.Property<int>("PlanId")
-                        .HasColumnType("int");
-
                     b.Property<string>("PrimaryColor")
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
@@ -89,8 +89,6 @@ namespace Booking.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
-
-                    b.HasIndex("PlanId");
 
                     b.HasIndex("ReviewedBy");
 
@@ -261,7 +259,6 @@ namespace Booking.Migrations
                     b.ToTable("EmailVerificationTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Booking.Models.FeatureLimit", b =>
             modelBuilder.Entity("Booking.Models.Hotel", b =>
                 {
                     b.Property<int>("Id")
@@ -269,18 +266,6 @@ namespace Booking.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("FeatureId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LimitValue")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FeatureId");
-
-                    b.ToTable("FeatureLimits");
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -341,7 +326,7 @@ namespace Booking.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Hotels");
-                }),
+                });
 
             modelBuilder.Entity("Booking.Models.PasswordResetCode", b =>
                 {
@@ -370,66 +355,6 @@ namespace Booking.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PasswordResetCodes", (string)null);
-                });
-
-            modelBuilder.Entity("Booking.Models.Plan", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Plans");
-                });
-
-            modelBuilder.Entity("Booking.Models.PlanFeature", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FeatureName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("PlanId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlanId");
-
-                    b.ToTable("PlanFeatures");
                 });
 
             modelBuilder.Entity("Booking.Models.RefreshToken", b =>
@@ -607,20 +532,12 @@ namespace Booking.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Booking.Models.Plan", "Plan")
-                        .WithMany()
-                        .HasForeignKey("PlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Booking.Models.ApplicationUser", "Reviewer")
                         .WithMany()
                         .HasForeignKey("ReviewedBy")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Owner");
-
-                    b.Navigation("Plan");
 
                     b.Navigation("Reviewer");
                 });
@@ -657,17 +574,6 @@ namespace Booking.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Booking.Models.FeatureLimit", b =>
-                {
-                    b.HasOne("Booking.Models.PlanFeature", "PlanFeature")
-                        .WithMany("FeatureLimits")
-                        .HasForeignKey("FeatureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlanFeature");
-                });
-
             modelBuilder.Entity("Booking.Models.PasswordResetCode", b =>
                 {
                     b.HasOne("Booking.Models.ApplicationUser", "User")
@@ -677,17 +583,6 @@ namespace Booking.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Booking.Models.PlanFeature", b =>
-                {
-                    b.HasOne("Booking.Models.Plan", "Plan")
-                        .WithMany("PlanFeatures")
-                        .HasForeignKey("PlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Plan");
                 });
 
             modelBuilder.Entity("Booking.Models.RefreshToken", b =>
@@ -757,16 +652,6 @@ namespace Booking.Migrations
                     b.Navigation("Documents");
 
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("Booking.Models.Plan", b =>
-                {
-                    b.Navigation("PlanFeatures");
-                });
-
-            modelBuilder.Entity("Booking.Models.PlanFeature", b =>
-                {
-                    b.Navigation("FeatureLimits");
                 });
 #pragma warning restore 612, 618
         }
