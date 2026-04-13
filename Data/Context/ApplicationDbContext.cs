@@ -19,12 +19,12 @@ namespace Booking.Data
             public DbSet<RefreshToken> RefreshTokens { get; set; }
             public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
             public DbSet<Plan> Plans { get; set; }
-            public DbSet<PlanFeature> PlanFeatures => Set<PlanFeature>();
-            public DbSet<FeatureLimit> FeatureLimits => Set<FeatureLimit>();
+            public DbSet<PlanFeature> PlanFeatures { get; set; }
+            public DbSet<FeatureLimit> FeatureLimits { get; set; }
             public DbSet<Hotel> Hotels { get; set; }
             public DbSet<Facility> Facilities { get; set; }
             public DbSet<FacilityPhoto> FacilityPhotos { get; set; }
-
+            public DbSet<RoomType> RoomTypes { get; set; }
 
             protected override void OnModelCreating(ModelBuilder builder)
             {
@@ -221,6 +221,17 @@ namespace Booking.Data
                         .WithMany(f => f.Photos)
                         .HasForeignKey(p => p.FacilityId)
                         .OnDelete(DeleteBehavior.Cascade);
+                  });
+
+                  //Room Type 
+                  builder.Entity<RoomType>(entity =>
+                  {
+                        entity.HasOne(r => r.Hotel)
+                              .WithMany(h => h.RoomTypes)
+                              .HasForeignKey(r => r.HotelId)
+                              .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasIndex(r => new { r.Name, r.HotelId }).IsUnique();
                   });
             }
       }
