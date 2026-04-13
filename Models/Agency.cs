@@ -7,8 +7,8 @@ namespace Booking.Models
     public class Agency
     {
         public int Id { get; set; }
-        //public int PlanId { get; set; }
-        //public Plan Plan { get; set; } = null!;
+        public int PlanId { get; set; }
+        public Plan Plan { get; set; } = null!;
         public int OwnerId { get; set; }
         public ApplicationUser Owner { get; set; } = null!;
         public AgencyStatus Status { get; set; } = AgencyStatus.Pending;
