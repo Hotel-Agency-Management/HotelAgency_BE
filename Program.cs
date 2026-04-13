@@ -19,6 +19,7 @@ using Booking.Strategies;
 using Booking.Factories;
 using System.Text.Json.Serialization;
 using Booking.Converters;
+using Booking.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,7 +79,8 @@ builder.Services
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings.Key))
+                Encoding.UTF8.GetBytes(jwtSettings.Key)),
+            RoleClaimType = ClaimConstant.ROLE
         };
     });
 
