@@ -2,11 +2,13 @@ using Booking.Constants;
 using Booking.DTO;
 using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Booking.Controllers
 {
-
     [ApiController]
+    [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.SuperAdmin}, {Roles.PropertyManager}")]
     [Route("api/agencies/{agencyId}/hotels/{hotelId}/facilities/{facilityId}/photos")]
     public class FacilityPhotoController(IFacilityPhotoService _photoService) : ControllerBase
     {
@@ -29,13 +31,12 @@ namespace Booking.Controllers
             return Ok(photos);
         }
 
-        //TODO: Create this Api 
-        /*[HttpGet("{photoId}")]
+        [HttpGet("{photoId}")]
         public async Task<IActionResult> GetPhoto([FromRoute] int photoId)
         {
-            var photos = await _photoService.GetPhotoByIdAsync(photoId);
-            return Ok(photos);
-        }*/
+            var photo = await _photoService.GetPhotoByIdAsync(photoId);
+            return Ok(photo);
+        }
 
         [HttpDelete("{photoId}")]
         public async Task<IActionResult> DeletePhoto(

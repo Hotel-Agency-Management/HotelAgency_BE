@@ -25,4 +25,14 @@ namespace Booking.DTO
         }
     }
 
+    public class FacilityPhotosResponse
+    {
+        public int Id { get; set; }
+        public string PhotoUrl { get; set; } = string.Empty;
+        public FacilityPhotosResponse(FacilityPhoto photo)
+        {
+            Id = photo.Id;
+            PhotoUrl = photo.PhotoUrl;
+        }
+    }
 }

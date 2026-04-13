@@ -28,5 +28,6 @@ namespace Booking.Repositories.Implementations
             _context.FacilityPhotos.Remove(photo);
             await _context.SaveChangesAsync();
         }
+        
     }
 }

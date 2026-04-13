@@ -2,10 +2,14 @@ using Booking.DTO;
 using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Booking.Constants;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Booking.Controllers
 {
+    
     [ApiController]
+    [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.SuperAdmin}, {Roles.PropertyManager}")]
     [Route("api/agencies/{agencyId}/hotels/{hotelId}/facilities")]
     public class FacilityController(IFacilityService _facilityService) : ControllerBase
     {

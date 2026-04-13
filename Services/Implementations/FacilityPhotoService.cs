@@ -32,13 +32,21 @@ namespace Booking.Services.Implementations
             return new FacilityPhotoResponse(response);
         }
 
-        public async Task<IEnumerable<FacilityPhotoResponse>> GetPhotosByFacilityIdAsync(int facilityId)
+        public async Task<IEnumerable<FacilityPhotosResponse>> GetPhotosByFacilityIdAsync(int facilityId)
         {
             var facility = await _facilityRepository.GetByIdAsync(facilityId)
                 ?? throw new FacilityNotFoundException(facilityId);
 
             var photos = await _photoRepository.GetAllByFacilityIdAsync(facilityId);
-            return photos.Select(p => new FacilityPhotoResponse(p));
+            return photos.Select(p => new FacilityPhotosResponse(p));
+        }
+
+        public async Task<FacilityPhotoResponse> GetPhotoByIdAsync(int photoId)
+        {
+            var photo = await _photoRepository.GetByIdAsync(photoId)
+                ??throw new FacilityPhotoNotFoundException(photoId);
+
+            return new FacilityPhotoResponse(photo);
         }
 
         public async Task DeletePhotoAsync(int photoId)
