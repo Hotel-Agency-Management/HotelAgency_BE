@@ -74,6 +74,7 @@ namespace Booking.Strategies
                 Phone = request.Phone.Trim(),
                 OwnerId = user.Id,
                 Status = AgencyStatus.InComplete,
+                PlanId = PlanConstant.FreePlanId,
                 CreatedAt = DateTime.UtcNow
             };
 

@@ -8,6 +8,9 @@ namespace Booking.Data.Seeders
             using var scope = services.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
             await RoleSeeder.SeedAsync(roleManager);
+
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await PlanSeeder.SeedAsync(context);
         }
     }
 }
