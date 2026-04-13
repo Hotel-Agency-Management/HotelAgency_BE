@@ -14,6 +14,7 @@ namespace Booking.Data.Seeders
             {
                 new Plan
                 {
+                    Id          = 1,
                     Name         = "Free",
                     Description  = "Default plan for any new agency joining the platform.",
                     Price        = 0,
@@ -47,6 +48,7 @@ namespace Booking.Data.Seeders
                 },
                 new Plan
                 {
+                    Id          = 2,
                     Name         = "Basic",
                     Description  = "Essential features for small agencies.",
                     Price        = 29.99m,

@@ -2,6 +2,6 @@ namespace Booking.Constants
 {
     public class PlanConstant
     {
-        public const int FreePlanId = 3;
+        public const int FreePlanId = 1;
     }
 }
