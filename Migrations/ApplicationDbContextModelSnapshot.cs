@@ -262,7 +262,6 @@ namespace Booking.Migrations
                 });
 
             modelBuilder.Entity("Booking.Models.FeatureLimit", b =>
-            modelBuilder.Entity("Booking.Models.Hotel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -281,6 +280,15 @@ namespace Booking.Migrations
                     b.HasIndex("FeatureId");
 
                     b.ToTable("FeatureLimits");
+                });
+
+            modelBuilder.Entity("Booking.Models.Hotel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -341,7 +349,7 @@ namespace Booking.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Hotels");
-                }),
+                });
 
             modelBuilder.Entity("Booking.Models.PasswordResetCode", b =>
                 {
