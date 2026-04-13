@@ -28,7 +28,7 @@ namespace Booking.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimConstant.FIRST_NAME, user.FirstName ?? string.Empty),
                 new Claim(ClaimConstant.LAST_NAME, user.LastName ?? string.Empty),
-                new Claim(ClaimConstant.ROLE, role)
+                new Claim(ClaimTypes.Role, role)
             };
 
             if (!string.IsNullOrEmpty(user.UserName))
