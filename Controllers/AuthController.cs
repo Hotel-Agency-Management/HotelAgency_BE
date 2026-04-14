@@ -31,16 +31,20 @@ namespace Booking.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _authService.RegisterAsync(request);
-
+            var result = await _authService.RegisterAsync(request);
             var response = new RegisterResponseDto
             {
-                UserId = user.Id,
-                Email = user.Email!,
+                UserId = result.User.Id,
+                Email = result.User.Email!,
                 Message = request.AccountType == AccountType.AgencyOwner
-                ? Messages.AgencyUnderReview
-                : Messages.VerifyEmail,
-                AgencyId = request.AccountType == AccountType.AgencyOwner ? user.AgencyId : null
+                    ? Messages.AgencyUnderReview
+                    : Messages.VerifyEmail,
+                AgencyId = request.AccountType == AccountType.AgencyOwner
+                    ? result.User.AgencyId
+                    : null,
+                RefreshToken = result.RefreshToken,
+                Token = result.Token,
+                Role = result.Role
             };
 
             return Ok(response);
