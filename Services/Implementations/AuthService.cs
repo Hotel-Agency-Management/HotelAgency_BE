@@ -80,7 +80,8 @@ namespace Booking.Services
 
             };
         }
-        public async Task<(ApplicationUser user, string token, string refreshToken, string role)> RegisterAsync(RegisterRequest request)
+
+        public async Task<RegisterResultDto> RegisterAsync(RegisterRequest request)
         {
             if (await _authRepository.FindByEmailAsync(request.Email.Trim()) is not null)
                 throw new EmailAlreadyExistsException(request.Email);
@@ -102,7 +103,13 @@ namespace Booking.Services
             await _authRepository.SaveRefreshTokenAsync(refreshToken);
 
             await SendVerificationEmailAsync(user);
-            return (user, token, refreshToken.Token,role);
+            return new RegisterResultDto
+            {
+                User = user,
+                Token = token,
+                RefreshToken = refreshToken.Token,
+                Role = role
+            };
         }
 
 
