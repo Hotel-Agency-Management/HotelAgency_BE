@@ -26,6 +26,8 @@ namespace Booking.Data
             public DbSet<FacilityPhoto> FacilityPhotos { get; set; }
             public DbSet<RoomType> RoomTypes { get; set; }
             public DbSet<Room> Rooms { get; set; }
+            public DbSet<RoomPhoto> RoomPhotos { get; set; }
+
 
             protected override void OnModelCreating(ModelBuilder builder)
             {
@@ -253,6 +255,14 @@ namespace Booking.Data
                               .HasMaxLength(20);
 
                         entity.HasIndex(r => new { r.RoomNumber, r.HotelId }).IsUnique();
+                  });
+
+                  builder.Entity<RoomPhoto>(entity =>
+                  {
+                        entity.HasOne(p => p.Room)
+                        .WithMany(r => r.Photos)
+                        .HasForeignKey(p => p.RoomId)
+                        .OnDelete(DeleteBehavior.Cascade);
                   });
             }
       }

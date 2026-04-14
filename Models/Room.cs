@@ -37,6 +37,6 @@ namespace Booking.Models
         [ForeignKey(nameof(RoomTypeId))]
         public RoomType? RoomType { get; set; }
 
-        //public ICollection<RoomPhoto> Photos { get; set; } = new List<RoomPhoto>();
+        public ICollection<RoomPhoto> Photos { get; set; } = new List<RoomPhoto>();
     }
 }
