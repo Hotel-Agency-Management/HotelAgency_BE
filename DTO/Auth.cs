@@ -48,6 +48,7 @@ namespace Booking.DTO
         public string Role { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public AgencyStatus? AgencyStatus { get; set; }
+
     }
 
 
@@ -59,6 +60,7 @@ namespace Booking.DTO
         public int? AgencyId { get; set; }
         public string RefreshToken { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
 
     }
 

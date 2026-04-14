@@ -8,7 +8,7 @@ namespace Booking.Interfaces.Services
     public interface IAuthService
     {
         Task<AuthResponseDto?> LoginAsync(LoginDto loginDto);
-        Task<(ApplicationUser user, string token, string refreshToken)> RegisterAsync(RegisterRequest request);
+        Task<(ApplicationUser user, string token, string refreshToken, string role)> RegisterAsync(RegisterRequest request);
         Task<ApplicationUser> UpdateProfileAsync(ApplicationUser user, UpdateProfileDto dto);
         Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, ChangePasswordDto dto);
         Task<bool> SendResetPasswordEmailAsync(string email);
