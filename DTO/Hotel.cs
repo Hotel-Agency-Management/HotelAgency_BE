@@ -50,6 +50,7 @@ namespace Booking.DTO
         public string PrimaryColor { get; set; } = string.Empty;
         public string SecondaryColor { get; set; } = string.Empty;
         public string TertiaryColor { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
         public int ManagerUserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -67,6 +68,7 @@ namespace Booking.DTO
             PrimaryColor = hotel.PrimaryColor;
             SecondaryColor = hotel.SecondaryColor;
             TertiaryColor = hotel.TertiaryColor;
+            Phone = hotel.Phone;
             ManagerUserId = hotel.ManagerUserId;
             CreatedAt = hotel.CreatedAt;
             UpdatedAt = hotel.UpdatedAt;
