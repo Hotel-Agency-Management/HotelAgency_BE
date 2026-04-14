@@ -33,7 +33,6 @@ namespace Booking.Models
 
         [ForeignKey(nameof(HotelId))]
         public Hotel? Hotel { get; set; }
-
-        //public ICollection<Room> Rooms { get; set; } = new List<Room>();
+        public ICollection<Room> Rooms { get; set; } = new List<Room>();
     }
 }
