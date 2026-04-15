@@ -1,3 +1,4 @@
+using Booking.Clients;
 using Booking.Constants;
 using Booking.DTO;
 using Booking.Exceptions;
@@ -10,6 +11,7 @@ namespace Booking.Services
     public class RoomService(
         IRoomRepository _roomRepository,
         IHotelRepository _hotelRepository,
+        IBlobStorageService _blobStorageService,
         IRoomTypeRepository _roomTypeRepository) : IRoomService
     {
         public async Task<RoomResponse> CreateRoomAsync(int hotelId, CreateRoomRequest request)
@@ -19,6 +21,7 @@ namespace Booking.Services
 
             var roomType = await _roomTypeRepository.GetByIdAndHotelIdAsync(request.RoomTypeId, hotelId)
                 ?? throw new RoomTypeNotInHotelException();
+            var CoverPhotoUrl = await _blobStorageService.UploadAsync(request.coverPhoto);
 
             if (await _roomRepository.ExistsByRoomNumberAndHotelIdAsync(request.RoomNumber, hotelId))
                 throw new RoomAlreadyExistsException();
@@ -33,7 +36,8 @@ namespace Booking.Services
                 Status = request.Status,
                 Notes = request.Notes,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                CoverPhotoUrl = CoverPhotoUrl
             };
 
             var saved = await _roomRepository.CreateAsync(room);
@@ -76,6 +80,12 @@ namespace Booking.Services
             if (request.Description is not null) room.Description = request.Description;
             if (request.Status is not null) room.Status = request.Status.Value;
             if (request.Notes is not null) room.Notes = request.Notes;
+            if (request.CoverPhoto is not null)
+            {
+                if (room.CoverPhotoUrl is not null)
+                    await _blobStorageService.DeleteAsync(room.CoverPhotoUrl);
+                room.CoverPhotoUrl = await _blobStorageService.UploadAsync(request.CoverPhoto);
+            }
 
             room.UpdatedAt = DateTime.UtcNow;
 
@@ -89,6 +99,8 @@ namespace Booking.Services
                 ?? throw new RoomNotFoundException(roomId);
 
             await _roomRepository.DeleteAsync(room);
+            if (room.CoverPhotoUrl is not null)
+                await _blobStorageService.DeleteAsync(room.CoverPhotoUrl);
         }
     }
 }
