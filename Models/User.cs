@@ -21,5 +21,6 @@ namespace Booking.Models
         public DateTime? UpdatedAt { get; set; }
 
         public Agency? Agency { get; set; }
+        public Hotel? Hotel { get; set; }
     }
 }

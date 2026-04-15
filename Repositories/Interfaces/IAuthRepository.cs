@@ -27,6 +27,7 @@ namespace Booking.Interfaces.Repositories
         Task MarkEmailVerificationTokenAsUsedAsync(EmailVerificationToken token);
         Task<bool> ConfirmEmailAsync(ApplicationUser user);
         Task<ApplicationUser> GetUserWithAgencyAsync(int userId);
+        Task<ApplicationUser> GetUserWithAgencyAndHotelAsync(int userId);
 
     }
 }

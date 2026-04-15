@@ -9,13 +9,21 @@ namespace Booking.Factories
 
         public ProfileStrategyFactory(
             BaseProfileStrategy basic,
-            AgencyOwnerProfileStrategy agencyOwner)
+            AgencyOwnerProfileStrategy agencyOwner,
+            HotelStaffProfileStrategy hotelStaff)
         {
             _strategies = new Dictionary<string, Func<IProfileStrategy>>
             {
                 [Roles.SuperAdmin] = () => basic,
                 [Roles.Customer] = () => basic,
                 [Roles.AgencyOwner] = () => agencyOwner,
+                [Roles.PropertyManager] = () => hotelStaff,
+                [Roles.FrontDeskStaff] = () => hotelStaff,
+                [Roles.HousekeepingManager] = () => hotelStaff,
+                [Roles.HousekeepingEmployee] = () => hotelStaff,
+                [Roles.Accountant] = () => hotelStaff,
+                [Roles.CustomerSupport] = () => hotelStaff,
+                [Roles.Auditor] = () => hotelStaff,
             };
         }
 

@@ -45,6 +45,7 @@ namespace Booking.DTO
         public string? TertiaryColor { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public int PlanId { get; set; }
         public AgencyProfileResponse(Agency agency)
         {
             Id = agency.Id;
@@ -59,6 +60,7 @@ namespace Booking.DTO
             TertiaryColor = agency.TertiaryColor;
             CreatedAt = agency.CreatedAt;
             UpdatedAt = agency.UpdatedAt ?? agency.CreatedAt;
+            PlanId = agency.PlanId;
         }
     }
 
