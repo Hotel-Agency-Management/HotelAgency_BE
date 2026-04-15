@@ -4,6 +4,7 @@ using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260415082149_RoomCoverPhoto")]
+    partial class RoomCoverPhoto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -274,47 +277,12 @@ namespace Booking.Migrations
 
                     b.Property<int>("LimitValue")
                         .HasColumnType("int");
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
-                    b.Property<TimeOnly?>("OpenAt")
-                        .HasColumnType("time(6)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
                     b.HasKey("Id");
 
                     b.HasIndex("FeatureId");
 
                     b.ToTable("FeatureLimits");
-                });
-
-            modelBuilder.Entity("Booking.Models.FacilityPhoto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("FacilityId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PhotoUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FacilityId");
-
-                    b.ToTable("FacilityPhotos");
                 });
 
             modelBuilder.Entity("Booking.Models.Hotel", b =>
@@ -828,25 +796,11 @@ namespace Booking.Migrations
                 {
                     b.HasOne("Booking.Models.PlanFeature", "PlanFeature")
                         .WithMany("FeatureLimits")
-                        .HasForeignKey("FeatureId");
-                    b.HasOne("Booking.Models.Hotel", "Hotel")
-                        .WithMany("Facilities")
-                        .HasForeignKey("HotelId")
+                        .HasForeignKey("FeatureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("PlanFeature");
-                });
-
-            modelBuilder.Entity("Booking.Models.FacilityPhoto", b =>
-                {
-                    b.HasOne("Booking.Models.Facility", "Facility")
-                        .WithMany("Photos")
-                        .HasForeignKey("FacilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Facility");
                 });
 
             modelBuilder.Entity("Booking.Models.PasswordResetCode", b =>
@@ -996,19 +950,9 @@ namespace Booking.Migrations
                     b.Navigation("FeatureLimits");
                 });
 
-            modelBuilder.Entity("Booking.Models.Facility", b =>
-            {
-                b.Navigation("Photos");
-            });
-
             modelBuilder.Entity("Booking.Models.Room", b =>
-            {
-                b.Navigation("Photos");
-            });
-
-            modelBuilder.Entity("Booking.Models.Hotel", b =>
                 {
-                    b.Navigation("Facilities");
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("Booking.Models.RoomType", b =>
@@ -1019,4 +963,3 @@ namespace Booking.Migrations
         }
     }
 }
-

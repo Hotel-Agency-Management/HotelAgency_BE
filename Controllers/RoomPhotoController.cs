@@ -19,8 +19,8 @@ namespace Booking.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var photos = await _roomPhotoService.UploadPhotosAsync(roomId, request);
-            return Ok(photos);
+            var photo = await _roomPhotoService.UploadPhotosAsync(roomId, request);
+            return Ok(photo);
         }
 
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner},{Roles.PropertyManager}")]

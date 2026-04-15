@@ -14,13 +14,13 @@ namespace Booking.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRoom(
             [FromRoute] int hotelId,
-            [FromBody] CreateRoomRequest request)
+            [FromForm] CreateRoomRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var room = await _roomService.CreateRoomAsync(hotelId, request);
-            return Created(string.Empty, room);
+            return Ok(room);
         }
 
         [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}")]
@@ -46,7 +46,7 @@ namespace Booking.Controllers
         public async Task<IActionResult> UpdateRoom(
             [FromRoute] int hotelId,
             [FromRoute] int roomId,
-            [FromBody] UpdateRoomRequest request)
+            [FromForm] UpdateRoomRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
