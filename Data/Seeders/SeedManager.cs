@@ -11,6 +11,9 @@ namespace Booking.Data.Seeders
 
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await PlanSeeder.SeedAsync(context);
+
+            var RoomsType = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await RoomTypeSeeder.SeedAsync(RoomsType);
         }
     }
 }
