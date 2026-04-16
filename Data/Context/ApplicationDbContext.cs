@@ -27,6 +27,7 @@ namespace Booking.Data
             public DbSet<RoomType> RoomTypes { get; set; }
             public DbSet<Room> Rooms { get; set; }
             public DbSet<RoomPhoto> RoomPhotos { get; set; }
+            public DbSet<RoomAmenity> RoomAmenities { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -258,6 +259,12 @@ namespace Booking.Data
                         .WithMany(r => r.Photos)
                         .HasForeignKey(p => p.RoomId)
                         .OnDelete(DeleteBehavior.Cascade);
+                  });
+
+                  //Room Amenity
+                  builder.Entity<RoomAmenity>(entity =>
+                  {
+                        entity.HasIndex(r => r.Name).IsUnique();
                   });
             }
       }
