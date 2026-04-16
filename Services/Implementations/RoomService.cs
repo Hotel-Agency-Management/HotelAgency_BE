@@ -19,7 +19,7 @@ namespace Booking.Services
             var hotel = await _hotelRepository.GetByIdAsync(hotelId)
                 ?? throw new HotelNotFoundException(hotelId);
 
-            var roomType = await _roomTypeRepository.GetByIdAndHotelIdAsync(request.RoomTypeId, hotelId)
+            var roomType = await _roomTypeRepository.GetByIdAsync(request.RoomTypeId)
                 ?? throw new RoomTypeNotInHotelException();
             var CoverPhotoUrl = await _blobStorageService.UploadAsync(request.coverPhoto);
 
@@ -69,7 +69,7 @@ namespace Booking.Services
 
             if (request.RoomTypeId is not null)
             {
-                var roomType = await _roomTypeRepository.GetByIdAndHotelIdAsync(request.RoomTypeId.Value, hotelId)
+                var roomType = await _roomTypeRepository.GetByIdAsync(request.RoomTypeId.Value)
                     ?? throw new RoomTypeNotInHotelException();
 
                 room.RoomTypeId = request.RoomTypeId.Value;

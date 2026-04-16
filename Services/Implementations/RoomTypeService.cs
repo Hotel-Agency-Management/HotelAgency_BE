@@ -8,20 +8,15 @@ using Booking.Models;
 namespace Booking.Services
 {
     public class RoomTypeService(
-        IRoomTypeRepository _roomTypeRepository,
-        IHotelRepository _hotelRepository) : IRoomTypeService
+        IRoomTypeRepository _roomTypeRepository) : IRoomTypeService
     {
-        public async Task<RoomTypeResponse> CreateRoomTypeAsync(int hotelId, CreateRoomTypeRequest request)
+        public async Task<RoomTypeResponse> CreateRoomTypeAsync(CreateRoomTypeRequest request)
         {
-            var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                ?? throw new HotelNotFoundException(hotelId);
-
-            if (await _roomTypeRepository.ExistsByNameAndHotelIdAsync(request.Name, hotelId))
+            if (await _roomTypeRepository.ExistsByNameAsync(request.Name))
                 throw new RoomTypeAlreadyExistsException();
 
             var roomType = new RoomType
             {
-                HotelId = hotelId,
                 Name = request.Name,
                 Description = request.Description,
                 Capacity = request.Capacity,
@@ -36,27 +31,24 @@ namespace Booking.Services
             return new RoomTypeResponse(saved);
         }
 
-        public async Task<RoomTypeResponse> GetRoomTypeByIdAsync(int hotelId, int roomTypeId)
+        public async Task<RoomTypeResponse> GetRoomTypeByIdAsync(int roomTypeId)
         {
-            var roomType = await _roomTypeRepository.GetByIdAndHotelIdAsync(roomTypeId, hotelId)
+            var roomType = await _roomTypeRepository.GetByIdAsync(roomTypeId)
                 ?? throw new RoomTypeNotFoundException(roomTypeId);
 
             return new RoomTypeResponse(roomType);
         }
 
-        public async Task<IEnumerable<RoomTypeResponse>> GetRoomTypesByHotelIdAsync(int hotelId)
+        public async Task<IEnumerable<RoomTypeResponse>> GetRoomTypesAsync()
         {
-            var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                ?? throw new HotelNotFoundException(hotelId);
-
-            var roomTypes = await _roomTypeRepository.GetAllByHotelIdAsync(hotelId);
+            var roomTypes = await _roomTypeRepository.GetAllAsync();
             return roomTypes.Select(r => new RoomTypeResponse(r));
         }
 
-        public async Task<RoomTypeResponse> UpdateRoomTypeAsync(int hotelId, int roomTypeId, UpdateRoomTypeRequest request)
+        public async Task<RoomTypeResponse> UpdateRoomTypeAsync(int roomTypeId, UpdateRoomTypeRequest request)
         {
 
-            var roomType = await _roomTypeRepository.GetByIdAndHotelIdAsync(roomTypeId, hotelId)
+            var roomType = await _roomTypeRepository.GetByIdAsync(roomTypeId)
                 ?? throw new RoomTypeNotFoundException(roomTypeId);
 
             if (request.Name is not null) roomType.Name = request.Name;
@@ -72,9 +64,9 @@ namespace Booking.Services
             return new RoomTypeResponse(updated);
         }
 
-        public async Task DeleteRoomTypeAsync(int hotelId, int roomTypeId)
+        public async Task DeleteRoomTypeAsync(int roomTypeId)
         {
-            var roomType = await _roomTypeRepository.GetByIdAndHotelIdAsync(roomTypeId, hotelId)
+            var roomType = await _roomTypeRepository.GetByIdAsync(roomTypeId)
                 ?? throw new RoomTypeNotFoundException(roomTypeId);
 
             await _roomTypeRepository.DeleteAsync(roomType);

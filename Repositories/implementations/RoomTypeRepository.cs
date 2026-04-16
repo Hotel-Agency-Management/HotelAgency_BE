@@ -17,18 +17,13 @@ namespace Booking.Repositories
         public async Task<RoomType?> GetByIdAsync(int roomTypeId)
             => await _context.RoomTypes.FindAsync(roomTypeId);
 
-        public async Task<RoomType?> GetByIdAndHotelIdAsync(int roomTypeId, int hotelId)
+        public async Task<IEnumerable<RoomType>> GetAllAsync()
             => await _context.RoomTypes
-                .FirstOrDefaultAsync(r => r.Id == roomTypeId && r.HotelId == hotelId);
-
-        public async Task<IEnumerable<RoomType>> GetAllByHotelIdAsync(int hotelId)
-            => await _context.RoomTypes
-                .Where(r => r.HotelId == hotelId)
                 .ToListAsync();
 
-        public async Task<bool> ExistsByNameAndHotelIdAsync(string name, int hotelId)
+        public async Task<bool> ExistsByNameAsync(string name)
             => await _context.RoomTypes
-                .AnyAsync(r => r.Name == name && r.HotelId == hotelId);
+                .AnyAsync(r => r.Name == name);
 
         public async Task<RoomType> UpdateAsync(RoomType roomType)
         {

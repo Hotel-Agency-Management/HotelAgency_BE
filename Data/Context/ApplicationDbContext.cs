@@ -229,12 +229,7 @@ namespace Booking.Data
                   //Room Type 
                   builder.Entity<RoomType>(entity =>
                   {
-                        entity.HasOne(r => r.Hotel)
-                              .WithMany(h => h.RoomTypes)
-                              .HasForeignKey(r => r.HotelId)
-                              .OnDelete(DeleteBehavior.Cascade);
-
-                        entity.HasIndex(r => new { r.Name, r.HotelId }).IsUnique();
+                        entity.HasIndex(r => r.Name).IsUnique();
                   });
 
                   //Room

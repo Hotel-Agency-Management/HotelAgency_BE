@@ -6,9 +6,8 @@ namespace Booking.Interfaces.Repositories
     {
         Task<RoomType> CreateAsync(RoomType roomType);
         Task<RoomType?> GetByIdAsync(int roomTypeId);
-        Task<RoomType?> GetByIdAndHotelIdAsync(int roomTypeId, int hotelId);
-        Task<IEnumerable<RoomType>> GetAllByHotelIdAsync(int hotelId);
-        Task<bool> ExistsByNameAndHotelIdAsync(string name, int hotelId);
+        Task<IEnumerable<RoomType>> GetAllAsync();
+        Task<bool> ExistsByNameAsync(string name);
         Task<RoomType> UpdateAsync(RoomType roomType);
         Task DeleteAsync(RoomType roomType);
     }

@@ -13,51 +13,47 @@ namespace Booking.Controllers
     {
         [HttpPost]
         public async Task<IActionResult> CreateRoomType(
-            [FromRoute] int hotelId,
             [FromBody] CreateRoomTypeRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var roomType = await _roomTypeService.CreateRoomTypeAsync(hotelId, request);
+            var roomType = await _roomTypeService.CreateRoomTypeAsync(request);
             return Ok(roomType);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetRoomTypesByHotel([FromRoute] int hotelId)
+        public async Task<IActionResult> GetRoomTypes()
         {
-            var roomTypes = await _roomTypeService.GetRoomTypesByHotelIdAsync(hotelId);
+            var roomTypes = await _roomTypeService.GetRoomTypesAsync();
             return Ok(roomTypes);
         }
 
         [HttpGet("{roomTypeId}")]
         public async Task<IActionResult> GetRoomTypeById(
-            [FromRoute] int hotelId,
             [FromRoute] int roomTypeId)
         {
-            var roomType = await _roomTypeService.GetRoomTypeByIdAsync(hotelId, roomTypeId);
+            var roomType = await _roomTypeService.GetRoomTypeByIdAsync(roomTypeId);
             return Ok(roomType);
         }
 
         [HttpPut("{roomTypeId}")]
         public async Task<IActionResult> UpdateRoomType(
-            [FromRoute] int hotelId,
             [FromRoute] int roomTypeId,
             [FromBody] UpdateRoomTypeRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _roomTypeService.UpdateRoomTypeAsync(hotelId, roomTypeId, request);
+            var updated = await _roomTypeService.UpdateRoomTypeAsync(roomTypeId, request);
             return Ok(updated);
         }
 
         [HttpDelete("{roomTypeId}")]
         public async Task<IActionResult> DeleteRoomType(
-            [FromRoute] int hotelId,
             [FromRoute] int roomTypeId)
         {
-            await _roomTypeService.DeleteRoomTypeAsync(hotelId, roomTypeId);
+            await _roomTypeService.DeleteRoomTypeAsync(roomTypeId);
             return NoContent();
         }
     }

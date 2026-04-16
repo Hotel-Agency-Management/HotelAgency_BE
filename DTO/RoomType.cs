@@ -26,7 +26,6 @@ namespace Booking.DTO
     public class RoomTypeResponse
     {
         public int Id { get; set; }
-        public int HotelId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int Capacity { get; set; }
@@ -39,7 +38,6 @@ namespace Booking.DTO
         public RoomTypeResponse(RoomType roomType)
         {
             Id = roomType.Id;
-            HotelId = roomType.HotelId;
             Name = roomType.Name;
             Description = roomType.Description;
             Capacity = roomType.Capacity;
