@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.AgencyOwner}")]
-    [Route("api/agencies/{agencyId}/hotels/{hotelId}/room-types")]
+    [Authorize(Roles = $"{Roles.SuperAdmin}")]
+    [Route("api/admin/room-types")]
     public class RoomTypeController(IRoomTypeService _roomTypeService) : ControllerBase
     {
         [HttpPost]
