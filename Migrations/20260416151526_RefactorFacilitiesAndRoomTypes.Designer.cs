@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260416135828_RefactorFacilitiesAndRoomTypes")]
+    [Migration("20260416151526_RefactorFacilitiesAndRoomTypes")]
     partial class RefactorFacilitiesAndRoomTypes
     {
         /// <inheritdoc />

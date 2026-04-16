@@ -52,7 +52,7 @@ namespace Booking.DTO
             Notes = room.Notes;
             CreatedAt = room.CreatedAt;
             UpdatedAt = room.UpdatedAt;
-            CoverPhotoUrl = room.CoverPhotoUrl;
+            CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
         }
     }
 }
