@@ -10,7 +10,5 @@ namespace Booking.Interfaces.Repositories
                 Task UpdateAsync(Agency agency);
                 Task DeleteAsync(Agency agency);
                 Task UpdateStatusAsync(int agencyId, AgencyStatus status);
-                //Task<Agency?> GetAgencyByOwnerIdAsync(int userId);
         }
-
 }
