@@ -48,10 +48,10 @@ namespace Booking.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Agency?> GetAgencyByOwnerIdAsync(int userId)
+        /*public async Task<Agency?> GetAgencyByOwnerIdAsync(int userId)
         {
             return await _context.Agencies
                 .FirstOrDefaultAsync(a => a.OwnerId == userId);
-        }
+        }*/
     }
 }
