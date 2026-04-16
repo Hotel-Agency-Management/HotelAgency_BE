@@ -37,11 +37,16 @@ namespace Booking.Services
 
             var role = await _authRepository.GetRoleAsync(user);
 
-            AgencyStatus? agencyStatus = null;
+
             Agency? agency = null;
-            if (role == Roles.AgencyOwner)
+            AgencyStatus? agencyStatus = null;
+
+            if (role != Roles.Customer && role != Roles.SuperAdmin)
             {
-                agency = await _agencyRepository.GetAgencyByOwnerIdAsync(user.Id);
+                if (!user.AgencyId.HasValue)
+                    throw new Exception("AgencyId is required.");
+
+                agency = await _agencyRepository.GetByIdAsync(user.AgencyId.Value);
                 if (agency == null)
                     throw new AgencyNotFoundException(user.Id);
 
@@ -78,7 +83,7 @@ namespace Booking.Services
                 LastName = user.LastName ?? string.Empty,
                 Role = role,
                 AgencyStatus = agencyStatus,
-                AgencyId = agency!.Id
+                AgencyId = agency?.Id
 
             };
         }
