@@ -3,6 +3,7 @@ using Booking.Interfaces.Repositories;
 using Booking.Models;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace Booking.Repositories
 {
     public class RoomRepository(ApplicationDbContext _context) : IRoomRepository
@@ -11,18 +12,22 @@ namespace Booking.Repositories
         {
             await _context.Rooms.AddAsync(room);
             await _context.SaveChangesAsync();
-            return room;
+            return await GetByIdAsync(room.Id) ?? room;
         }
 
         public async Task<Room?> GetByIdAsync(int roomId)
-            => await _context.Rooms.FindAsync(roomId);
+            => await _context.Rooms
+                .Include(r => r.RoomType)
+                .FirstOrDefaultAsync(r => r.Id == roomId);
 
         public async Task<Room?> GetByIdAndHotelIdAsync(int roomId, int hotelId)
             => await _context.Rooms
+                .Include(r => r.RoomType)
                 .FirstOrDefaultAsync(r => r.Id == roomId && r.HotelId == hotelId);
 
         public async Task<IEnumerable<Room>> GetAllByHotelIdAsync(int hotelId)
             => await _context.Rooms
+                .Include(r => r.RoomType)
                 .Where(r => r.HotelId == hotelId)
                 .ToListAsync();
 
@@ -34,7 +39,7 @@ namespace Booking.Repositories
         {
             _context.Rooms.Update(room);
             await _context.SaveChangesAsync();
-            return room;
+            return await GetByIdAsync(room.Id) ?? room;
         }
 
         public async Task DeleteAsync(Room room)

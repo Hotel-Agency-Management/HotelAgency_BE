@@ -31,6 +31,7 @@ namespace Booking.DTO
         public int Id { get; set; }
         public int HotelId { get; set; }
         public int RoomTypeId { get; set; }
+        public string RoomTypeName { get; set; }
         public string RoomNumber { get; set; } = string.Empty;
         public int FloorNumber { get; set; }
         public string? Description { get; set; }
@@ -53,6 +54,7 @@ namespace Booking.DTO
             CreatedAt = room.CreatedAt;
             UpdatedAt = room.UpdatedAt;
             CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
+            RoomTypeName = room.RoomType.Name;
         }
     }
 }

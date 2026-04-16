@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260416151526_RefactorFacilitiesAndRoomTypes")]
-    partial class RefactorFacilitiesAndRoomTypes
+    [Migration("20260416155003_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
