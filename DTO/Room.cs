@@ -54,7 +54,7 @@ namespace Booking.DTO
             CreatedAt = room.CreatedAt;
             UpdatedAt = room.UpdatedAt;
             CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
-            RoomTypeName = room.RoomType.Name;
+            RoomTypeName = room.RoomType!.Name;
         }
     }
 }

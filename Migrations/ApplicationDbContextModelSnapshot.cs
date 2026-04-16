@@ -604,6 +604,26 @@ namespace Booking.Migrations
                     b.ToTable("Rooms");
                 });
 
+            modelBuilder.Entity("Booking.Models.RoomAmenity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("RoomAmenities");
+                });
+
             modelBuilder.Entity("Booking.Models.RoomPhoto", b =>
                 {
                     b.Property<int>("Id")
