@@ -9,7 +9,7 @@ namespace Booking.Strategies
     {
         public async Task<BaseProfileResponseDto> BuildProfileAsync(ApplicationUser user)
         {
-            var result = await _userRepository.GetUserWithAgencyAsync(user.Id);
+            var result = await _userRepository.GetUserWithAgencyAndHotelAsync(user.Id);
             
             if (result.Agency == null)
                 throw new AgencyNotAssignedException();
