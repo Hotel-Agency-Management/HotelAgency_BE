@@ -63,7 +63,6 @@ namespace Booking.Services
 
         public async Task<RoomResponse> UpdateRoomAsync(int hotelId, int roomId, UpdateRoomRequest request)
         {
-
             var room = await _roomRepository.GetByIdAndHotelIdAsync(roomId, hotelId)
                 ?? throw new RoomNotFoundException(roomId);
 
