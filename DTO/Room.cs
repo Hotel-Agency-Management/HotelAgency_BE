@@ -13,6 +13,8 @@ namespace Booking.DTO
         public RoomStatus Status { get; set; } = RoomStatus.Available;
         public string? Notes { get; set; }
         public IFormFile coverPhoto { get; set; } = null!;
+        public List<int> AmenityIds { get; set; } = new();
+
     }
 
     public class UpdateRoomRequest
@@ -41,6 +43,7 @@ namespace Booking.DTO
         public DateTime UpdatedAt { get; set; }
         public string CoverPhotoUrl { get; set; }
 
+
         public RoomResponse(Room room)
         {
             Id = room.Id;
@@ -55,6 +58,7 @@ namespace Booking.DTO
             UpdatedAt = room.UpdatedAt;
             CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
             RoomTypeName = room.RoomType!.Name;
+
         }
     }
 }

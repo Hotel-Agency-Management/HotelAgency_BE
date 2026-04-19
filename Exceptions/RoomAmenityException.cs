@@ -21,4 +21,13 @@ namespace Booking.Exceptions
         public RoomAmenityAlreadyExistsException()
             : base($"Room Amenity AlreadyExists", (int)HttpStatusCode.Conflict) { }
     }
+    public class SomeAmenitiesNotFoundException : RoomAmenityException
+    {
+        public SomeAmenitiesNotFoundException(List<int> missingIds)
+            : base(
+                $"Room amenities with IDs [{string.Join(", ", missingIds)}] were not found.",
+                (int)HttpStatusCode.NotFound)
+        {
+        }
+    }
 }

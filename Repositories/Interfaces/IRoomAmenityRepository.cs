@@ -9,5 +9,6 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<RoomAmenity>> GetAllAsync();
         Task<bool> ExistsByNameAsync(string name);
         Task DeleteAsync(RoomAmenity amenity);
+        Task<List<RoomAmenity>> GetByIdsAsync(List<int> ids);
     }
 }

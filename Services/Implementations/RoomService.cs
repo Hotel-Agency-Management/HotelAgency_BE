@@ -12,6 +12,7 @@ namespace Booking.Services
         IRoomRepository _roomRepository,
         IHotelRepository _hotelRepository,
         IBlobStorageService _blobStorageService,
+        IRoomAmenityRepository _roomAmenityRepository,
         IRoomTypeRepository _roomTypeRepository) : IRoomService
     {
         public async Task<RoomResponse> CreateRoomAsync(int hotelId, CreateRoomRequest request)
@@ -25,6 +26,20 @@ namespace Booking.Services
 
             if (await _roomRepository.ExistsByRoomNumberAndHotelIdAsync(request.RoomNumber, hotelId))
                 throw new RoomAlreadyExistsException();
+
+            
+            var amenities = new List<RoomAmenity>();
+            if (request.AmenityIds.Any())
+            {
+                amenities = await _roomAmenityRepository.GetByIdsAsync(request.AmenityIds);
+
+                var missingIds = request.AmenityIds
+                    .Except(amenities.Select(a => a.Id))
+                    .ToList();
+
+                if (missingIds.Any())
+                    throw new SomeAmenitiesNotFoundException(missingIds);
+            }
 
             var room = new Room
             {

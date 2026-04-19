@@ -29,5 +29,10 @@ namespace Booking.Repositories.Implementations
             _context.RoomAmenities.Remove(amenity);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<RoomAmenity>> GetByIdsAsync(List<int> ids)
+            => await _context.RoomAmenities
+                .Where(a => ids.Contains(a.Id))
+                .ToListAsync();
     }
 }
