@@ -93,7 +93,9 @@ builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 builder.Services.AddScoped<IFacilityPhotoRepository, FacilityPhotoRepository>();
 builder.Services.AddScoped<IFacilityRepository, FacilityRepository>();
-
+builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IRoomPhotoRepository, RoomPhotoRepository>();
 
 
 //Services
@@ -106,6 +108,9 @@ builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IFacilityPhotoService, FacilityPhotoService>();
 builder.Services.AddScoped<IFacilityService, FacilityService>();
+builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
 
 
 // Strategies

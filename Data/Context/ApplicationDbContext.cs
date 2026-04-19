@@ -19,11 +19,14 @@ namespace Booking.Data
             public DbSet<RefreshToken> RefreshTokens { get; set; }
             public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
             public DbSet<Plan> Plans { get; set; }
-            public DbSet<PlanFeature> PlanFeatures => Set<PlanFeature>();
-            public DbSet<FeatureLimit> FeatureLimits => Set<FeatureLimit>();
+            public DbSet<PlanFeature> PlanFeatures { get; set; }
+            public DbSet<FeatureLimit> FeatureLimits { get; set; }
             public DbSet<Hotel> Hotels { get; set; }
             public DbSet<Facility> Facilities { get; set; }
             public DbSet<FacilityPhoto> FacilityPhotos { get; set; }
+            public DbSet<RoomType> RoomTypes { get; set; }
+            public DbSet<Room> Rooms { get; set; }
+            public DbSet<RoomPhoto> RoomPhotos { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -220,6 +223,40 @@ namespace Booking.Data
                         entity.HasOne(p => p.Facility)
                         .WithMany(f => f.Photos)
                         .HasForeignKey(p => p.FacilityId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                  });
+
+                  //Room Type 
+                  builder.Entity<RoomType>(entity =>
+                  {
+                        entity.HasIndex(r => r.Name).IsUnique();
+                  });
+
+                  //Room
+                  builder.Entity<Room>(entity =>
+                  {
+                        entity.HasOne(r => r.Hotel)
+                              .WithMany()
+                              .HasForeignKey(r => r.HotelId)
+                              .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasOne(r => r.RoomType)
+                              .WithMany(rt => rt.Rooms)
+                              .HasForeignKey(r => r.RoomTypeId)
+                              .OnDelete(DeleteBehavior.Restrict);
+
+                        entity.Property(r => r.Status)
+                              .HasConversion<string>()
+                              .HasMaxLength(20);
+
+                        entity.HasIndex(r => new { r.RoomNumber, r.HotelId }).IsUnique();
+                  });
+
+                  builder.Entity<RoomPhoto>(entity =>
+                  {
+                        entity.HasOne(p => p.Room)
+                        .WithMany(r => r.Photos)
+                        .HasForeignKey(p => p.RoomId)
                         .OnDelete(DeleteBehavior.Cascade);
                   });
             }
