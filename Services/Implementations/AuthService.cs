@@ -321,8 +321,7 @@ namespace Booking.Services
 
         public Task<BaseProfileResponseDto> GetProfileAsync(ApplicationUser user, string role)
         {
-            var strategy = _profileFactory.Create(role);
-            return strategy.BuildProfileAsync(user);
+            return _profileFactory.BuildProfileAsync(role, user);
         }
 
     }

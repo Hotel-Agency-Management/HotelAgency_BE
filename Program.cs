@@ -116,9 +116,8 @@ builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
 // Strategies
 builder.Services.AddScoped<CustomerRegistrationStrategy>();
 builder.Services.AddScoped<AgencyOwnerRegistrationStrategy>();
-builder.Services.AddScoped<BaseProfileStrategy>();
-builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
-builder.Services.AddScoped<HotelStaffProfileStrategy>();
+//builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
+//builder.Services.AddScoped<HotelStaffProfileStrategy>();
 
 //Factories
 builder.Services.AddScoped<IRegistrationStrategyFactory, RegistrationStrategyFactory>();
