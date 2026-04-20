@@ -42,7 +42,7 @@ namespace Booking.DTO
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string CoverPhotoUrl { get; set; }
-
+        public List<RoomAmenityResponse> Amenities { get; set; } = new();
 
         public RoomResponse(Room room)
         {
@@ -58,7 +58,30 @@ namespace Booking.DTO
             UpdatedAt = room.UpdatedAt;
             CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
             RoomTypeName = room.RoomType!.Name;
+            Amenities = room.Amenities
+            .Select(a => new RoomAmenityResponse(a))
+            .ToList();
+        }
+    }
 
+
+    public class ListRoomResponse
+    {
+        public int Id { get; set; }
+        public int HotelId { get; set; }
+        public string RoomTypeName { get; set; }
+        public string RoomNumber { get; set; } = string.Empty;
+        public int FloorNumber { get; set; }
+        public string Status { get; set; } = string.Empty;
+
+        public ListRoomResponse(Room room)
+        {
+            Id = room.Id;
+            HotelId = room.HotelId;
+            RoomNumber = room.RoomNumber;
+            FloorNumber = room.FloorNumber;
+            Status = room.Status.ToString();
+            RoomTypeName = room.RoomType!.Name;
         }
     }
 }

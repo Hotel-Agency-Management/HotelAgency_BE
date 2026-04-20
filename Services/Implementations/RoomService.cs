@@ -27,7 +27,7 @@ namespace Booking.Services
             if (await _roomRepository.ExistsByRoomNumberAndHotelIdAsync(request.RoomNumber, hotelId))
                 throw new RoomAlreadyExistsException();
 
-            
+
             var amenities = new List<RoomAmenity>();
             if (request.AmenityIds.Any())
             {
@@ -52,7 +52,8 @@ namespace Booking.Services
                 Notes = request.Notes,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                CoverPhotoUrl = CoverPhotoUrl
+                CoverPhotoUrl = CoverPhotoUrl,
+                Amenities = amenities
             };
 
             var saved = await _roomRepository.CreateAsync(room);
@@ -67,13 +68,13 @@ namespace Booking.Services
             return new RoomResponse(room);
         }
 
-        public async Task<IEnumerable<RoomResponse>> GetRoomsByHotelIdAsync(int hotelId)
+        public async Task<IEnumerable<ListRoomResponse>> GetRoomsByHotelIdAsync(int hotelId)
         {
             var hotel = await _hotelRepository.GetByIdAsync(hotelId)
                 ?? throw new HotelNotFoundException(hotelId);
 
             var rooms = await _roomRepository.GetAllByHotelIdAsync(hotelId);
-            return rooms.Select(r => new RoomResponse(r));
+            return rooms.Select(r => new ListRoomResponse(r));
         }
 
         public async Task<RoomResponse> UpdateRoomAsync(int hotelId, int roomId, UpdateRoomRequest request)
