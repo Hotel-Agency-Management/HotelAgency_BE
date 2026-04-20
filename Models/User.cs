@@ -22,5 +22,6 @@ namespace Booking.Models
 
         public Agency? Agency { get; set; }
         public Hotel? Hotel { get; set; }
+        public int? HotelId { get; set; }
     }
 }

@@ -125,7 +125,12 @@ namespace Booking.DTO
         }
     }
 
-    public class HotelStaffProfileResponseDto : AgencyOwnerProfileResponseDto
+    public class AgencyMemberProfileResponseDto : AgencyOwnerProfileResponseDto
+    {
+        public AgencyMemberProfileResponseDto(ApplicationUser user) : base(user) { }
+    }
+    
+    public class HotelStaffProfileResponseDto : AgencyMemberProfileResponseDto
     {
         public HotelInfoDto Hotel { get; set; }
 
@@ -134,6 +139,7 @@ namespace Booking.DTO
             Hotel = new HotelInfoDto(user.Hotel!);
         }
     }
+
 
     public class ChangePasswordDto
     {
