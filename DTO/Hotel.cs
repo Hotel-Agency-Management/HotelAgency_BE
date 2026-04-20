@@ -74,4 +74,22 @@ namespace Booking.DTO
             UpdatedAt = hotel.UpdatedAt;
         }
     }
+
+    public class HotelInfoDto
+    {
+        public string? HotelName { get; set; }
+        public string? HotelLogo { get; set; }
+        public string? HotelCountry { get; set; }
+        public string? HotelCity { get; set; }
+        public string? Phone { get; set; }
+
+        public HotelInfoDto(Hotel hotel)
+        {
+            HotelName = hotel.Name;
+            HotelLogo = hotel.LogoUrl;
+            HotelCountry = hotel.Country;
+            HotelCity = hotel.City;
+            Phone = hotel.Phone;
+        }
+    }
 }

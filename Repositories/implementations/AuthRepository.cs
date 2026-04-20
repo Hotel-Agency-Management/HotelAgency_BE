@@ -160,14 +160,13 @@ namespace Booking.Repositories
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
         }
-
-        public async Task<ApplicationUser> GetUserWithAgencyAsync(int userId)
+        public async Task<ApplicationUser> GetUserWithAgencyAndHotelAsync(int userId)
         {
             return await _context.Users
                 .Include(u => u.Agency)
+                .Include(u => u.Hotel)
                 .FirstOrDefaultAsync(u => u.Id == userId)
                 ?? throw new UserNotFoundException($"User with id {userId} not found.");
-
         }
     }
 }

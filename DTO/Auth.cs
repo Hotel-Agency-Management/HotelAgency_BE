@@ -126,6 +126,22 @@ namespace Booking.DTO
         }
     }
 
+    public class AgencyMemberProfileResponseDto : AgencyOwnerProfileResponseDto
+    {
+        public AgencyMemberProfileResponseDto(ApplicationUser user) : base(user) { }
+    }
+    
+    public class HotelStaffProfileResponseDto : AgencyMemberProfileResponseDto
+    {
+        public HotelInfoDto Hotel { get; set; }
+
+        public HotelStaffProfileResponseDto(ApplicationUser user) : base(user)
+        {
+            Hotel = new HotelInfoDto(user.Hotel!);
+        }
+    }
+
+
     public class ChangePasswordDto
     {
         [Required(ErrorMessage = "Current Password is required")]

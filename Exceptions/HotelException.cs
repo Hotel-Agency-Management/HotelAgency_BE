@@ -25,4 +25,12 @@ namespace Booking.Exceptions
         {
         }
     }
+    public class HotelNotAssignedException : AppException
+    {
+        public HotelNotAssignedException()
+            : base("User has no Hotel assigned.", StatusCodes.Status400BadRequest)
+        {
+        }
+    }
+
 }
