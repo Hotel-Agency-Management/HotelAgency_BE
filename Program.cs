@@ -100,7 +100,6 @@ builder.Services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
 
 //Services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAgencyService, AgencyService>();
 builder.Services.AddScoped<IAgencyDocumentService, AgencyDocumentService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
@@ -116,8 +115,8 @@ builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
 // Strategies
 builder.Services.AddScoped<CustomerRegistrationStrategy>();
 builder.Services.AddScoped<AgencyOwnerRegistrationStrategy>();
-//builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
-//builder.Services.AddScoped<HotelStaffProfileStrategy>();
+builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
+builder.Services.AddScoped<HotelStaffProfileStrategy>();
 
 //Factories
 builder.Services.AddScoped<IRegistrationStrategyFactory, RegistrationStrategyFactory>();
