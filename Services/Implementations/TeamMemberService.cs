@@ -11,6 +11,7 @@ namespace Booking.Services
 {
     public class TeamMemberService(
         ITeamMemberRepository _teamMemberRepository,
+        IHotelRepository _hotelRepository,
         IAuthRepository _authRepository,
         IEmailJobService _emailJobService,
         IEmailVerificationService _emailVerificationService) : ITeamMemberService
@@ -57,6 +58,9 @@ namespace Booking.Services
             if (await _teamMemberRepository.FindByEmailAsync(email) is not null)
                 throw new EmailAlreadyExistsException(email);
 
+            var hotel = await _hotelRepository.GetByIdAndAgencyIdAsync(hotelId, agencyId)
+                ?? throw new HotelNotFoundException(hotelId);
+
             await _teamMemberRepository.EnsureHotelDoesNotHaveSingleAssigneeRoleAsync(hotelId, role);
 
             var user = new ApplicationUser
@@ -82,7 +86,7 @@ namespace Booking.Services
                 throw new TeamMemberCreationFailedException();
 
             var link = await _emailVerificationService.GenerateVerificationLinkAsync(user);
-            await _emailJobService.EnqueueTeamMemberInviteEmailAsync(user, link, AuthConstant.DefaultPassword);
+            await _emailJobService.EnqueueTeamMemberVerificationEmailAsync(user, hotel, link, AuthConstant.DefaultPassword);
 
             return new TeamMemberResponse(user, role);
         }

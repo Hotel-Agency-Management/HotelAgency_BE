@@ -5,5 +5,5 @@ public interface IEmailJobService
 {
     Task EnqueueVerificationEmailAsync(ApplicationUser user, string verificationLink);
     Task EnqueueAgencyUnderReviewEmailAsync(ApplicationUser user);
-    Task EnqueueTeamMemberInviteEmailAsync(ApplicationUser user, string verificationLink, string password);
+    Task EnqueueTeamMemberVerificationEmailAsync(ApplicationUser user, Hotel hotel, string verificationLink, string password);
 }

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hotel Invitation Email</title>
+  <!--
+    ╔══════════════════════════════════════════════════════╗
+    ║         HOTEL INVITATION EMAIL TEMPLATE             ║
+    ║  Replace the variables below with your hotel data   ║
+    ╚══════════════════════════════════════════════════════╝
+
+    VARIABLES TO REPLACE:
+    ─────────────────────────────────────────────────────
+    {{HOTEL_NAME}}         → e.g. "Grand Palais Hotel"
+    {{HOTEL_TAGLINE}}      → e.g. "Luxury Redefined"
+    {{PRIMARY_COLOR}}      → e.g. "#1a3a5c"
+    {{SECONDARY_COLOR}}    → e.g. "#c9a84c"
+    {{TERTIARY_COLOR}}     → e.g. "#eef3f8"
+    {{GUEST_NAME}}         → e.g. "Ahmad Saleh"
+    {{GUEST_EMAIL}}        → e.g. "ahmad@example.com"
+    {{TEMP_PASSWORD}}      → e.g. "Welcome@12345"
+    {{VERIFY_LINK}}        → e.g. "https://yourapp.com/verify?token=abc"
+    {{SUPPORT_EMAIL}}      → e.g. "support@yourapp.com"
+    {{CURRENT_YEAR}}       → e.g. "2026"
+    ─────────────────────────────────────────────────────
+  -->
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #f0ede8;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      -webkit-font-smoothing: antialiased;
+      padding: 40px 16px;
+    }
+
+    /* ── Outer shell ── */
+    .shell {
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* ── Pre-header label ── */
+    .pre-header {
+      text-align: center;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    /* ── Email card ── */
+    .email-card {
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    /* ── Header ── */
+    .email-header {
+      background-color: {{PRIMARY_COLOR}};
+      padding: 36px 40px 32px;
+      text-align: center;
+      position: relative;
+    }
+    .header-ornament {
+      font-size: 20px;
+      color: {{SECONDARY_COLOR}};
+      margin-bottom: 14px;
+      letter-spacing: 0.3em;
+    }
+    .hotel-name {
+      font-family: 'Georgia', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+    }
+    .hotel-tagline {
+      margin-top: 6px;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+    }
+
+    /* ── Accent bar ── */
+    .accent-bar {
+      height: 4px;
+      background-color: {{SECONDARY_COLOR}};
+    }
+
+    /* ── Body ── */
+    .email-body {
+      background-color: #ffffff;
+      padding: 40px 44px 36px;
+    }
+    .section-rule {
+      width: 40px;
+      height: 2px;
+      background-color: {{SECONDARY_COLOR}};
+      margin-bottom: 22px;
+      border-radius: 2px;
+    }
+    .greeting {
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: {{PRIMARY_COLOR}};
+      margin-bottom: 14px;
+    }
+    .intro-text {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.75;
+      color: #555555;
+      margin-bottom: 28px;
+    }
+    .intro-text strong {
+      color: {{PRIMARY_COLOR}};
+      font-weight: 600;
+    }
+
+    /* ── CTA Button ── */
+    .cta-wrapper {
+      text-align: center;
+      margin: 28px 0 32px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background-color: {{PRIMARY_COLOR}};
+      color: #ffffff !important;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 14px 36px;
+      border-radius: 2px;
+      border: 2px solid {{SECONDARY_COLOR}};
+    }
+
+    /* ── Info box ── */
+    .info-box {
+      background-color: {{TERTIARY_COLOR}};
+      border-left: 3px solid {{SECONDARY_COLOR}};
+      border-radius: 2px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    .info-box-title {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: {{PRIMARY_COLOR}};
+      margin-bottom: 14px;
+      opacity: 0.75;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 13px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #999999; }
+    .info-value {
+      font-weight: 600;
+      color: #1a1a1a;
+      word-break: break-all;
+      text-align: right;
+      margin-left: 12px;
+    }
+    .info-value.highlight { color: {{PRIMARY_COLOR}}; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background-color: #eeeeee;
+      margin: 24px 0;
+    }
+
+    /* ── Notice ── */
+    .notice {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 12px;
+      color: #aaaaaa;
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* ── Footer ── */
+    .email-footer {
+      background-color: {{PRIMARY_COLOR}};
+      padding: 24px 40px;
+      text-align: center;
+    }
+    .footer-hotel-name {
+      font-family: 'Georgia', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: {{SECONDARY_COLOR}};
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .footer-text {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.9;
+    }
+    .footer-text a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: underline;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .email-body { padding: 28px 24px 24px; }
+      .email-header { padding: 28px 24px; }
+      .hotel-name { font-size: 20px; }
+      .greeting { font-size: 18px; }
+      .info-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+      .info-value { text-align: left; margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="shell">
+
+    <p class="pre-header">{{HOTEL_NAME}} · Staff Invitation</p>
+
+    <div class="email-card">
+
+      <!-- ── Header ── -->
+      <div class="email-header">
+        <div class="header-ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+        <div class="hotel-name">{{HOTEL_NAME}}</div>
+        <div class="hotel-tagline">{{HOTEL_TAGLINE}}</div>
+      </div>
+
+      <!-- ── Accent bar ── -->
+      <div class="accent-bar"></div>
+
+      <!-- ── Body ── -->
+      <div class="email-body">
+
+        <div class="section-rule"></div>
+
+        <div class="greeting">Welcome, {{GUEST_NAME}}</div>
+
+        <p class="intro-text">
+          You have been invited to join <strong>{{HOTEL_NAME}}</strong>'s management
+          platform. Your account has been created and is ready to use. Please verify
+          your email and sign in using the temporary credentials below.
+        </p>
+
+        <!-- CTA -->
+        <div class="cta-wrapper">
+          <a href="{{VERIFY_LINK}}" class="cta-btn">Verify Your Email</a>
+        </div>
+
+        <!-- Credentials box -->
+        <div class="info-box">
+          <div class="info-box-title">Your login credentials</div>
+          <div class="info-row">
+            <span class="info-label">Property</span>
+            <span class="info-value highlight">{{HOTEL_NAME}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{GUEST_EMAIL}}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Temporary password</span>
+            <span class="info-value">{{TEMP_PASSWORD}}</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="notice">
+          For your security, please change your password immediately after signing in.
+          If you did not expect this invitation, contact us at
+          <a href="mailto:{{SUPPORT_EMAIL}}" style="color:#999;">{{SUPPORT_EMAIL}}</a>.
+        </p>
+
+      </div>
+      <!-- /email-body -->
+
+      <!-- ── Footer ── -->
+      <div class="email-footer">
+        <div class="footer-hotel-name">{{HOTEL_NAME}}</div>
+        <div class="footer-text">
+          © {{CURRENT_YEAR}} HotelAgency &nbsp;·&nbsp; All rights reserved<br>
+          This is an automated message — please do not reply directly to this email.<br>
+          <a href="{{VERIFY_LINK}}">Verify account</a>
+        </div>
+      </div>
+
+    </div>
+    <!-- /email-card -->
+
+  </div>
+  <!-- /shell -->
+
+</body>
+</html>
