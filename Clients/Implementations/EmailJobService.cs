@@ -59,6 +59,32 @@ public class EmailJobService(
         );
     }
 
+    public Task EnqueueTeamMemberInviteEmailAsync(ApplicationUser user, string verificationLink, string password)
+    {
+        var userName = $"{user.FirstName} {user.LastName}".Trim();
+        if (string.IsNullOrWhiteSpace(userName))
+            userName = "User";
+
+        var plainText =
+            $"Hi {userName}, you have been invited to HotelAgency. " +
+            $"Verify your email: {verificationLink}. " +
+            $"Email: {user.Email}. Temporary password: {password}";
+
+        var html = $"""
+            <p>Hi {userName},</p>
+            <p>You have been invited to HotelAgency.</p>
+            <p><a href="{verificationLink}">Verify your email</a></p>
+            <p>Email: <strong>{user.Email}</strong></p>
+            <p>Temporary password: <strong>{password}</strong></p>
+            <p>Please change your password after signing in.</p>
+            """;
+
+        _jobs.Enqueue<IEmailService>(svc =>
+            svc.SendEmailAsync(user.Email!, "You have been invited to HotelAgency", plainText, html));
+
+        return Task.CompletedTask;
+    }
+
     private async Task EnqueueAsync(
         string templateFile,
         string to,

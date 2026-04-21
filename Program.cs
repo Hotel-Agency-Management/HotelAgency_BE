@@ -20,7 +20,6 @@ using Booking.Factories;
 using System.Text.Json.Serialization;
 using Booking.Converters;
 using Booking.Repositories.Implementations;
-using Booking.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +95,7 @@ builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomPhotoRepository, RoomPhotoRepository>();
 builder.Services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
+builder.Services.AddScoped<ITeamMemberRepository, TeamMemberRepository>();
 
 
 //Services
@@ -111,13 +111,16 @@ builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
 builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
+builder.Services.AddScoped<ITeamMemberService, TeamMemberService>();
+builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
+
 
 
 // Strategies
 builder.Services.AddScoped<CustomerRegistrationStrategy>();
 builder.Services.AddScoped<AgencyOwnerRegistrationStrategy>();
-//builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
-//builder.Services.AddScoped<HotelStaffProfileStrategy>();
+builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
+builder.Services.AddScoped<HotelStaffProfileStrategy>();
 
 //Factories
 builder.Services.AddScoped<IRegistrationStrategyFactory, RegistrationStrategyFactory>();

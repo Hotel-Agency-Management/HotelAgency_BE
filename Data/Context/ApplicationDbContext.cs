@@ -55,6 +55,11 @@ namespace Booking.Data
                         .HasForeignKey(u => u.AgencyId)
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired(false);
+
+                        entity.HasOne(u => u.Hotel)
+                        .WithMany(h => h.Users)
+                        .HasForeignKey(u => u.HotelId)
+                        .IsRequired(false);
                   });
 
                   // Agency

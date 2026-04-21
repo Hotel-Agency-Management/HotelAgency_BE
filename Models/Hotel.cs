@@ -47,13 +47,14 @@ namespace Booking.Models
 
         [Required]
         public int ManagerUserId { get; set; }
-
+        
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<Facility> Facilities { get; set; } = new List<Facility>();
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
+        public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
 
     }
 }

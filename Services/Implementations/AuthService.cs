@@ -17,6 +17,7 @@ namespace Booking.Services
     public class AuthService(
         IAuthRepository _authRepository,
         IJwtService _jwtService,
+        IEmailVerificationService _emailVerificationService,
         IEmailService _emailService,
         IEmailJobService _emailJobService,
         IRegistrationStrategyFactory _strategyFactory,
@@ -265,25 +266,8 @@ namespace Booking.Services
             if (user.EmailConfirmed)
                 return;
 
-            await _authRepository.DeleteExistingEmailVerificationTokensAsync(user.Id);
-
-            var rawToken = AuthUtils.GenerateSecureToken();
-            var hashedToken = AuthUtils.HashToken(rawToken);
-
-            var verificationToken = new EmailVerificationToken
-            {
-                UserId = user.Id,
-                TokenHash = hashedToken,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-                IsUsed = false
-            };
-
-            await _authRepository.SaveEmailVerificationTokenAsync(verificationToken);
-
-            var verificationLink =
-                $"http://localhost:3000/verify-email?userId={user.Id}&token={Uri.EscapeDataString(rawToken)}";
-
-            await _emailJobService.EnqueueVerificationEmailAsync(user, verificationLink);
+            var link = await _emailVerificationService.GenerateVerificationLinkAsync(user);
+            await _emailJobService.EnqueueVerificationEmailAsync(user, link);
         }
 
         public async Task VerifyEmailAsync(int userId, string token)
