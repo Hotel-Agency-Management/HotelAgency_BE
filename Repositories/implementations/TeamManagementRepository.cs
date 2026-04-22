@@ -6,27 +6,33 @@ using Booking.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Booking.Repositories.Implementations
+namespace Booking.Repositories
 {
-    public class TeamMemberRepository(
+    public class TeamManagementRepository(
         ApplicationDbContext _context,
-        UserManager<ApplicationUser> _userManager) : ITeamMemberRepository
+        UserManager<ApplicationUser> _userManager) : ITeamManagementRepository
     {
-        public Task<int> CountByHotelAsync(int agencyId, int hotelId, int excludedUserId)
+        public Task<int> CountByHotelAsync(int agencyId, int hotelId, int? excludedUserId = null)
         {
             return _context.Users
-                .CountAsync(u => u.AgencyId == agencyId && u.HotelId == hotelId && u.Id != excludedUserId);
+                .CountAsync(u =>
+                    u.AgencyId == agencyId &&
+                    u.HotelId == hotelId &&
+                    (excludedUserId == null || u.Id != excludedUserId.Value));
         }
 
         public Task<List<ApplicationUser>> GetByHotelAsync(
             int agencyId,
             int hotelId,
-            int excludedUserId,
+            int? excludedUserId,
             int pageNumber,
             int pageSize)
         {
             return _context.Users
-                .Where(u => u.AgencyId == agencyId && u.HotelId == hotelId && u.Id != excludedUserId)
+                .Where(u =>
+                    u.AgencyId == agencyId &&
+                    u.HotelId == hotelId &&
+                    (excludedUserId == null || u.Id != excludedUserId.Value))
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)
                 .Skip((pageNumber - 1) * pageSize)

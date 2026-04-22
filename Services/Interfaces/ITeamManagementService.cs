@@ -3,12 +3,12 @@ using Booking.Models;
 
 namespace Booking.Interfaces.Services
 {
-    public interface ITeamMemberService
+    public interface ITeamManagementService
     {
         Task<PaginatedResponse<TeamMemberResponse>> GetAgencyTeamMembersAsync(
             int agencyId,
             int hotelId,
-            int agencyOwnerId,
+            int? excludedUserId,
             TeamMemberListRequest request);
 
         Task<TeamMemberResponse> CreateAgencyTeamMemberAsync(
@@ -21,5 +21,10 @@ namespace Booking.Interfaces.Services
             int hotelId,
             int teamMemberId,
             AssignTeamMemberRoleRequest request);
+
+        Task<TeamMemberResponse> TransferAgencyTeamMemberAsync(
+            int agencyId,
+            int teamMemberId,
+            TransferTeamMemberRequest request);
     }
 }

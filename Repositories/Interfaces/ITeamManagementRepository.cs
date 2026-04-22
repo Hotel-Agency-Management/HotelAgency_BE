@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Booking.Interfaces.Repositories
 {
-    public interface ITeamMemberRepository
+    public interface ITeamManagementRepository
     {
-        Task<int> CountByHotelAsync(int agencyId, int hotelId, int excludedUserId);
-        Task<List<ApplicationUser>> GetByHotelAsync(int agencyId, int hotelId, int excludedUserId, int pageNumber, int pageSize);
+        Task<int> CountByHotelAsync(int agencyId, int hotelId, int? excludedUserId = null);
+        Task<List<ApplicationUser>> GetByHotelAsync(int agencyId, int hotelId, int? excludedUserId, int pageNumber, int pageSize);
         Task<ApplicationUser?> GetByIdAndAgencyAsync(int userId, int agencyId);
         Task<bool> HotelHasRoleAsync(int hotelId, string roleName, int? excludedUserId = null);
         Task EnsureHotelDoesNotHaveSingleAssigneeRoleAsync(int hotelId, string role, int? excludedUserId = null);

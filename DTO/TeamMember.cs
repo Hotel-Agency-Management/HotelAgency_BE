@@ -38,6 +38,17 @@ namespace Booking.DTO
         public string Role { get; set; } = string.Empty;
     }
 
+    public class TransferTeamMemberRequest
+    {
+        [Required]
+        [Range(1, int.MaxValue)]
+        public int SourceHotelId { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue)]
+        public int DestinationHotelId { get; set; }
+    }
+
     public class TeamMemberResponse
     {
         public int Id { get; set; }

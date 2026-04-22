@@ -13,8 +13,8 @@ namespace Booking.Controllers.AgencyOwner
     [Authorize(Roles = Roles.AgencyOwner)]
     [EnsureHotelBelongsToAgency]
     [Route("api/hotels/{hotelId:int}/team-members")]
-    public class TeamMembersController(
-        ITeamMemberService _teamMemberService,
+    public class TeamMemberController(
+        ITeamManagementService _teamMemberService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
         [HttpGet]
@@ -32,7 +32,7 @@ namespace Booking.Controllers.AgencyOwner
             var result = await _teamMemberService.GetAgencyTeamMembersAsync(
                 agencyId:agencyOwner.AgencyId.Value,
                 hotelId:hotelId,
-                agencyOwnerId:agencyOwner.Id,
+                excludedUserId:agencyOwner.Id,
                 request:request);
             return Ok(result);
         }
@@ -78,5 +78,33 @@ namespace Booking.Controllers.AgencyOwner
 
             return Ok(result);
         }
+
+        [HttpPut("{teamMemberId:int}/transfer")]
+        public async Task<IActionResult> TransferTeamMember(
+            [FromRoute] int hotelId,
+            [FromRoute] int teamMemberId,
+            [FromBody] TransferTeamMemberRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (request.SourceHotelId != hotelId)
+                return BadRequest("SourceHotelId must match the route hotelId.");
+
+            var agencyOwner = await _userManager.GetUserAsync(User);
+            if (agencyOwner is null)
+                return Unauthorized(Messages.Unauthorized);
+
+            if (agencyOwner.AgencyId is null)
+                return BadRequest("AgencyId is missing.");
+
+            var result = await _teamMemberService.TransferAgencyTeamMemberAsync(
+                agencyOwner.AgencyId.Value,
+                teamMemberId,
+                request);
+
+            return Ok(result);
+        }
+
     }
 }

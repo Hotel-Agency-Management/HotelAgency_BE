@@ -5,28 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hotel Invitation Email</title>
   <!--
-    ╔══════════════════════════════════════════════════════╗
-    ║         HOTEL INVITATION EMAIL TEMPLATE             ║
-    ║  Replace the variables below with your hotel data   ║
-    ╚══════════════════════════════════════════════════════╝
+    HOTEL INVITATION EMAIL TEMPLATE
+    Replace the variables below with your hotel data.
 
     VARIABLES TO REPLACE:
-    ─────────────────────────────────────────────────────
-    {{HOTEL_NAME}}         → e.g. "Grand Palais Hotel"
-    {{HOTEL_TAGLINE}}      → e.g. "Luxury Redefined"
-    {{PRIMARY_COLOR}}      → e.g. "#1a3a5c"
-    {{SECONDARY_COLOR}}    → e.g. "#c9a84c"
-    {{TERTIARY_COLOR}}     → e.g. "#eef3f8"
-    {{GUEST_NAME}}         → e.g. "Ahmad Saleh"
-    {{GUEST_EMAIL}}        → e.g. "ahmad@example.com"
-    {{TEMP_PASSWORD}}      → e.g. "Welcome@12345"
-    {{VERIFY_LINK}}        → e.g. "https://yourapp.com/verify?token=abc"
-    {{SUPPORT_EMAIL}}      → e.g. "support@yourapp.com"
-    {{CURRENT_YEAR}}       → e.g. "2026"
-    ─────────────────────────────────────────────────────
+    {{HOTEL_NAME}}      e.g. "Grand Palais Hotel"
+    {{HOTEL_TAGLINE}}   e.g. "Luxury Redefined"
+    {{GUEST_NAME}}      e.g. "Ahmad Saleh"
+    {{GUEST_EMAIL}}     e.g. "ahmad@example.com"
+    {{TEMP_PASSWORD}}   e.g. "Welcome@12345"
+    {{VERIFY_LINK}}     e.g. "https://yourapp.com/verify?token=abc"
+    {{SUPPORT_EMAIL}}   e.g. "support@yourapp.com"
+    {{CURRENT_YEAR}}    e.g. "2026"
+
+    Theme colors are injected per hotel theme.
   -->
   <style>
-    /* ── Reset ── */
+    :root {
+      --primary-color: {{PRIMARY_COLOR}};
+      --secondary-color: {{SECONDARY_COLOR}};
+      --tertiary-color: {{TERTIARY_COLOR}};
+    }
+
+    /* Reset */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background-color: #f0ede8;
@@ -35,13 +36,13 @@
       padding: 40px 16px;
     }
 
-    /* ── Outer shell ── */
+    /* Outer shell */
     .shell {
       max-width: 580px;
       margin: 0 auto;
     }
 
-    /* ── Pre-header label ── */
+    /* Pre-header label */
     .pre-header {
       text-align: center;
       font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -52,23 +53,23 @@
       margin-bottom: 20px;
     }
 
-    /* ── Email card ── */
+    /* Email card */
     .email-card {
       border-radius: 4px;
       overflow: hidden;
       box-shadow: 0 4px 24px rgba(0,0,0,0.10);
     }
 
-    /* ── Header ── */
+    /* Header */
     .email-header {
-      background-color: {{PRIMARY_COLOR}};
+      background-color: var(--primary-color);
       padding: 36px 40px 32px;
       text-align: center;
       position: relative;
     }
     .header-ornament {
       font-size: 20px;
-      color: {{SECONDARY_COLOR}};
+      color: var(--secondary-color);
       margin-bottom: 14px;
       letter-spacing: 0.3em;
     }
@@ -89,13 +90,13 @@
       color: rgba(255,255,255,0.65);
     }
 
-    /* ── Accent bar ── */
+    /* Accent bar */
     .accent-bar {
       height: 4px;
-      background-color: {{SECONDARY_COLOR}};
+      background-color: var(--secondary-color);
     }
 
-    /* ── Body ── */
+    /* Body */
     .email-body {
       background-color: #ffffff;
       padding: 40px 44px 36px;
@@ -103,7 +104,7 @@
     .section-rule {
       width: 40px;
       height: 2px;
-      background-color: {{SECONDARY_COLOR}};
+      background-color: var(--secondary-color);
       margin-bottom: 22px;
       border-radius: 2px;
     }
@@ -111,7 +112,7 @@
       font-family: 'Georgia', serif;
       font-size: 22px;
       font-weight: 700;
-      color: {{PRIMARY_COLOR}};
+      color: var(--primary-color);
       margin-bottom: 14px;
     }
     .intro-text {
@@ -122,18 +123,18 @@
       margin-bottom: 28px;
     }
     .intro-text strong {
-      color: {{PRIMARY_COLOR}};
+      color: var(--primary-color);
       font-weight: 600;
     }
 
-    /* ── CTA Button ── */
+    /* CTA button */
     .cta-wrapper {
       text-align: center;
       margin: 28px 0 32px;
     }
     .cta-btn {
       display: inline-block;
-      background-color: {{PRIMARY_COLOR}};
+      background-color: var(--primary-color);
       color: #ffffff !important;
       font-family: 'Helvetica Neue', Arial, sans-serif;
       font-size: 13px;
@@ -143,13 +144,13 @@
       text-decoration: none;
       padding: 14px 36px;
       border-radius: 2px;
-      border: 2px solid {{SECONDARY_COLOR}};
+      border: 2px solid var(--secondary-color);
     }
 
-    /* ── Info box ── */
+    /* Info box */
     .info-box {
-      background-color: {{TERTIARY_COLOR}};
-      border-left: 3px solid {{SECONDARY_COLOR}};
+      background-color: var(--tertiary-color);
+      border-left: 3px solid var(--secondary-color);
       border-radius: 2px;
       padding: 20px 24px;
       margin-bottom: 28px;
@@ -160,7 +161,7 @@
       font-weight: 600;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: {{PRIMARY_COLOR}};
+      color: var(--primary-color);
       margin-bottom: 14px;
       opacity: 0.75;
     }
@@ -182,16 +183,16 @@
       text-align: right;
       margin-left: 12px;
     }
-    .info-value.highlight { color: {{PRIMARY_COLOR}}; }
+    .info-value.highlight { color: var(--primary-color); }
 
-    /* ── Divider ── */
+    /* Divider */
     .divider {
       height: 1px;
       background-color: #eeeeee;
       margin: 24px 0;
     }
 
-    /* ── Notice ── */
+    /* Notice */
     .notice {
       font-family: 'Helvetica Neue', Arial, sans-serif;
       font-size: 12px;
@@ -200,9 +201,9 @@
       font-style: italic;
     }
 
-    /* ── Footer ── */
+    /* Footer */
     .email-footer {
-      background-color: {{PRIMARY_COLOR}};
+      background-color: var(--primary-color);
       padding: 24px 40px;
       text-align: center;
     }
@@ -210,7 +211,7 @@
       font-family: 'Georgia', serif;
       font-size: 14px;
       font-weight: 700;
-      color: {{SECONDARY_COLOR}};
+      color: var(--secondary-color);
       letter-spacing: 0.06em;
       margin-bottom: 8px;
     }
@@ -225,7 +226,7 @@
       text-decoration: underline;
     }
 
-    /* ── Responsive ── */
+    /* Responsive */
     @media (max-width: 480px) {
       .email-body { padding: 28px 24px 24px; }
       .email-header { padding: 28px 24px; }
@@ -244,17 +245,17 @@
 
     <div class="email-card">
 
-      <!-- ── Header ── -->
+      <!-- Header -->
       <div class="email-header">
-        <div class="header-ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+        <div class="header-ornament">* &nbsp; * &nbsp; *</div>
         <div class="hotel-name">{{HOTEL_NAME}}</div>
         <div class="hotel-tagline">{{HOTEL_TAGLINE}}</div>
       </div>
 
-      <!-- ── Accent bar ── -->
+      <!-- Accent bar -->
       <div class="accent-bar"></div>
 
-      <!-- ── Body ── -->
+      <!-- Body -->
       <div class="email-body">
 
         <div class="section-rule"></div>
@@ -300,12 +301,12 @@
       </div>
       <!-- /email-body -->
 
-      <!-- ── Footer ── -->
+      <!-- Footer -->
       <div class="email-footer">
         <div class="footer-hotel-name">{{HOTEL_NAME}}</div>
         <div class="footer-text">
           © {{CURRENT_YEAR}} HotelAgency &nbsp;·&nbsp; All rights reserved<br>
-          This is an automated message — please do not reply directly to this email.<br>
+          This is an automated message - please do not reply directly to this email.<br>
           <a href="{{VERIFY_LINK}}">Verify account</a>
         </div>
       </div>
@@ -318,3 +319,4 @@
 
 </body>
 </html>
+

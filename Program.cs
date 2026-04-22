@@ -19,7 +19,6 @@ using Booking.Strategies;
 using Booking.Factories;
 using System.Text.Json.Serialization;
 using Booking.Converters;
-using Booking.Repositories.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,7 +94,7 @@ builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomPhotoRepository, RoomPhotoRepository>();
 builder.Services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
-builder.Services.AddScoped<ITeamMemberRepository, TeamMemberRepository>();
+builder.Services.AddScoped<ITeamManagementRepository, TeamManagementRepository>();
 
 
 //Services
@@ -111,7 +110,7 @@ builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
 builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
-builder.Services.AddScoped<ITeamMemberService, TeamMemberService>();
+builder.Services.AddScoped<ITeamManagementService, TeamManagementService>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 
 
