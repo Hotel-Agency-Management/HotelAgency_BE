@@ -77,16 +77,21 @@ public class EmailJobService(
             {
                 { "AGENCY_NAME", hotel.Name },
                 { "HOTEL_NAME", hotel.Name },
+                { "HOTEL_TAGLINE", "Management Platform" },
                 { "USER_NAME", userName },
                 { "USER_EMAIL", user.Email ?? string.Empty },
+                { "GUEST_NAME", userName },
+                { "GUEST_EMAIL", user.Email ?? string.Empty },
                 { "TEMP_PASSWORD", password },
                 { "PRIMARY_COLOR", GetThemeColor(hotel.PrimaryColor, "#173f3a") },
                 { "SECONDARY_COLOR", GetThemeColor(hotel.SecondaryColor, "#d8b879") },
                 { "TERTIARY_COLOR", GetThemeColor(hotel.TertiaryColor, "#f8f5ef") },
                 { "VERIFY_LINK", verificationLink },
+                { "SUPPORT_EMAIL", "support@hotelagency.com" },
                 { "HELP_LINK", "http://localhost:3000/help" },
                 { "SUPPORT_LINK", "http://localhost:3000/support" },
-                { "PRIVACY_LINK", "http://localhost:3000/privacy" }
+                { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+                { "CURRENT_YEAR", DateTime.UtcNow.Year.ToString() }
             });
 
         _jobs.Enqueue<IEmailService>(svc =>
