@@ -4,5 +4,4 @@ namespace Booking.Constants
     {
         public const string DefaultPassword = "Welcome@12345";
     }
-
 }
