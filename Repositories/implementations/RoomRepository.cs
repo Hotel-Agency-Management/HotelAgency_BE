@@ -18,11 +18,13 @@ namespace Booking.Repositories
         public async Task<Room?> GetByIdAsync(int roomId)
             => await _context.Rooms
                 .Include(r => r.RoomType)
+                .Include(r => r.Amenities)
                 .FirstOrDefaultAsync(r => r.Id == roomId);
 
         public async Task<Room?> GetByIdAndHotelIdAsync(int roomId, int hotelId)
             => await _context.Rooms
                 .Include(r => r.RoomType)
+                .Include(r => r.Amenities)
                 .FirstOrDefaultAsync(r => r.Id == roomId && r.HotelId == hotelId);
 
         public async Task<IEnumerable<Room>> GetAllByHotelIdAsync(int hotelId)

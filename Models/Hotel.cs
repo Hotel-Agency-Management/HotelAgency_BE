@@ -5,7 +5,7 @@ using Booking.Constants;
 namespace Booking.Models
 {
     public class Hotel
-    {    
+    {
         [Key]
         public int Id { get; set; }
 
@@ -53,5 +53,7 @@ namespace Booking.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<Facility> Facilities { get; set; } = new List<Facility>();
+        public ICollection<Room> Rooms { get; set; } = new List<Room>();
+
     }
 }

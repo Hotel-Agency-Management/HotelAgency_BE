@@ -90,12 +90,12 @@ builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
 builder.Services.AddScoped<IAgencyDocumentRepository, AgencyDocumentRepository>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
-builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 builder.Services.AddScoped<IFacilityPhotoRepository, FacilityPhotoRepository>();
 builder.Services.AddScoped<IFacilityRepository, FacilityRepository>();
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomPhotoRepository, RoomPhotoRepository>();
+builder.Services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
 
 
 //Services
@@ -105,12 +105,12 @@ builder.Services.AddScoped<IAgencyService, AgencyService>();
 builder.Services.AddScoped<IAgencyDocumentService, AgencyDocumentService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<IHotelService, HotelService>();
-builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IFacilityPhotoService, FacilityPhotoService>();
 builder.Services.AddScoped<IFacilityService, FacilityService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
+builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
 
 
 // Strategies

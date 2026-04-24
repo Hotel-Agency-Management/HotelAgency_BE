@@ -38,5 +38,7 @@ namespace Booking.Models
         public RoomType? RoomType { get; set; }
         public string? CoverPhotoUrl { get; set; }
         public ICollection<RoomPhoto> Photos { get; set; } = new List<RoomPhoto>();
+        public ICollection<RoomAmenity> Amenities { get; set; } = new List<RoomAmenity>();
+
     }
 }

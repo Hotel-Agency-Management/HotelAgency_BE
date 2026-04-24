@@ -27,6 +27,7 @@ namespace Booking.Data
             public DbSet<RoomType> RoomTypes { get; set; }
             public DbSet<Room> Rooms { get; set; }
             public DbSet<RoomPhoto> RoomPhotos { get; set; }
+            public DbSet<RoomAmenity> RoomAmenities { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -232,24 +233,29 @@ namespace Booking.Data
                         entity.HasIndex(r => r.Name).IsUnique();
                   });
 
-                  //Room
+                  // Room
                   builder.Entity<Room>(entity =>
                   {
                         entity.HasOne(r => r.Hotel)
-                              .WithMany()
-                              .HasForeignKey(r => r.HotelId)
-                              .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany(h => h.Rooms)
+                        .HasForeignKey(r => r.HotelId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
                         entity.HasOne(r => r.RoomType)
-                              .WithMany(rt => rt.Rooms)
-                              .HasForeignKey(r => r.RoomTypeId)
-                              .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany(rt => rt.Rooms)
+                        .HasForeignKey(r => r.RoomTypeId)
+                        .OnDelete(DeleteBehavior.Restrict);
 
                         entity.Property(r => r.Status)
-                              .HasConversion<string>()
-                              .HasMaxLength(20);
+                        .HasConversion<string>()
+                        .HasMaxLength(20);
 
-                        entity.HasIndex(r => new { r.RoomNumber, r.HotelId }).IsUnique();
+                        entity.HasIndex(r => new { r.RoomNumber, r.HotelId })
+                        .IsUnique();
+
+                        entity.HasMany(r => r.Amenities)
+                        .WithMany(a => a.Rooms)
+                        .UsingEntity(j => j.ToTable("RoomAmenityMaps"));
                   });
 
                   builder.Entity<RoomPhoto>(entity =>
@@ -258,6 +264,13 @@ namespace Booking.Data
                         .WithMany(r => r.Photos)
                         .HasForeignKey(p => p.RoomId)
                         .OnDelete(DeleteBehavior.Cascade);
+                  });
+
+                  // Room Amenity
+                  builder.Entity<RoomAmenity>(entity =>
+                  {
+                        entity.HasIndex(a => a.Name)
+                        .IsUnique();
                   });
             }
       }

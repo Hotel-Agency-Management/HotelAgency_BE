@@ -12,24 +12,6 @@ namespace Booking.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "FacilityPhotos");
-
-            migrationBuilder.DropTable(
-                name: "RoomAmenities");
-
-            migrationBuilder.DropTable(
-                name: "RoomPhotos");
-
-            migrationBuilder.DropTable(
-                name: "Facilities");
-
-            migrationBuilder.DropTable(
-                name: "Rooms");
-
-            migrationBuilder.DropTable(
-                name: "RoomTypes");
-
             migrationBuilder.AddColumn<int>(
                 name: "HotelId",
                 table: "Users",
