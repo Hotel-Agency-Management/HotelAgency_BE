@@ -2,24 +2,15 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Booking.Configurations;
-using Booking.Interfaces.Services;
-using Booking.Models;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Booking.Constants;
+using Booking.Models;
+using Microsoft.IdentityModel.Tokens;
 
-namespace Booking.Services
+namespace Booking.Utils
 {
-    public class JwtService : IJwtService
+    public static class JwtUtils
     {
-        private readonly JwtSettings _jwtSettings;
-
-        public JwtService(IOptions<JwtSettings> jwtSettings)
-        {
-            _jwtSettings = jwtSettings.Value;
-        }
-
-        public string GenerateToken(ApplicationUser user, string role)
+        public static string GenerateToken(ApplicationUser user, string role, JwtSettings jwtSettings)
         {
             var claims = new List<Claim>
             {
@@ -32,33 +23,21 @@ namespace Booking.Services
             };
 
             if (!string.IsNullOrEmpty(user.UserName))
-            {
                 claims.Add(new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName));
-            }
 
             if (user.AgencyId.HasValue)
-            {
                 claims.Add(new Claim(ClaimConstant.AGENCY_Id, user.AgencyId.Value.ToString()));
-            }
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtSettings.Key)
-            );
-
-            var creds = new SigningCredentials(
-                key,
-                SecurityAlgorithms.HmacSha256
-            );
-
-            var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expires = DateTime.UtcNow.AddMinutes(jwtSettings.DurationInMinutes);
 
             var token = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
+                issuer: jwtSettings.Issuer,
+                audience: jwtSettings.Audience,
                 claims: claims,
                 expires: expires,
-                signingCredentials: creds
-            );
+                signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

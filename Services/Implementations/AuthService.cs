@@ -10,19 +10,23 @@ using Booking.Clients;
 using System.Security.Cryptography;
 using Booking.Utils;
 using Booking.Factories;
+using Booking.Configurations;
+using Microsoft.Extensions.Options;
 
 
 namespace Booking.Services
 {
     public class AuthService(
         IAuthRepository _authRepository,
-        IJwtService _jwtService,
+        IOptions<JwtSettings> jwtSettings,
         IEmailService _emailService,
         IEmailJobService _emailJobService,
         IRegistrationStrategyFactory _strategyFactory,
         IProfileStrategyFactory _profileFactory,
         IAgencyRepository _agencyRepository) : IAuthService
     {
+        private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
             var user = await _authRepository.FindByEmailAsync(loginDto.Email)
@@ -57,7 +61,7 @@ namespace Booking.Services
             }
 
             await _authRepository.DeleteUserRefreshTokensAsync(user.Id);
-            var token = _jwtService.GenerateToken(user, role);
+            var token = JwtUtils.GenerateToken(user, role, _jwtSettings);
 
             var refreshToken = new RefreshToken
             {
@@ -96,7 +100,7 @@ namespace Booking.Services
             var strategy = _strategyFactory.GetStrategy(request.AccountType);
             var user = await strategy.ExecuteAsync(request);
             var role = await _authRepository.GetRoleAsync(user);
-            var token = _jwtService.GenerateToken(user, role);
+            var token = JwtUtils.GenerateToken(user, role, _jwtSettings);
 
             var refreshToken = new RefreshToken
             {
@@ -235,7 +239,7 @@ namespace Booking.Services
             await _authRepository.RevokeRefreshTokenAsync(refreshToken);
 
             var role = await _authRepository.GetRoleAsync(user);
-            var newAccessToken = _jwtService.GenerateToken(user, role);
+            var newAccessToken = JwtUtils.GenerateToken(user, role, _jwtSettings);
 
             var newRefreshToken = new RefreshToken
             {
@@ -321,8 +325,7 @@ namespace Booking.Services
 
         public Task<BaseProfileResponseDto> GetProfileAsync(ApplicationUser user, string role)
         {
-            var strategy = _profileFactory.Create(role);
-            return strategy.BuildProfileAsync(user);
+            return _profileFactory.BuildProfileAsync(role, user);
         }
 
     }

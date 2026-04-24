@@ -3,9 +3,9 @@ using Booking.Models;
 
 namespace Booking.Strategies
 {
-    public class BaseProfileStrategy : IProfileStrategy
+    public static class BaseProfileStrategy
     {
-        public Task<BaseProfileResponseDto> BuildProfileAsync(ApplicationUser user)
+        public static Task<BaseProfileResponseDto> BuildProfileAsync(ApplicationUser user)
             => Task.FromResult(new BaseProfileResponseDto(user));
     }
 }
