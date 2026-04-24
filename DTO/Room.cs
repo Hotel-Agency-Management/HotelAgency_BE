@@ -64,7 +64,6 @@ namespace Booking.DTO
         }
     }
 
-
     public class ListRoomResponse
     {
         public int Id { get; set; }
