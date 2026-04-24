@@ -11,7 +11,7 @@ namespace Booking.Controllers.AgencyOwner
 {
     [ApiController]
     [Authorize(Roles = Roles.AgencyOwner)]
-    [EnsureHotelBelongsToAgency]
+    [EnsureHotelExistsForOwnerAttribute]
     [Route("api/hotels/{hotelId:int}/team-members")]
     public class TeamMemberController(
         ITeamManagementService _teamMemberService,

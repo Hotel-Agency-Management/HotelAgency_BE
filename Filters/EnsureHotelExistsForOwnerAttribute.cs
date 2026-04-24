@@ -1,3 +1,4 @@
+// EnsureHotelExistsForOwnerFilter.cs
 using Booking.Constants;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
@@ -7,25 +8,21 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Booking.Filters
 {
-    public class EnsureHotelBelongsToAgencyAttribute : TypeFilterAttribute
+    public class EnsureHotelExistsForOwnerAttribute : TypeFilterAttribute
     {
-        public EnsureHotelBelongsToAgencyAttribute() : base(typeof(EnsureHotelBelongsToAgencyFilter))
+        public EnsureHotelExistsForOwnerAttribute() : base(typeof(EnsureHotelExistsForOwnerFilter))
         {
         }
     }
 
-    public class EnsureHotelBelongsToAgencyFilter(
+    public class EnsureHotelExistsForOwnerFilter(
         UserManager<ApplicationUser> _userManager,
         IHotelRepository _hotelRepository) : IAsyncActionFilter
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (!context.ActionArguments.TryGetValue("hotelId", out var hotelIdValue) ||
-                hotelIdValue is not int hotelId)
-            {
-                context.Result = new BadRequestObjectResult(Messages.HotelIdMissing);
+            if (!FilterHelpers.TryGetId(context, "hotelId", Messages.HotelIdMissing, out int hotelId))
                 return;
-            }
 
             var agencyOwner = await _userManager.GetUserAsync(context.HttpContext.User);
             if (agencyOwner is null)
@@ -43,22 +40,13 @@ namespace Booking.Filters
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             if (hotel is null)
             {
-                context.Result = new NotFoundObjectResult(new
-                {
-                    statusCode = 404,
-                    message = string.Format(Messages.HotelNotFound, hotelId)
-                });
+                context.Result = FilterHelpers.NotFound(string.Format(Messages.HotelNotFound, hotelId));
                 return;
             }
 
             if (hotel.AgencyId != agencyOwner.AgencyId.Value)
             {
-                context.Result = new ObjectResult(new
-                {
-                    statusCode = 403,
-                    message = Messages.HotelForbidden
-                })
-                { StatusCode = 403 };
+                context.Result = FilterHelpers.Forbidden(Messages.HotelForbidden);
                 return;
             }
 

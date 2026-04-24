@@ -9,7 +9,7 @@ namespace Booking.Controllers.Admin
 {
     [ApiController]
     [Authorize(Roles = Roles.SuperAdmin)]
-    [EnsureAgencyHotelExists]
+    [EnsureHotelExistsForAdminAttribute]
     [Route("api/admin/agencies/{agencyId:int}/hotels/{hotelId:int}/team-members")]
     public class TeamMemberController(ITeamManagementService _teamMemberService) : ControllerBase
     {
