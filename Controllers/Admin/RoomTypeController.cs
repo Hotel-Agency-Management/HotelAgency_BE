@@ -4,7 +4,7 @@ using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Booking.Controllers
+namespace Booking.Controllers.Admin
 {
     [ApiController]
     [Authorize(Roles = $"{Roles.SuperAdmin}")]

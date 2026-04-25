@@ -22,6 +22,12 @@ namespace Booking.Exceptions
             : base($"User with email '{email}' was not found.", (int)HttpStatusCode.NotFound) { }
     }
 
+    public class AuthenticatedUserNotFoundException : AuthException
+    {
+        public AuthenticatedUserNotFoundException()
+            : base("Authenticated user was not found.", (int)HttpStatusCode.NotFound) { }
+    }
+
     public class ManagerUserNotFoundException : HotelException
     {
         public ManagerUserNotFoundException(int userId)

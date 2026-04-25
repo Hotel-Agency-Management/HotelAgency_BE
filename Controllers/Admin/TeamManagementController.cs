@@ -11,7 +11,7 @@ namespace Booking.Controllers.Admin
     [Authorize(Roles = Roles.SuperAdmin)]
     [EnsureHotelExistsForAdminAttribute]
     [Route("api/admin/agencies/{agencyId:int}/hotels/{hotelId:int}/team-members")]
-    public class TeamMemberController(ITeamManagementService _teamMemberService) : ControllerBase
+    public class TeamManagementController(ITeamManagementService _teamMemberService) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetTeamMembers(

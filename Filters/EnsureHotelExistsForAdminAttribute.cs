@@ -12,7 +12,6 @@ namespace Booking.Filters
     }
 
     public class EnsureHotelExistsForAdminFilter(
-        IAgencyRepository _agencyRepository,
         IHotelRepository _hotelRepository) : IAsyncActionFilter
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -23,13 +22,8 @@ namespace Booking.Filters
             if (!FilterHelpers.TryGetId(context, "hotelId", Messages.HotelIdMissing, out int hotelId))
                 return;
 
-            var agency = await _agencyRepository.GetByIdAsync(agencyId);
-            if (agency is null)
-            {
-                context.Result = FilterHelpers.NotFound($"Agency with id '{agencyId}' was not found.");
-                return;
-            }
-
+            // Agency existence is validated by the controller-level agency filter.
+            // This filter only ensures the hotel exists and belongs to that agency.
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             if (hotel is null)
             {

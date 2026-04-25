@@ -37,6 +37,8 @@ namespace Booking.Filters
                 return;
             }
 
+            // Agency existence is validated by the owner agency filter.
+            // This filter only ensures the hotel exists and belongs to the owner's agency.
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             if (hotel is null)
             {

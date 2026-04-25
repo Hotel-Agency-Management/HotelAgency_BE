@@ -4,45 +4,36 @@ using Microsoft.AspNetCore.Mvc;
 using Booking.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Booking.Filters;
-using Booking.Models;
-using Microsoft.AspNetCore.Identity;
 
-
-namespace Booking.Controllers
+namespace Booking.Controllers.Admin
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner}")]
-    [EnsureAgencyExistsForOwner]
-    [Route("api/hotels")]
-    public class HotelController(
-        IHotelService _hotelService,
-        UserManager<ApplicationUser> _userManager) : ControllerBase
+    [Authorize(Roles = $"{Roles.SuperAdmin}")]
+    [EnsureAgencyExistsForAdminAttribute]
+    [Route("api/admin/agencies/{agencyId}/hotels")]
+    public class HotelController(IHotelService _hotelService) : ControllerBase
     {
-        [Authorize(Roles = $"{Roles.AgencyOwner}")]
         [HttpPost]
         public async Task<IActionResult> CreateHotel(
+            [FromRoute] int agencyId,
             [FromForm] CreateHotelRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var agencyOwner = await _userManager.GetUserAsync(User);
-            request.AgencyId = agencyOwner!.AgencyId!.Value;
+            request.AgencyId = agencyId;
 
             var hotel = await _hotelService.CreateHotelAsync(request);
             return Ok(hotel);
         }
 
-
         [HttpGet]
-        public async Task<IActionResult> GetHotelsByAgency()
+        public async Task<IActionResult> GetHotelsByAgency([FromRoute] int agencyId)
         {
-            var agencyOwner = await _userManager.GetUserAsync(User);
-            var hotels = await _hotelService.GetHotelsByAgencyIdAsync(agencyOwner!.AgencyId!.Value);
+            var hotels = await _hotelService.GetHotelsByAgencyIdAsync(agencyId);
             return Ok(hotels);
         }
 
-        [EnsureHotelExistsForOwnerAttribute]
         [HttpGet("{hotelId}")]
         public async Task<IActionResult> GetHotelById([FromRoute] int hotelId)
         {
@@ -50,11 +41,10 @@ namespace Booking.Controllers
             return Ok(hotel);
         }
 
-        [EnsureHotelExistsForOwnerAttribute]
         [HttpPut("{hotelId}")]
         public async Task<IActionResult> UpdateHotel(
-                [FromRoute] int hotelId,
-                [FromForm] UpdateHotelRequest request)
+            [FromRoute] int hotelId,
+            [FromForm] UpdateHotelRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

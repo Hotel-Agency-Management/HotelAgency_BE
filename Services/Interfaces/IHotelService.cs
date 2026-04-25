@@ -8,6 +8,5 @@ namespace Booking.Interfaces.Services
         Task<HotelResponse> GetHotelByIdAsync(int hotelId);
         Task<IEnumerable<HotelResponse>> GetHotelsByAgencyIdAsync(int agencyId);
         Task<HotelResponse> UpdateHotelAsync(int hotelId, UpdateHotelRequest request);
-        Task DeleteHotelAsync(int hotelId);
     }
 }

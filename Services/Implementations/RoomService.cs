@@ -17,8 +17,8 @@ namespace Booking.Services
     {
         public async Task<RoomResponse> CreateRoomAsync(int hotelId, CreateRoomRequest request)
         {
-            var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                ?? throw new HotelNotFoundException(hotelId);
+            //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
+               // ?? throw new HotelNotFoundException(hotelId);
 
             var roomType = await _roomTypeRepository.GetByIdAsync(request.RoomTypeId)
                 ?? throw new RoomTypeNotInHotelException();
@@ -70,8 +70,8 @@ namespace Booking.Services
 
         public async Task<IEnumerable<ListRoomResponse>> GetRoomsByHotelIdAsync(int hotelId)
         {
-            var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                ?? throw new HotelNotFoundException(hotelId);
+            //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
+                //?? throw new HotelNotFoundException(hotelId);
 
             var rooms = await _roomRepository.GetAllByHotelIdAsync(hotelId);
             return rooms.Select(r => new ListRoomResponse(r));

@@ -5,13 +5,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Booking.Filters;
 
-namespace Booking.Controllers
+
+namespace Booking.Controllers.Admin
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
-    [EnsureAgencyExistsForOwner]
-    [EnsureHotelExistsForOwner]
-    [Route("api/hotels/{hotelId}/rooms/{roomId}/photos")]
+    [Authorize(Roles = $"{Roles.SuperAdmin}")]
+    [EnsureAgencyExistsForAdminAttribute]
+    [EnsureHotelExistsForAdminAttribute]
+
+    [Route("api/agencies/{agencyId}/hotels/{hotelId}/rooms/{roomId}/photos")]
     public class RoomPhotoController(IRoomPhotoService _roomPhotoService) : ControllerBase
     {
         [HttpPost]

@@ -14,8 +14,8 @@ namespace Booking.Services
         public async Task<FacilityResponse> CreateFacilityAsync(int hotelId, CreateFacilityRequest request)
         {
 
-            var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                ?? throw new HotelNotFoundException(hotelId);
+            //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
+                //?? throw new HotelNotFoundException(hotelId);
 
             if (await _facilityRepository.ExistsByNameAndHotelIdAsync(request.Name, hotelId))
                 throw new FacilityAlreadyExistsException();
@@ -48,8 +48,8 @@ namespace Booking.Services
 
         public async Task<IEnumerable<FacilityResponse>> GetFacilitiesByHotelIdAsync(int hotelId)
         {
-            var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                ?? throw new HotelNotFoundException(hotelId);
+            //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
+                //?? throw new HotelNotFoundException(hotelId);
 
             var facilities = await _facilityRepository.GetAllByHotelIdAsync(hotelId);
             return facilities.Select(f => new FacilityResponse(f));

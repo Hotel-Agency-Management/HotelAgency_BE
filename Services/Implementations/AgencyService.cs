@@ -16,10 +16,10 @@ namespace Booking.Services
         public async Task<Agency> GetAgencyProfileAsync(int agencyId)
         {
             var agency = await _agencyRepository.GetByIdAsync(agencyId);
-            if (agency is null)
-                throw new AgencyNotFoundException(agencyId);
+            //if (agency is null)
+              //  throw new AgencyNotFoundException(agencyId);
 
-            return agency;
+            return agency!;
         }
 
         public async Task UpdateAgencyAsync(int agencyId, UpdateAgencyRequest request)
