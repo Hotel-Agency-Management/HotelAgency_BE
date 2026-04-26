@@ -13,7 +13,7 @@ namespace Booking.Controllers
     [ApiController]
     [Authorize(Roles = $"{Roles.AgencyOwner}")]
     [EnsureAgencyExistsForOwnerAttribute]
-    [Route("api/documents")]
+    [Route("api/agencies/documents")]
     public class AgencyDocumentController(
         IAgencyDocumentService _documentService,
         UserManager<ApplicationUser> _userManager) : ControllerBase

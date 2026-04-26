@@ -28,7 +28,7 @@ namespace Booking.Controllers.Admin
         }
 
         [HttpPut("{documentId}")]
-        public async Task<IActionResult> UpdateDocument(int documentId, [FromForm] UpdateDocumentDto dto)
+        public async Task<IActionResult> UpdateDocument([FromRoute] int agencyId, int documentId, [FromForm] UpdateDocumentDto dto)
         {
             var result = await _documentService.UpdateDocumentAsync(documentId, dto);
             return Ok(result);

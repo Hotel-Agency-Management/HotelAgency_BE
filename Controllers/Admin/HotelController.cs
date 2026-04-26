@@ -27,6 +27,7 @@ namespace Booking.Controllers.Admin
             return Ok(hotel);
         }
 
+        [EnsureHotelExistsForAdmin]
         [HttpGet]
         public async Task<IActionResult> GetHotelsByAgency([FromRoute] int agencyId)
         {
@@ -34,15 +35,20 @@ namespace Booking.Controllers.Admin
             return Ok(hotels);
         }
 
+        [EnsureHotelExistsForAdmin]
         [HttpGet("{hotelId}")]
-        public async Task<IActionResult> GetHotelById([FromRoute] int hotelId)
+        public async Task<IActionResult> GetHotelById(
+            [FromRoute] int agencyId,
+            [FromRoute] int hotelId)
         {
             var hotel = await _hotelService.GetHotelByIdAsync(hotelId);
             return Ok(hotel);
         }
 
+        [EnsureHotelExistsForAdmin]
         [HttpPut("{hotelId}")]
         public async Task<IActionResult> UpdateHotel(
+            [FromRoute] int agencyId,
             [FromRoute] int hotelId,
             [FromForm] UpdateHotelRequest request)
         {

@@ -11,7 +11,7 @@ namespace Booking.DTO
     public class UpdateDocumentDto
     {
         public string? DocumentType { get; set; }
-        public IFormFile File { get; set; } = null!;
+        public IFormFile? File { get; set; } = null!;
     }
 
     public class AgencyDocumentResponseDto
