@@ -1,13 +1,14 @@
 using Booking.Constants;
+using Booking.Interfaces.Services;
 using Hangfire;
 using Booking.Models;
 
 namespace Booking.Clients;
 
-//TODO: support FE Base url in the appsettings.
 public class EmailJobService(
     IBackgroundJobClient _jobs,
-    IEmailService _emailService) : IEmailJobService
+    IEmailService _emailService,
+    IAppLinkService _appLinkService) : IEmailJobService
 {
     public async Task EnqueueVerificationEmailAsync(ApplicationUser user, string verificationLink)
     {
@@ -27,9 +28,9 @@ public class EmailJobService(
             {
                 { "USER_NAME", userName },
                 { "VERIFY_LINK", verificationLink },
-                { "HELP_LINK", "http://localhost:3000/help" },
-                { "SUPPORT_LINK", "http://localhost:3000/support" },
-                { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
                 { "AGENCY_NAME", "HotelAgency" }
             }
         );
@@ -52,9 +53,9 @@ public class EmailJobService(
             placeholders: new Dictionary<string, string>
             {
             { "AGENCY_NAME", userName },
-            { "HELP_LINK", "http://localhost:3000/help" },
-            { "SUPPORT_LINK", "http://localhost:3000/support" },
-            { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+            { "HELP_LINK", _appLinkService.GetHelpLink() },
+            { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+            { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
             }
         );
     }
@@ -88,9 +89,9 @@ public class EmailJobService(
                 { "TERTIARY_COLOR", GetThemeColor(hotel.TertiaryColor, "#f8f5ef") },
                 { "VERIFY_LINK", verificationLink },
                 { "SUPPORT_EMAIL", "support@hotelagency.com" },
-                { "HELP_LINK", "http://localhost:3000/help" },
-                { "SUPPORT_LINK", "http://localhost:3000/support" },
-                { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
                 { "CURRENT_YEAR", DateTime.UtcNow.Year.ToString() }
             });
 

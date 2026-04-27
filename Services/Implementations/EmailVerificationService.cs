@@ -6,7 +6,8 @@ using Booking.Interfaces.Services;
 namespace Booking.Services
 {
     public class EmailVerificationService(
-        IAuthRepository _authRepository) : IEmailVerificationService
+        IAuthRepository _authRepository,
+        IAppLinkService _appLinkService) : IEmailVerificationService
     {
         public async Task<string> GenerateVerificationLinkAsync(ApplicationUser user)
         {
@@ -23,7 +24,7 @@ namespace Booking.Services
                 IsUsed = false
             });
 
-            return $"http://localhost:3000/verify-email?userId={user.Id}&token={Uri.EscapeDataString(rawToken)}";
+            return _appLinkService.BuildVerifyEmailLink(user.Id, rawToken);
         }
     }
 }

@@ -20,6 +20,7 @@ namespace Booking.Services
         IEmailVerificationService _emailVerificationService,
         IEmailService _emailService,
         IEmailJobService _emailJobService,
+        IAppLinkService _appLinkService,
         IRegistrationStrategyFactory _strategyFactory,
         IProfileStrategyFactory _profileFactory,
         IAgencyRepository _agencyRepository) : IAuthService
@@ -179,9 +180,9 @@ namespace Booking.Services
                     { "USER_NAME", userName },
                     { "RESET_CODE", resetCode.Code },
                     { "EXPIRATION_TIME", "15 minutes" },
-                    { "HELP_LINK", "http://localhost:3000/help" },
-                    { "SUPPORT_LINK", "http://localhost:3000/support" },
-                    { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+                    { "HELP_LINK", _appLinkService.GetHelpLink() },
+                    { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                    { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
                     { "AGENCY_NAME", "HotelAgency" }
                 });
 

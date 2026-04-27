@@ -5,8 +5,8 @@ using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Models;
-using Booking.Utils;
-
+using Booking.Configurations;
+using Microsoft.Extensions.Options;
 namespace Booking.Services
 {
     public class TeamManagementService(
@@ -14,8 +14,11 @@ namespace Booking.Services
         IHotelRepository _hotelRepository,
         IAuthRepository _authRepository,
         IEmailJobService _emailJobService,
+        IOptions<AuthSettings> authSettings,
         IEmailVerificationService _emailVerificationService) : ITeamManagementService
     {
+        private readonly AuthSettings _authSettings = authSettings.Value;
+
         public async Task<PaginatedResponse<TeamMemberResponse>> GetAgencyTeamMembersAsync(
             int agencyId,
             int hotelId,
@@ -76,7 +79,7 @@ namespace Booking.Services
                 UpdatedAt = DateTime.UtcNow
             };
 
-            var createResult = await _teamMemberRepository.CreateAsync(user, AuthConstant.DefaultPassword);
+            var createResult = await _teamMemberRepository.CreateAsync(user, _authSettings.DefaultPassword);
             if (!createResult.Succeeded)
                 throw new TeamMemberCreationFailedException();
 
@@ -85,7 +88,7 @@ namespace Booking.Services
                 throw new TeamMemberCreationFailedException();
 
             var link = await _emailVerificationService.GenerateVerificationLinkAsync(user);
-            await _emailJobService.EnqueueTeamMemberVerificationEmailAsync(user, hotel!, link, AuthConstant.DefaultPassword);
+            await _emailJobService.EnqueueTeamMemberVerificationEmailAsync(user, hotel!, link, _authSettings.DefaultPassword);
 
             return new TeamMemberResponse(user, role);
         }
