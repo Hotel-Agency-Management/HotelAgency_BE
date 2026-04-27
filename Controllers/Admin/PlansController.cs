@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Booking.Constants;
 
 
-namespace Booking.Controllers
+namespace Booking.Controllers.Admin
 {
     [ApiController]
     [Route("api/[controller]")]

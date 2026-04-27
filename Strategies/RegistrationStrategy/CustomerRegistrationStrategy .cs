@@ -1,4 +1,3 @@
-// CustomerRegistrationStrategy.cs
 using Booking.Constants;
 using Booking.DTO;
 using Booking.Exceptions;

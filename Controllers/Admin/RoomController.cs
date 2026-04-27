@@ -5,15 +5,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Booking.Filters;
 
-namespace Booking.Controllers
+
+namespace Booking.Controllers.Admin
 {
     [ApiController]
-    [EnsureAgencyExistsForOwner]
-    [EnsureHotelExistsForOwner]
-    [Route("api/hotels/{hotelId}/rooms")]
+    [Authorize(Roles = $"{Roles.SuperAdmin}")]
+    [EnsureAgencyExistsForAdminAttribute]
+    [EnsureHotelExistsForAdminAttribute]
+    [Route("api/admin/agencies/{agencyId}/hotels/{hotelId}/rooms")]
     public class RoomController(IRoomService _roomService) : ControllerBase
     {
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}")]
         [HttpPost]
         public async Task<IActionResult> CreateRoom(
             [FromRoute] int hotelId,
@@ -26,7 +27,6 @@ namespace Booking.Controllers
             return Ok(room);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}")]
         [HttpGet]
         public async Task<IActionResult> GetRoomsByHotel([FromRoute] int hotelId)
         {
@@ -34,7 +34,6 @@ namespace Booking.Controllers
             return Ok(rooms);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}")]
         [HttpGet("{roomId}")]
         public async Task<IActionResult> GetRoomById(
             [FromRoute] int hotelId,
@@ -44,7 +43,6 @@ namespace Booking.Controllers
             return Ok(room);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}")]
         [HttpPut("{roomId}")]
         public async Task<IActionResult> UpdateRoom(
             [FromRoute] int hotelId,
@@ -58,7 +56,6 @@ namespace Booking.Controllers
             return Ok(updated);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}")]
         [HttpDelete("{roomId}")]
         public async Task<IActionResult> DeleteRoom(
             [FromRoute] int hotelId,

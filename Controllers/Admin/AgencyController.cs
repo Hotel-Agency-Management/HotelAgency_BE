@@ -5,29 +5,26 @@ using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Booking.Controllers
+namespace Booking.Controllers.Admin
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner}")]
-    [EnsureAgencyExistsForOwnerAttribute]
-    [Route("api/agencies")]
+    [Authorize(Roles = $"{Roles.SuperAdmin}")]
+    [EnsureAgencyExistsForAdminAttribute]
+    [Route("api/admin/agencies/{agencyId}")]
     public class AgencyController(
         IAgencyService _agencyService) : ControllerBase
     {
-        [HttpGet("me")]
-        public async Task<IActionResult> GetAgencyProfile()
+        [HttpGet()]
+        public async Task<IActionResult> GetAgencyProfile([FromRoute] int agencyId)
         {
-            
-            var agencyId = FilterHelpers.GetRequiredAgencyId(HttpContext);
             var agency = await _agencyService.GetAgencyProfileAsync(agencyId);
 
             return Ok(new AgencyProfileResponse(agency));
         }
 
         [HttpPatch]
-        public async Task<IActionResult> UpdateAgency([FromBody] UpdateAgencyRequest request)
+        public async Task<IActionResult> UpdateAgency([FromRoute] int agencyId, [FromBody] UpdateAgencyRequest request)
         {
-            var agencyId = FilterHelpers.GetRequiredAgencyId(HttpContext);
             await _agencyService.UpdateAgencyAsync(agencyId, request);
             return Ok(new AgencyResponseDto
             {
@@ -36,9 +33,8 @@ namespace Booking.Controllers
         }
 
         [HttpPatch("update-logo")]
-        public async Task<IActionResult> UpdateAgencyLogo([FromForm] IFormFile file)
+        public async Task<IActionResult> UpdateAgencyLogo([FromRoute] int agencyId, [FromForm] IFormFile file)
         {
-            var agencyId = FilterHelpers.GetRequiredAgencyId(HttpContext);
             await _agencyService.UpdateAgencyLogoAsync(agencyId, file);
             return Ok(new AgencyResponseDto
             {

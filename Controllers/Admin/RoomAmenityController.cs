@@ -4,12 +4,12 @@ using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Booking.Controllers
+namespace Booking.Controllers.Admin
 {
     [ApiController]
     [Authorize(Roles = $"{Roles.SuperAdmin}")]
     [Route("api/admin/room-amenities")]
-    public class RoomAmenityAdminController(IRoomAmenityService _amenityService) : ControllerBase
+    public class RoomAmenityController(IRoomAmenityService _amenityService) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> CreateAmenity([FromBody] CreateRoomAmenityRequest request)

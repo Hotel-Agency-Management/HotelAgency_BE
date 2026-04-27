@@ -2,9 +2,9 @@ namespace Booking.Enums
 {
     public enum UserRole
     {
-        SUPER_ADMIN = 1,         // platform owner
+        SUPER_ADMIN = 1,       
         AGENCY_OWNER = 2,
-        PROPERTY_MANAGER = 3,    // Hotel manager 
+        PROPERTY_MANAGER = 3,  
         FRONT_DESK_STAFF = 4,
         HOUSEKEEPING_MANAGER = 5,
         HOUSEKEEPING_EMPLOYEE = 6,

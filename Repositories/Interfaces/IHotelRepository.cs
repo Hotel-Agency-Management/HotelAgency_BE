@@ -9,6 +9,5 @@ namespace Booking.Interfaces.Repositories
         Task<Hotel?> GetByIdAndAgencyIdAsync(int hotelId, int agencyId);
         Task<IEnumerable<Hotel>> GetAllByAgencyIdAsync(int agencyId);
         Task<Hotel> UpdateAsync(Hotel hotel);
-        Task DeleteAsync(Hotel hotel);
     }
 }

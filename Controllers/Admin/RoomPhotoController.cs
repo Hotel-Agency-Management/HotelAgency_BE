@@ -5,21 +5,21 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Booking.Filters;
 
-namespace Booking.Controllers
+
+namespace Booking.Controllers.Admin
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
-    [EnsureAgencyExistsForOwner]
-    [EnsureHotelExistsForOwner]
-    [Route("api/hotels/{hotelId}/rooms/{roomId}/photos")]
+    [Authorize(Roles = $"{Roles.SuperAdmin}")]
+    [EnsureAgencyExistsForAdminAttribute]
+    [EnsureHotelExistsForAdminAttribute]
+
+    [Route("api/admin/agencies/{agencyId}/hotels/{hotelId}/rooms/{roomId}/photos")]
     public class RoomPhotoController(IRoomPhotoService _roomPhotoService) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> UploadPhotos(
-            [FromRoute] int hotelId,
             [FromRoute] int roomId,
-            [FromForm] UploadRoomPhotosRequest request
-        )
+            [FromForm] UploadRoomPhotosRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -29,10 +29,7 @@ namespace Booking.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPhotos(
-            [FromRoute] int hotelId,
-            [FromRoute] int roomId
-        )
+        public async Task<IActionResult> GetPhotos([FromRoute] int roomId)
         {
             var photos = await _roomPhotoService.GetPhotosByRoomIdAsync(roomId);
             return Ok(photos);
@@ -40,10 +37,8 @@ namespace Booking.Controllers
 
         [HttpDelete("{photoId}")]
         public async Task<IActionResult> DeletePhoto(
-            [FromRoute] int hotelId,
             [FromRoute] int roomId,
-            [FromRoute] int photoId
-        )
+            [FromRoute] int photoId)
         {
             await _roomPhotoService.DeletePhotoAsync(roomId, photoId);
             return NoContent();

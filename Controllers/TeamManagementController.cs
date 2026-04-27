@@ -11,9 +11,10 @@ namespace Booking.Controllers.AgencyOwner
 {
     [ApiController]
     [Authorize(Roles = Roles.AgencyOwner)]
+    [EnsureAgencyExistsForOwner]
     [EnsureHotelExistsForOwnerAttribute]
     [Route("api/hotels/{hotelId:int}/team-members")]
-    public class TeamMemberController(
+    public class TeamManagementController(
         ITeamManagementService _teamMemberService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
@@ -23,17 +24,12 @@ namespace Booking.Controllers.AgencyOwner
             [FromQuery] TeamMemberListRequest request)
         {
             var agencyOwner = await _userManager.GetUserAsync(User);
-            if (agencyOwner is null)
-                return Unauthorized(Messages.Unauthorized);
-
-            if (agencyOwner.AgencyId is null)
-                return BadRequest("AgencyId is missing.");
 
             var result = await _teamMemberService.GetAgencyTeamMembersAsync(
-                agencyId:agencyOwner.AgencyId.Value,
-                hotelId:hotelId,
-                excludedUserId:agencyOwner.Id,
-                request:request);
+                agencyId: agencyOwner!.AgencyId!.Value,
+                hotelId: hotelId,
+                excludedUserId: agencyOwner.Id,
+                request: request);
             return Ok(result);
         }
 
@@ -43,14 +39,9 @@ namespace Booking.Controllers.AgencyOwner
             [FromBody] CreateTeamMemberRequest request)
         {
             var agencyOwner = await _userManager.GetUserAsync(User);
-            if (agencyOwner is null)
-                return Unauthorized(Messages.Unauthorized);
-
-            if (agencyOwner.AgencyId is null)
-                return BadRequest("AgencyId is missing.");
 
             var result = await _teamMemberService.CreateAgencyTeamMemberAsync(
-                agencyOwner.AgencyId.Value,
+                agencyOwner!.AgencyId!.Value,
                 hotelId,
                 request);
 
@@ -64,14 +55,9 @@ namespace Booking.Controllers.AgencyOwner
             [FromBody] AssignTeamMemberRoleRequest request)
         {
             var agencyOwner = await _userManager.GetUserAsync(User);
-            if (agencyOwner is null)
-                return Unauthorized(Messages.Unauthorized);
-
-            if (agencyOwner.AgencyId is null)
-                return BadRequest("AgencyId is missing.");
 
             var result = await _teamMemberService.AssignAgencyTeamMemberRoleAsync(
-                agencyOwner.AgencyId.Value,
+                agencyOwner!.AgencyId!.Value,
                 hotelId,
                 teamMemberId,
                 request);
@@ -92,14 +78,9 @@ namespace Booking.Controllers.AgencyOwner
                 return BadRequest("SourceHotelId must match the route hotelId.");
 
             var agencyOwner = await _userManager.GetUserAsync(User);
-            if (agencyOwner is null)
-                return Unauthorized(Messages.Unauthorized);
-
-            if (agencyOwner.AgencyId is null)
-                return BadRequest("AgencyId is missing.");
 
             var result = await _teamMemberService.TransferAgencyTeamMemberAsync(
-                agencyOwner.AgencyId.Value,
+                agencyOwner!.AgencyId!.Value,
                 teamMemberId,
                 request);
 

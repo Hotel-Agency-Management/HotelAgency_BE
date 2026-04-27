@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 namespace Booking.Data.Seeders
 {
     public static class SeedManager
@@ -7,16 +8,13 @@ namespace Booking.Data.Seeders
         {
             using var scope = services.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-            await RoleSeeder.SeedAsync(roleManager);
-
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await context.Database.MigrateAsync();
+
+            await RoleSeeder.SeedAsync(roleManager);
             await PlanSeeder.SeedAsync(context);
-
-            var RoomsType = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await RoomTypeSeeder.SeedAsync(RoomsType);
-
-            var RoomsAmenity = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await RoomAmenitySeeder.SeedAsync(RoomsAmenity);
+            await RoomTypeSeeder.SeedAsync(context);
+            await RoomAmenitySeeder.SeedAsync(context);
         }
     }
 }

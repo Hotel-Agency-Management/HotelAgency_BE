@@ -32,11 +32,5 @@ namespace Booking.Repositories
             await _context.SaveChangesAsync();
             return hotel;
         }
-
-        public async Task DeleteAsync(Hotel hotel)
-        {
-            _context.Hotels.Remove(hotel);
-            await _context.SaveChangesAsync();
-        }
     }
 }

@@ -12,23 +12,15 @@ namespace Booking.Filters
     }
 
     public class EnsureHotelExistsForAdminFilter(
-        IAgencyRepository _agencyRepository,
         IHotelRepository _hotelRepository) : IAsyncActionFilter
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (!FilterHelpers.TryGetId(context, "agencyId", Messages.AgencyIdMissing, out int agencyId))
+            if (!FilterHelpers.TryGetRouteId(context, "agencyId", Messages.AgencyIdMissing, out int agencyId))
                 return;
 
-            if (!FilterHelpers.TryGetId(context, "hotelId", Messages.HotelIdMissing, out int hotelId))
+            if (!FilterHelpers.TryGetRouteId(context, "hotelId", Messages.HotelIdMissing, out int hotelId))
                 return;
-
-            var agency = await _agencyRepository.GetByIdAsync(agencyId);
-            if (agency is null)
-            {
-                context.Result = FilterHelpers.NotFound($"Agency with id '{agencyId}' was not found.");
-                return;
-            }
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             if (hotel is null)

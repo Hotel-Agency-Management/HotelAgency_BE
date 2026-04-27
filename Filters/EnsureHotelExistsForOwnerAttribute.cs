@@ -1,4 +1,3 @@
-// EnsureHotelExistsForOwnerFilter.cs
 using Booking.Constants;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
@@ -37,6 +36,7 @@ namespace Booking.Filters
                 return;
             }
 
+            
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             if (hotel is null)
             {

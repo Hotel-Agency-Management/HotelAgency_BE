@@ -17,7 +17,7 @@ namespace Booking.Services
         {
             var logoUrl = await _blobStorageService.UploadAsync(request.Logo);
             var coverPath = await _blobStorageService.UploadAsync(request.CoverPhoto);
-            
+
             var manager = await _authRepository.FindByIdAsync(request.ManagerUserId);
             if (manager is null)
                 throw new ManagerUserNotFoundException(request.ManagerUserId);
@@ -93,17 +93,6 @@ namespace Booking.Services
 
             var updated = await _hotelRepository.UpdateAsync(hotel);
             return new HotelResponse(updated);
-        }
-
-        public async Task DeleteHotelAsync(int hotelId)
-        {
-            var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                ?? throw new HotelNotFoundException(hotelId);
-
-            await _blobStorageService.DeleteAsync(hotel.LogoUrl);
-            await _blobStorageService.DeleteAsync(hotel.CoverPath);
-
-            await _hotelRepository.DeleteAsync(hotel);
         }
     }
 }

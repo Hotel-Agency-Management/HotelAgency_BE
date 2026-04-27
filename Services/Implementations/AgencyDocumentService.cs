@@ -41,17 +41,23 @@ namespace Booking.Services
             var existing = await _documentRepository.GetByIdAsync(documentId)
                 ?? throw new AgencyDocumentNotFoundException(documentId);
 
-            await _blobStorageService.DeleteAsync(existing.FilePath);
+            if (dto.File != null)
+            {
+                await _blobStorageService.DeleteAsync(existing.FilePath);
 
-            var newFileName = await _blobStorageService.UploadAsync(dto.File);
+                var newFileName = await _blobStorageService.UploadAsync(dto.File);
 
-            existing.FilePath = newFileName;
-            existing.UploadedAt = DateTime.UtcNow;
+                existing.FilePath = newFileName;
+                existing.UploadedAt = DateTime.UtcNow;
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.DocumentType))
+            {
                 existing.DocumentType = dto.DocumentType;
+            }
 
             var updated = await _documentRepository.UpdateAsync(existing);
+
             return new AgencyDocumentResponseDto(updated);
         }
 

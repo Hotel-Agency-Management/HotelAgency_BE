@@ -65,4 +65,20 @@ namespace Booking.Exceptions
         {
         }
     }
+
+    public class AgencyIdMissingException : AgencyException
+    {
+        public AgencyIdMissingException()
+            : base("AgencyId is missing.", StatusCodes.Status400BadRequest)
+        {
+        }
+    }
+
+    public class AgencyAccessDeniedException : AgencyException
+    {
+        public AgencyAccessDeniedException(int agencyId)
+            : base($"You do not have permission to access agency with id '{agencyId}'.", (int)HttpStatusCode.Forbidden)
+        {
+        }
+    }
 }

@@ -5,21 +5,22 @@ using Booking.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Booking.Filters;
 
-namespace Booking.Controllers
+namespace Booking.Controllers.Admin
 {
 
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
-    [EnsureAgencyExistsForOwner]
-    [EnsureHotelExistsForOwnerAttribute]
-    [Route("api/hotels/{hotelId}/facilities")]
+    [Authorize(Roles = $"{Roles.SuperAdmin}")]
+    [EnsureAgencyExistsForAdminAttribute]
+    [EnsureHotelExistsForAdminAttribute]
+    [Route("api/admin/agencies/{agencyId}/hotels/{hotelId}/facilities")]
     public class FacilityController(IFacilityService _facilityService) : ControllerBase
     {
-
         [HttpPost]
         public async Task<IActionResult> CreateFacility(
+            [FromRoute] int agencyId,
             [FromRoute] int hotelId,
-            [FromBody] CreateFacilityRequest request)
+            [FromBody] CreateFacilityRequest request
+        )
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -29,7 +30,10 @@ namespace Booking.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFacilitiesByHotel([FromRoute] int hotelId)
+        public async Task<IActionResult> GetFacilitiesByHotel(
+            [FromRoute] int agencyId,
+            [FromRoute] int hotelId
+        )
         {
             var facilities = await _facilityService.GetFacilitiesByHotelIdAsync(hotelId);
             return Ok(facilities);
@@ -38,6 +42,7 @@ namespace Booking.Controllers
         [HttpGet("{facilityId}")]
         [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> GetFacilityById(
+            [FromRoute] int agencyId,
             [FromRoute] int hotelId,
             [FromRoute] int facilityId)
         {
@@ -48,6 +53,7 @@ namespace Booking.Controllers
         [HttpPut("{facilityId}")]
         [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> UpdateFacility(
+            [FromRoute] int agencyId,
             [FromRoute] int hotelId,
             [FromRoute] int facilityId,
             [FromBody] UpdateFacilityRequest request)
@@ -62,6 +68,7 @@ namespace Booking.Controllers
         [HttpDelete("{facilityId}")]
         [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> DeleteFacility(
+            [FromRoute] int agencyId,
             [FromRoute] int hotelId,
             [FromRoute] int facilityId)
         {
