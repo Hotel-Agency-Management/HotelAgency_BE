@@ -21,6 +21,26 @@ namespace Booking.Filters
             return false;
         }
 
+        internal static bool TryGetRouteId(ActionExecutingContext context, string key, string errorMessage, out int id)
+        {
+            if (context.ActionArguments.TryGetValue(key, out var actionValue) && actionValue is int parsedActionId)
+            {
+                id = parsedActionId;
+                return true;
+            }
+
+            if (context.RouteData.Values.TryGetValue(key, out var routeValue)
+                && int.TryParse(routeValue?.ToString(), out var parsedRouteId))
+            {
+                id = parsedRouteId;
+                return true;
+            }
+
+            context.Result = new BadRequestObjectResult(errorMessage);
+            id = 0;
+            return false;
+        }
+
         internal static int GetRequiredAgencyId(HttpContext httpContext)
         {
             if (httpContext.Items.TryGetValue(AgencyIdItemKey, out var value) && value is int agencyId)

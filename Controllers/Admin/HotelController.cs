@@ -27,9 +27,10 @@ namespace Booking.Controllers.Admin
             return Ok(hotel);
         }
 
-        [EnsureHotelExistsForAdmin]
+
         [HttpGet]
-        public async Task<IActionResult> GetHotelsByAgency([FromRoute] int agencyId)
+        public async Task<IActionResult> GetHotelsByAgency(
+            [FromRoute] int agencyId)
         {
             var hotels = await _hotelService.GetHotelsByAgencyIdAsync(agencyId);
             return Ok(hotels);

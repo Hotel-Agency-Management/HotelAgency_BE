@@ -36,7 +36,9 @@ namespace Booking.Controllers
         }
 
         [HttpGet("{facilityId}")]
+        [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> GetFacilityById(
+            [FromRoute] int hotelId,
             [FromRoute] int facilityId)
         {
             var facility = await _facilityService.GetFacilityByIdAsync(facilityId);
@@ -44,7 +46,9 @@ namespace Booking.Controllers
         }
 
         [HttpPut("{facilityId}")]
+        [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> UpdateFacility(
+            [FromRoute] int hotelId,
             [FromRoute] int facilityId,
             [FromBody] UpdateFacilityRequest request)
         {
@@ -56,7 +60,9 @@ namespace Booking.Controllers
         }
 
         [HttpDelete("{facilityId}")]
+        [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> DeleteFacility(
+            [FromRoute] int hotelId,
             [FromRoute] int facilityId)
         {
             await _facilityService.DeleteFacilityAsync(facilityId);

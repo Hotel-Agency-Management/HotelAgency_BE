@@ -17,8 +17,8 @@ namespace Booking.Filters
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (!context.ActionArguments.TryGetValue("agencyId", out var value) || value is not int agencyId)
-                throw new AgencyIdMissingException();
+            if (!FilterHelpers.TryGetRouteId(context, "agencyId", "AgencyId is missing.", out int agencyId))
+                return;
 
             var agency = await _agencyRepository.GetByIdAsync(agencyId);
             if (agency is null)

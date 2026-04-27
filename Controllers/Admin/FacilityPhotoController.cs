@@ -11,6 +11,7 @@ namespace Booking.Controllers.Admin
     [Authorize(Roles = $"{Roles.SuperAdmin}")]
     [EnsureAgencyExistsForAdminAttribute]
     [EnsureHotelExistsForAdminAttribute]
+    [EnsureFacilityBelongsToHotel]
     [Route("api/admin/agencies/{agencyId}/hotels/{hotelId}/facilities/{facilityId}/photos")]
     public class FacilityPhotoController(IFacilityPhotoService _photoService) : ControllerBase
     {

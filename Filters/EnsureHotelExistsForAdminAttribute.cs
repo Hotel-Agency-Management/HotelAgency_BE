@@ -16,10 +16,10 @@ namespace Booking.Filters
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (!FilterHelpers.TryGetId(context, "agencyId", Messages.AgencyIdMissing, out int agencyId))
+            if (!FilterHelpers.TryGetRouteId(context, "agencyId", Messages.AgencyIdMissing, out int agencyId))
                 return;
 
-            if (!FilterHelpers.TryGetId(context, "hotelId", Messages.HotelIdMissing, out int hotelId))
+            if (!FilterHelpers.TryGetRouteId(context, "hotelId", Messages.HotelIdMissing, out int hotelId))
                 return;
 
             // Agency existence is validated by the controller-level agency filter.

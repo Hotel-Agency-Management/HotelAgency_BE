@@ -39,6 +39,9 @@ public static class Messages
     //filter
     public const string HotelIdMissing = "HotelId is missing.";
     public const string AgencyIdMissing = "AgencyId is missing.";
+    public const string FacilityIdMissing = "FacilityId is missing.";
     public const string HotelNotFound = "Hotel with id '{0}' was not found.";
     public const string HotelForbidden = "You do not have permission to access this hotel.";
+    public const string FacilityNotFound = "Facility with id '{0}' was not found.";
+    public const string FacilityForbidden = "Facility with id '{0}' does not belong to hotel with id '{1}'.";
 }

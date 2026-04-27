@@ -21,6 +21,9 @@ using System.Text.Json.Serialization;
 using Booking.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("DefaultConnection is not configured.");
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 36));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -37,8 +40,8 @@ builder.Services.AddControllers()
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+        connectionString,
+        serverVersion
     )
 );
 
@@ -135,7 +138,7 @@ builder.Services.AddScoped<IEmailJobService, EmailJobService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 // Hangfire with MySQL
-var hangfireConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
+var hangfireConnection = connectionString;
 
 builder.Services.AddHangfire(config =>
     config
