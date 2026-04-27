@@ -10,16 +10,12 @@ namespace Booking.Services
 {
     public class RoomService(
         IRoomRepository _roomRepository,
-        IHotelRepository _hotelRepository,
         IBlobStorageService _blobStorageService,
         IRoomAmenityRepository _roomAmenityRepository,
         IRoomTypeRepository _roomTypeRepository) : IRoomService
     {
         public async Task<RoomResponse> CreateRoomAsync(int hotelId, CreateRoomRequest request)
         {
-            //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-               // ?? throw new HotelNotFoundException(hotelId);
-
             var roomType = await _roomTypeRepository.GetByIdAsync(request.RoomTypeId)
                 ?? throw new RoomTypeNotInHotelException();
             var CoverPhotoUrl = await _blobStorageService.UploadAsync(request.coverPhoto);
@@ -70,9 +66,6 @@ namespace Booking.Services
 
         public async Task<IEnumerable<ListRoomResponse>> GetRoomsByHotelIdAsync(int hotelId)
         {
-            //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                //?? throw new HotelNotFoundException(hotelId);
-
             var rooms = await _roomRepository.GetAllByHotelIdAsync(hotelId);
             return rooms.Select(r => new ListRoomResponse(r));
         }

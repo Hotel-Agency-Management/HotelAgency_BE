@@ -4,7 +4,6 @@ using Booking.Models;
 
 namespace Booking.Clients;
 
-//TODO: support FE Base url in the appsettings.
 public class EmailJobService(
     IBackgroundJobClient _jobs,
     IEmailService _emailService) : IEmailJobService

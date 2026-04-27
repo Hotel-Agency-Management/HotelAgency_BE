@@ -34,7 +34,6 @@ namespace Booking.Data
             {
                   base.OnModelCreating(builder);
 
-                  // ApplicationUser
                   builder.Entity<ApplicationUser>(entity =>
                   {
                         entity.ToTable("Users");
@@ -62,7 +61,6 @@ namespace Booking.Data
                         .IsRequired(false);
                   });
 
-                  // Agency
                   builder.Entity<Agency>(entity =>
                   {
                         entity.ToTable("Agencies");
@@ -99,13 +97,11 @@ namespace Booking.Data
                         .HasConversion<string>()
                         .HasMaxLength(30);
 
-                        // Agency
                         entity.HasOne(a => a.Owner)
                         .WithMany()
                         .HasForeignKey(a => a.OwnerId)
                         .OnDelete(DeleteBehavior.Cascade);
 
-                        // Agency → Reviewer (optional admin user)
                         entity.HasOne(a => a.Reviewer)
                         .WithMany()
                         .HasForeignKey(a => a.ReviewedBy)
@@ -113,7 +109,6 @@ namespace Booking.Data
                         .IsRequired(false);
                   });
 
-                  // AgencyDocument
                   builder.Entity<AgencyDocument>(entity =>
                   {
                         entity.ToTable("AgencyDocuments");
@@ -132,7 +127,6 @@ namespace Booking.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
-                  // RefreshToken
                   builder.Entity<RefreshToken>(entity =>
                   {
                         entity.ToTable("RefreshTokens");
@@ -150,7 +144,6 @@ namespace Booking.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
-                  // PasswordResetCode 
                   builder.Entity<PasswordResetCode>(entity =>
                   {
                         entity.ToTable("PasswordResetCodes");
@@ -165,7 +158,6 @@ namespace Booking.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
-                  // EmailVerificationToken
                   builder.Entity<EmailVerificationToken>(entity =>
                   {
                         entity.ToTable("EmailVerificationTokens");
@@ -183,7 +175,6 @@ namespace Booking.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
-                  //plan
                   builder.Entity<Plan>(e =>
                   {
                         e.HasKey(p => p.Id);
@@ -192,7 +183,6 @@ namespace Booking.Data
                         e.Property(p => p.Price).HasColumnType("decimal(18,2)");
                   });
 
-                  //PlanFeature
                   builder.Entity<PlanFeature>(e =>
                   {
                         e.HasKey(f => f.Id);
@@ -203,7 +193,6 @@ namespace Booking.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
-                  //FeatureLimit 
                   builder.Entity<FeatureLimit>(e =>
                   {
                         e.HasKey(l => l.Id);
@@ -211,7 +200,8 @@ namespace Booking.Data
                         .WithMany(f => f.FeatureLimits)
                         .HasForeignKey(l => l.FeatureId);
                   });
-                  //Facility
+
+
                   builder.Entity<Facility>(entity =>
                   {
                         entity.ToTable("Facilities");
@@ -236,13 +226,11 @@ namespace Booking.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
-                  //Room Type 
                   builder.Entity<RoomType>(entity =>
                   {
                         entity.HasIndex(r => r.Name).IsUnique();
                   });
 
-                  // Room
                   builder.Entity<Room>(entity =>
                   {
                         entity.HasOne(r => r.Hotel)
@@ -277,7 +265,6 @@ namespace Booking.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
-                  // Room Amenity
                   builder.Entity<RoomAmenity>(entity =>
                   {
                         entity.HasIndex(a => a.Name)

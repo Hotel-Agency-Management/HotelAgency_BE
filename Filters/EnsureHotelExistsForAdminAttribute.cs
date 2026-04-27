@@ -22,8 +22,6 @@ namespace Booking.Filters
             if (!FilterHelpers.TryGetRouteId(context, "hotelId", Messages.HotelIdMissing, out int hotelId))
                 return;
 
-            // Agency existence is validated by the controller-level agency filter.
-            // This filter only ensures the hotel exists and belongs to that agency.
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             if (hotel is null)
             {
