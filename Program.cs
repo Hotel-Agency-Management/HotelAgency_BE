@@ -19,8 +19,6 @@ using Booking.Strategies;
 using Booking.Factories;
 using System.Text.Json.Serialization;
 using Booking.Converters;
-using Booking.Repositories.Implementations;
-using Booking.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +58,8 @@ builder.Services
 // JWT
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<AppLinksOptions>(
+    builder.Configuration.GetSection("AppLinks"));
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
 
@@ -96,6 +96,7 @@ builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomPhotoRepository, RoomPhotoRepository>();
 builder.Services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
+builder.Services.AddScoped<ITeamManagementRepository, TeamManagementRepository>();
 
 
 //Services
@@ -111,12 +112,15 @@ builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
 builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
+builder.Services.AddScoped<ITeamManagementService, TeamManagementService>();
+builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
+builder.Services.AddSingleton<IAppLinkService, AppLinkService>();
+
 
 
 // Strategies
 builder.Services.AddScoped<CustomerRegistrationStrategy>();
 builder.Services.AddScoped<AgencyOwnerRegistrationStrategy>();
-builder.Services.AddScoped<BaseProfileStrategy>();
 builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
 builder.Services.AddScoped<HotelStaffProfileStrategy>();
 
@@ -156,6 +160,9 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+    
+builder.Services.Configure<AuthSettings>(
+    builder.Configuration.GetSection("AuthSettings"));
 
 builder.Services.AddHangfireServer(options => options.WorkerCount = 2);
 

@@ -61,4 +61,10 @@ namespace Booking.Exceptions
             : base($"Email '{email}' is not confirmed.", (int)HttpStatusCode.Forbidden) { }
     }
 
+    public class UserAccountIsArchived: AuthException
+    {
+        public UserAccountIsArchived(string message)
+            : base(message, (int)HttpStatusCode.Forbidden) { }
+    }
+
 }

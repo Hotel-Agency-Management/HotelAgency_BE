@@ -1,13 +1,14 @@
 using Booking.Constants;
+using Booking.Interfaces.Services;
 using Hangfire;
 using Booking.Models;
 
 namespace Booking.Clients;
 
-//TODO: support FE Base url in the appsettings.
 public class EmailJobService(
     IBackgroundJobClient _jobs,
-    IEmailService _emailService) : IEmailJobService
+    IEmailService _emailService,
+    IAppLinkService _appLinkService) : IEmailJobService
 {
     public async Task EnqueueVerificationEmailAsync(ApplicationUser user, string verificationLink)
     {
@@ -27,9 +28,9 @@ public class EmailJobService(
             {
                 { "USER_NAME", userName },
                 { "VERIFY_LINK", verificationLink },
-                { "HELP_LINK", "http://localhost:3000/help" },
-                { "SUPPORT_LINK", "http://localhost:3000/support" },
-                { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
                 { "AGENCY_NAME", "HotelAgency" }
             }
         );
@@ -52,11 +53,50 @@ public class EmailJobService(
             placeholders: new Dictionary<string, string>
             {
             { "AGENCY_NAME", userName },
-            { "HELP_LINK", "http://localhost:3000/help" },
-            { "SUPPORT_LINK", "http://localhost:3000/support" },
-            { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+            { "HELP_LINK", _appLinkService.GetHelpLink() },
+            { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+            { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
             }
         );
+    }
+
+    public async Task EnqueueTeamMemberVerificationEmailAsync(ApplicationUser user, Hotel hotel, string verificationLink, string password)
+    {
+        var userName = $"{user.FirstName} {user.LastName}".Trim();
+        if (string.IsNullOrWhiteSpace(userName))
+            userName = "User";
+
+        var plainText =
+            $"Hi {userName}, you have been invited to {hotel.Name}. " +
+            $"Verify your email: {verificationLink}. " +
+            $"Email: {user.Email}. Temporary password: {password}";
+
+        var template = await _emailService.LoadTemplateAsync(EmailTemplateFiles.HotelInvitation);
+        var html = RenderTemplate(
+            template,
+            new Dictionary<string, string>
+            {
+                { "AGENCY_NAME", hotel.Name },
+                { "HOTEL_NAME", hotel.Name },
+                { "HOTEL_TAGLINE", "Management Platform" },
+                { "USER_NAME", userName },
+                { "USER_EMAIL", user.Email ?? string.Empty },
+                { "GUEST_NAME", userName },
+                { "GUEST_EMAIL", user.Email ?? string.Empty },
+                { "TEMP_PASSWORD", password },
+                { "PRIMARY_COLOR", GetThemeColor(hotel.PrimaryColor, "#173f3a") },
+                { "SECONDARY_COLOR", GetThemeColor(hotel.SecondaryColor, "#d8b879") },
+                { "TERTIARY_COLOR", GetThemeColor(hotel.TertiaryColor, "#f8f5ef") },
+                { "VERIFY_LINK", verificationLink },
+                { "SUPPORT_EMAIL", "support@hotelagency.com" },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
+                { "CURRENT_YEAR", DateTime.UtcNow.Year.ToString() }
+            });
+
+        _jobs.Enqueue<IEmailService>(svc =>
+            svc.SendEmailAsync(user.Email!, $"You have been invited to {hotel.Name}", plainText, html));
     }
 
     private async Task EnqueueAsync(
@@ -81,5 +121,10 @@ public class EmailJobService(
             template,
             (current, kv) => current.Replace("{{" + kv.Key + "}}", kv.Value)
         );
+    }
+
+    private static string GetThemeColor(string color, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(color) ? fallback : color.Trim();
     }
 }

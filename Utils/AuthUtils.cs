@@ -17,5 +17,7 @@ namespace Booking.Utils
             var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(token));
             return Convert.ToHexString(bytes);
         }
+
+        
     }
 }

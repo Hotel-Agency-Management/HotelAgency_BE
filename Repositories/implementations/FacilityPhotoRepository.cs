@@ -3,7 +3,7 @@ using Booking.Interfaces.Repositories;
 using Booking.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Booking.Repositories.Implementations
+namespace Booking.Repositories
 {
     public class FacilityPhotoRepository(ApplicationDbContext _context) : IFacilityPhotoRepository
     {

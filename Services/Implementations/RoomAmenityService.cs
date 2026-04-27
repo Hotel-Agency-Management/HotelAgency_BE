@@ -5,7 +5,7 @@ using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Models;
 
-namespace Booking.Services.Implementations
+namespace Booking.Services
 {
     public class RoomAmenityService(
         IRoomAmenityRepository _amenityRepository) : IRoomAmenityService

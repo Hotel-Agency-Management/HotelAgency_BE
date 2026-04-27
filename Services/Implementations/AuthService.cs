@@ -17,8 +17,10 @@ namespace Booking.Services
     public class AuthService(
         IAuthRepository _authRepository,
         IJwtService _jwtService,
+        IEmailVerificationService _emailVerificationService,
         IEmailService _emailService,
         IEmailJobService _emailJobService,
+        IAppLinkService _appLinkService,
         IRegistrationStrategyFactory _strategyFactory,
         IProfileStrategyFactory _profileFactory,
         IAgencyRepository _agencyRepository) : IAuthService
@@ -178,9 +180,9 @@ namespace Booking.Services
                     { "USER_NAME", userName },
                     { "RESET_CODE", resetCode.Code },
                     { "EXPIRATION_TIME", "15 minutes" },
-                    { "HELP_LINK", "http://localhost:3000/help" },
-                    { "SUPPORT_LINK", "http://localhost:3000/support" },
-                    { "PRIVACY_LINK", "http://localhost:3000/privacy" },
+                    { "HELP_LINK", _appLinkService.GetHelpLink() },
+                    { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                    { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
                     { "AGENCY_NAME", "HotelAgency" }
                 });
 
@@ -265,25 +267,8 @@ namespace Booking.Services
             if (user.EmailConfirmed)
                 return;
 
-            await _authRepository.DeleteExistingEmailVerificationTokensAsync(user.Id);
-
-            var rawToken = AuthUtils.GenerateSecureToken();
-            var hashedToken = AuthUtils.HashToken(rawToken);
-
-            var verificationToken = new EmailVerificationToken
-            {
-                UserId = user.Id,
-                TokenHash = hashedToken,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-                IsUsed = false
-            };
-
-            await _authRepository.SaveEmailVerificationTokenAsync(verificationToken);
-
-            var verificationLink =
-                $"http://localhost:3000/verify-email?userId={user.Id}&token={Uri.EscapeDataString(rawToken)}";
-
-            await _emailJobService.EnqueueVerificationEmailAsync(user, verificationLink);
+            var link = await _emailVerificationService.GenerateVerificationLinkAsync(user);
+            await _emailJobService.EnqueueVerificationEmailAsync(user, link);
         }
 
         public async Task VerifyEmailAsync(int userId, string token)
@@ -321,8 +306,7 @@ namespace Booking.Services
 
         public Task<BaseProfileResponseDto> GetProfileAsync(ApplicationUser user, string role)
         {
-            var strategy = _profileFactory.Create(role);
-            return strategy.BuildProfileAsync(user);
+            return _profileFactory.BuildProfileAsync(role, user);
         }
 
     }
