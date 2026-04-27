@@ -16,8 +16,10 @@ namespace Booking.Controllers
     {
         [HttpPost]
         public async Task<IActionResult> UploadPhotos(
+            [FromRoute] int hotelId,
             [FromRoute] int roomId,
-            [FromForm] UploadRoomPhotosRequest request)
+            [FromForm] UploadRoomPhotosRequest request
+        )
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -27,7 +29,10 @@ namespace Booking.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPhotos([FromRoute] int roomId)
+        public async Task<IActionResult> GetPhotos(
+            [FromRoute] int hotelId,
+            [FromRoute] int roomId
+        )
         {
             var photos = await _roomPhotoService.GetPhotosByRoomIdAsync(roomId);
             return Ok(photos);
@@ -35,8 +40,10 @@ namespace Booking.Controllers
 
         [HttpDelete("{photoId}")]
         public async Task<IActionResult> DeletePhoto(
+            [FromRoute] int hotelId,
             [FromRoute] int roomId,
-            [FromRoute] int photoId)
+            [FromRoute] int photoId
+        )
         {
             await _roomPhotoService.DeletePhotoAsync(roomId, photoId);
             return NoContent();

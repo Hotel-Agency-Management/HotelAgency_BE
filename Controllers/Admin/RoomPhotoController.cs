@@ -13,7 +13,7 @@ namespace Booking.Controllers.Admin
     [EnsureAgencyExistsForAdminAttribute]
     [EnsureHotelExistsForAdminAttribute]
 
-    [Route("api/agencies/{agencyId}/hotels/{hotelId}/rooms/{roomId}/photos")]
+    [Route("api/admin/agencies/{agencyId}/hotels/{hotelId}/rooms/{roomId}/photos")]
     public class RoomPhotoController(IRoomPhotoService _roomPhotoService) : ControllerBase
     {
         [HttpPost]

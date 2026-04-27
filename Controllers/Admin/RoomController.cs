@@ -12,7 +12,7 @@ namespace Booking.Controllers.Admin
     [Authorize(Roles = $"{Roles.SuperAdmin}")]
     [EnsureAgencyExistsForAdminAttribute]
     [EnsureHotelExistsForAdminAttribute]
-    [Route("api/agencies/{agencyId}/hotels/{hotelId}/rooms")]
+    [Route("api/admin/agencies/{agencyId}/hotels/{hotelId}/rooms")]
     public class RoomController(IRoomService _roomService) : ControllerBase
     {
         [HttpPost]

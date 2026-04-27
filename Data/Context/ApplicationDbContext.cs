@@ -269,6 +269,8 @@ namespace Booking.Data
 
                   builder.Entity<RoomPhoto>(entity =>
                   {
+                        entity.ToTable("RoomPhotos");
+
                         entity.HasOne(p => p.Room)
                         .WithMany(r => r.Photos)
                         .HasForeignKey(p => p.RoomId)
