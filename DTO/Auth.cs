@@ -49,6 +49,7 @@ namespace Booking.DTO
         public string RefreshToken { get; set; } = string.Empty;
         public AgencyStatus? AgencyStatus { get; set; }
         public int? AgencyId { get; set; }
+        public int? HotelId { get; set; }
 
     }
 
