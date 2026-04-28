@@ -58,14 +58,6 @@ namespace Booking.Services
 
                 if (agencyStatus == AgencyStatus.Pending)
                     throw new AgencyUnderReviewException();
-
-                if (!user.HotelId.HasValue)
-                    throw new Exception("HotelId is required.");
-
-                hotel = await _hotelRepository.GetByIdAsync(user.HotelId.Value);
-                if (agency == null)
-                    throw new HotelNotFoundException(user.HotelId.Value);
-
             }
 
             if (role != Roles.Customer && role != Roles.SuperAdmin && role != Roles.AgencyOwner)
