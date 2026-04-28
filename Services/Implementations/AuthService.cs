@@ -23,7 +23,8 @@ namespace Booking.Services
         IAppLinkService _appLinkService,
         IRegistrationStrategyFactory _strategyFactory,
         IProfileStrategyFactory _profileFactory,
-        IAgencyRepository _agencyRepository) : IAuthService
+        IAgencyRepository _agencyRepository,
+        IHotelRepository _hotelRepository) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -41,6 +42,7 @@ namespace Booking.Services
 
 
             Agency? agency = null;
+            Hotel? hotel = null;
             AgencyStatus? agencyStatus = null;
 
             if (role != Roles.Customer && role != Roles.SuperAdmin)
@@ -50,12 +52,30 @@ namespace Booking.Services
 
                 agency = await _agencyRepository.GetByIdAsync(user.AgencyId.Value);
                 if (agency == null)
-                    throw new AgencyNotFoundException(user.Id);
+                    throw new AgencyNotFoundException(user.AgencyId.Value);
 
                 agencyStatus = agency.Status;
 
                 if (agencyStatus == AgencyStatus.Pending)
                     throw new AgencyUnderReviewException();
+
+                if (!user.HotelId.HasValue)
+                    throw new Exception("HotelId is required.");
+
+                hotel = await _hotelRepository.GetByIdAsync(user.HotelId.Value);
+                if (agency == null)
+                    throw new HotelNotFoundException(user.HotelId.Value);
+
+            }
+
+            if (role != Roles.Customer && role != Roles.SuperAdmin && role != Roles.AgencyOwner)
+            {
+                if (!user.HotelId.HasValue)
+                    throw new Exception("HotelId is required.");
+
+                hotel = await _hotelRepository.GetByIdAsync(user.HotelId.Value);
+                if (agency == null)
+                    throw new HotelNotFoundException(user.HotelId.Value);
             }
 
             await _authRepository.DeleteUserRefreshTokensAsync(user.Id);
@@ -85,8 +105,8 @@ namespace Booking.Services
                 LastName = user.LastName ?? string.Empty,
                 Role = role,
                 AgencyStatus = agencyStatus,
-                AgencyId = agency?.Id
-
+                AgencyId = agency?.Id,
+                HotelId = hotel?.Id
             };
         }
 
