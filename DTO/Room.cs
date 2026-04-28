@@ -14,6 +14,11 @@ namespace Booking.DTO
         public string? Notes { get; set; }
         public IFormFile coverPhoto { get; set; } = null!;
         public List<int> AmenityIds { get; set; } = new();
+        [Required] public decimal DailyPrice { get; set; }
+        [Required] public decimal WeeklyPrice { get; set; }
+        [Required] public decimal MonthlyPrice { get; set; }
+        [Required] public decimal ExtendPrice { get; set; }
+        [Required] public int Capacity { get; set; }
 
     }
 
@@ -26,6 +31,12 @@ namespace Booking.DTO
         public RoomStatus? Status { get; set; }
         public string? Notes { get; set; }
         public IFormFile? CoverPhoto { get; set; }
+        public decimal? DailyPrice { get; set; }
+        public decimal? WeeklyPrice { get; set; }
+        public decimal? MonthlyPrice { get; set; }
+        public decimal? ExtendPrice { get; set; }
+        public int? Capacity { get; set; }
+
     }
 
     public class RoomResponse
@@ -39,6 +50,11 @@ namespace Booking.DTO
         public string? Description { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? Notes { get; set; }
+        public decimal DailyPrice { get; set; }
+        public decimal WeeklyPrice { get; set; }
+        public decimal MonthlyPrice { get; set; }
+        public decimal ExtendPrice { get; set; }
+        public int Capacity { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string CoverPhotoUrl { get; set; }
@@ -54,6 +70,11 @@ namespace Booking.DTO
             Description = room.Description;
             Status = room.Status.ToString();
             Notes = room.Notes;
+            DailyPrice = room.DailyPrice;
+            MonthlyPrice = room.MonthlyPrice;
+            WeeklyPrice = room.WeeklyPrice;
+            ExtendPrice = room.ExtendPrice;
+            Capacity = room.Capacity;
             CreatedAt = room.CreatedAt;
             UpdatedAt = room.UpdatedAt;
             CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
