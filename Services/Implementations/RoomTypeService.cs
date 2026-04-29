@@ -19,10 +19,6 @@ namespace Booking.Services
             {
                 Name = request.Name,
                 Description = request.Description,
-                Capacity = request.Capacity,
-                DailyPrice = request.DailyPrice,
-                WeeklyPrice = request.WeeklyPrice,
-                MonthlyPrice = request.MonthlyPrice,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -47,16 +43,11 @@ namespace Booking.Services
 
         public async Task<RoomTypeResponse> UpdateRoomTypeAsync(int roomTypeId, UpdateRoomTypeRequest request)
         {
-
             var roomType = await _roomTypeRepository.GetByIdAsync(roomTypeId)
                 ?? throw new RoomTypeNotFoundException(roomTypeId);
 
             if (request.Name is not null) roomType.Name = request.Name;
             if (request.Description is not null) roomType.Description = request.Description;
-            if (request.Capacity is not null) roomType.Capacity = request.Capacity.Value;
-            if (request.DailyPrice is not null) roomType.DailyPrice = request.DailyPrice.Value;
-            if (request.WeeklyPrice is not null) roomType.WeeklyPrice = request.WeeklyPrice.Value;
-            if (request.MonthlyPrice is not null) roomType.MonthlyPrice = request.MonthlyPrice.Value;
 
             roomType.UpdatedAt = DateTime.UtcNow;
 

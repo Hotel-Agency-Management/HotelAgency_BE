@@ -46,6 +46,11 @@ namespace Booking.Services
                 Description = request.Description,
                 Status = request.Status,
                 Notes = request.Notes,
+                DailyPrice = request.DailyPrice,
+                MonthlyPrice = request.MonthlyPrice,
+                WeeklyPrice = request.WeeklyPrice,
+                ExtendPrice = request.ExtendPrice,
+                Capacity = request.Capacity,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CoverPhotoUrl = CoverPhotoUrl,
@@ -88,6 +93,11 @@ namespace Booking.Services
             if (request.Description is not null) room.Description = request.Description;
             if (request.Status is not null) room.Status = request.Status.Value;
             if (request.Notes is not null) room.Notes = request.Notes;
+            if (request.Capacity is not null) room.Capacity = request.Capacity.Value;
+            if (request.DailyPrice is not null) room.DailyPrice = request.DailyPrice.Value;
+            if (request.WeeklyPrice is not null) room.WeeklyPrice = request.WeeklyPrice.Value;
+            if (request.MonthlyPrice is not null) room.MonthlyPrice = request.MonthlyPrice.Value;
+            if (request.ExtendPrice is not null) room.ExtendPrice = request.ExtendPrice.Value;
             if (request.CoverPhoto is not null)
             {
                 if (room.CoverPhotoUrl is not null)

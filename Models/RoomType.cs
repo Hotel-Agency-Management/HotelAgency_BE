@@ -14,16 +14,6 @@ namespace Booking.Models
 
         public string? Description { get; set; }
 
-        [Required]
-        public int Capacity { get; set; }
-
-        [Required]
-        public decimal DailyPrice { get; set; }
-
-        public decimal WeeklyPrice { get; set; }
-
-        public decimal MonthlyPrice { get; set; }
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

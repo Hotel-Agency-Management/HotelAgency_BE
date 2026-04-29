@@ -37,6 +37,11 @@ namespace Booking.Models
         [ForeignKey(nameof(RoomTypeId))]
         public RoomType? RoomType { get; set; }
         public string? CoverPhotoUrl { get; set; }
+        [Required] public int Capacity { get; set; }
+        [Required] public decimal DailyPrice { get; set; }
+        [Required] public decimal WeeklyPrice { get; set; }
+        [Required] public decimal MonthlyPrice { get; set; }
+        [Required] public decimal ExtendPrice { get; set; }
         public ICollection<RoomPhoto> Photos { get; set; } = new List<RoomPhoto>();
         public ICollection<RoomAmenity> Amenities { get; set; } = new List<RoomAmenity>();
 

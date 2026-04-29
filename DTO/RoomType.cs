@@ -8,9 +8,6 @@ namespace Booking.DTO
         [Required] public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         [Required] public int Capacity { get; set; }
-        [Required] public decimal DailyPrice { get; set; }
-        [Required] public decimal WeeklyPrice { get; set; }
-        [Required] public decimal MonthlyPrice { get; set; }
     }
 
     public class UpdateRoomTypeRequest
@@ -18,9 +15,6 @@ namespace Booking.DTO
         public string? Name { get; set; }
         public string? Description { get; set; }
         public int? Capacity { get; set; }
-        public decimal? DailyPrice { get; set; }
-        public decimal? WeeklyPrice { get; set; }
-        public decimal? MonthlyPrice { get; set; }
     }
 
     public class RoomTypeResponse
@@ -29,9 +23,6 @@ namespace Booking.DTO
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int Capacity { get; set; }
-        public decimal DailyPrice { get; set; }
-        public decimal WeeklyPrice { get; set; }
-        public decimal MonthlyPrice { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
@@ -40,10 +31,6 @@ namespace Booking.DTO
             Id = roomType.Id;
             Name = roomType.Name;
             Description = roomType.Description;
-            Capacity = roomType.Capacity;
-            DailyPrice = roomType.DailyPrice;
-            WeeklyPrice = roomType.WeeklyPrice;
-            MonthlyPrice = roomType.MonthlyPrice;
             CreatedAt = roomType.CreatedAt;
             UpdatedAt = roomType.UpdatedAt;
         }
