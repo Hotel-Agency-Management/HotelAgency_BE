@@ -26,14 +26,6 @@ namespace Booking.Controllers.Admin
             return Ok(result);
         }
 
-        [HttpGet("available-property-managers")]
-        public async Task<IActionResult> GetAvailablePropertyManagers([FromRoute] int agencyId)
-        {
-            var result = await _teamMemberService.GetAvailablePropertyManagersAsync(agencyId);
-
-            return Ok(result);
-        }
-
         [HttpPost]
         public async Task<IActionResult> CreateTeamMember(
             [FromRoute] int agencyId,

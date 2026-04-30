@@ -5,9 +5,15 @@ namespace Booking.Interfaces.Repositories
 {
     public interface ITeamManagementRepository
     {
-        Task<int> CountByAgencyAsync(int agencyId, int? excludedUserId = null);
-        Task<List<ApplicationUser>> GetByAgencyAsync(int agencyId, int? excludedUserId, int pageNumber, int pageSize);
-        Task<List<ApplicationUser>> GetAvailablePropertyManagersByAgencyAsync(int agencyId);
+        Task<int> CountByAgencyAsync(int agencyId, int? excludedUserId, string? role, bool? assigned);
+        Task<List<ApplicationUser>> GetByAgencyAsync(
+            int agencyId,
+            int? excludedUserId,
+            string? role,
+            bool? assigned,
+            int pageNumber,
+            int pageSize);
+
         Task<ApplicationUser?> GetByIdAndAgencyAsync(int userId, int agencyId);
         Task<ApplicationUser?> FindByEmailAsync(string email);
         Task<IdentityResult> CreateAsync(ApplicationUser user, string password);

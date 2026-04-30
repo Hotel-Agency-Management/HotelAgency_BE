@@ -11,6 +11,10 @@ namespace Booking.DTO
 
         [Range(1, 100)]
         public int PageSize { get; set; } = 10;
+
+        public string? Role { get; set; }
+
+        public bool? Assigned { get; set; }
     }
 
     public class CreateTeamMemberRequest

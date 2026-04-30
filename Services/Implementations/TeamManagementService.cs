@@ -24,10 +24,21 @@ namespace Booking.Services
             int? excludedUserId,
             TeamMemberListRequest request)
         {
-            var totalCount = await _teamMemberRepository.CountByAgencyAsync(agencyId, excludedUserId);
+            var roleFilter = string.IsNullOrWhiteSpace(request.Role)
+                ? null
+                : TeamMemberUtils.NormalizeAndValidateRole(request.Role);
+
+            var totalCount = await _teamMemberRepository.CountByAgencyAsync(
+                agencyId,
+                excludedUserId,
+                roleFilter,
+                request.Assigned);
+
             var users = await _teamMemberRepository.GetByAgencyAsync(
                 agencyId,
                 excludedUserId,
+                roleFilter,
+                request.Assigned,
                 request.PageNumber,
                 request.PageSize);
 
@@ -46,12 +57,6 @@ namespace Booking.Services
                 TotalCount = totalCount,
                 TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
             };
-        }
-
-        public async Task<IReadOnlyCollection<TeamMemberResponse>> GetAvailablePropertyManagersAsync(int agencyId)
-        {
-            var managers = await _teamMemberRepository.GetAvailablePropertyManagersByAgencyAsync(agencyId);
-            return managers.Select(manager => new TeamMemberResponse(manager, Roles.PropertyManager)).ToList();
         }
 
         public async Task<TeamMemberResponse> CreateAgencyTeamMemberAsync(

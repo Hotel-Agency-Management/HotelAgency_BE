@@ -12,37 +12,28 @@ namespace Booking.Repositories
         ApplicationDbContext _context,
         UserManager<ApplicationUser> _userManager) : ITeamManagementRepository
     {
-        public Task<int> CountByAgencyAsync(int agencyId, int? excludedUserId = null)
+        public Task<int> CountByAgencyAsync(
+            int agencyId,
+            int? excludedUserId,
+            string? role,
+            bool? assigned)
         {
-            return AgencyTeamMemberQuery(agencyId, excludedUserId).CountAsync();
+            return AgencyTeamMemberQuery(agencyId, excludedUserId, role, assigned).CountAsync();
         }
 
         public Task<List<ApplicationUser>> GetByAgencyAsync(
             int agencyId,
             int? excludedUserId,
+            string? role,
+            bool? assigned,
             int pageNumber,
             int pageSize)
         {
-            return AgencyTeamMemberQuery(agencyId, excludedUserId)
+            return AgencyTeamMemberQuery(agencyId, excludedUserId, role, assigned)
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
-        }
-
-        public Task<List<ApplicationUser>> GetAvailablePropertyManagersByAgencyAsync(int agencyId)
-        {
-            return (
-                from user in _context.Users
-                join userRole in _context.UserRoles on user.Id equals userRole.UserId
-                join role in _context.Roles on userRole.RoleId equals role.Id
-                where user.AgencyId == agencyId
-                    && user.HotelId == null
-                    && role.Name == Roles.PropertyManager
-                orderby user.FirstName, user.LastName
-                select user)
-                .Distinct()
                 .ToListAsync();
         }
 
@@ -52,17 +43,29 @@ namespace Booking.Repositories
                 .FirstOrDefaultAsync(u => u.Id == userId && u.AgencyId == agencyId);
         }
 
-        private IQueryable<ApplicationUser> AgencyTeamMemberQuery(int agencyId, int? excludedUserId)
+        private IQueryable<ApplicationUser> AgencyTeamMemberQuery(
+            int agencyId,
+            int? excludedUserId,
+            string? role,
+            bool? assigned)
         {
-            return (
+            var query = (
                 from user in _context.Users
                 join userRole in _context.UserRoles on user.Id equals userRole.UserId
-                join role in _context.Roles on userRole.RoleId equals role.Id
+                join identityRole in _context.Roles on userRole.RoleId equals identityRole.Id
                 where user.AgencyId == agencyId
-                    && AllowedAgencyRoleNames.Contains(role.Name!)
+                    && AllowedAgencyRoleNames.Contains(identityRole.Name!)
                     && (excludedUserId == null || user.Id != excludedUserId.Value)
+                    && (role == null || identityRole.Name == role)
                 select user)
                 .Distinct();
+
+            return assigned switch
+            {
+                true => query.Where(user => user.HotelId != null),
+                false => query.Where(user => user.HotelId == null),
+                _ => query
+            };
         }
 
         private static readonly string[] AllowedAgencyRoleNames =
