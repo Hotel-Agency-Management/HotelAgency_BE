@@ -64,6 +64,32 @@ namespace Booking.DTO
         }
     }
 
+    public class AgencyListItemResponse
+    {
+        public int Id { get; set; }
+        public int OwnerId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string? LogoUrl { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+
+        public AgencyListItemResponse(Agency agency)
+        {
+            Id = agency.Id;
+            OwnerId = agency.OwnerId;
+            Name = agency.AgencyName;
+            Phone = agency.Phone;
+            Country = agency.Country;
+            City = agency.City;
+            LogoUrl = agency.LogoUrl;
+            CreatedAt = agency.CreatedAt;
+            UpdatedAt = agency.UpdatedAt ?? agency.CreatedAt;
+        }
+    }
+
     public class UpdateAgencyRequest
     {
         public string? AgencyName { get; set; }
