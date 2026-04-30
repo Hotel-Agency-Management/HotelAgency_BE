@@ -11,6 +11,10 @@ namespace Booking.DTO
 
         [Range(1, 100)]
         public int PageSize { get; set; } = 10;
+
+        public string? Role { get; set; }
+
+        public bool? Assigned { get; set; }
     }
 
     public class CreateTeamMemberRequest
@@ -38,21 +42,9 @@ namespace Booking.DTO
         public string Role { get; set; } = string.Empty;
     }
 
-    public class TransferTeamMemberRequest
-    {
-        [Required]
-        [Range(1, int.MaxValue)]
-        public int SourceHotelId { get; set; }
-
-        [Required]
-        [Range(1, int.MaxValue)]
-        public int DestinationHotelId { get; set; }
-    }
-
     public class TeamMemberResponse
     {
         public int Id { get; set; }
-        public int HotelId { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
@@ -63,7 +55,6 @@ namespace Booking.DTO
         public TeamMemberResponse(ApplicationUser user, string role)
         {
             Id = user.Id;
-            HotelId = user.HotelId.GetValueOrDefault();
             FirstName = user.FirstName;
             LastName = user.LastName;
             Email = user.Email ?? string.Empty;

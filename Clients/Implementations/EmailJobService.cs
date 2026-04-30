@@ -60,14 +60,14 @@ public class EmailJobService(
         );
     }
 
-    public async Task EnqueueTeamMemberVerificationEmailAsync(ApplicationUser user, Hotel hotel, string verificationLink, string password)
+    public async Task EnqueueTeamMemberVerificationEmailAsync(ApplicationUser user, Agency agency, string verificationLink, string password)
     {
         var userName = $"{user.FirstName} {user.LastName}".Trim();
         if (string.IsNullOrWhiteSpace(userName))
             userName = "User";
 
         var plainText =
-            $"Hi {userName}, you have been invited to {hotel.Name}. " +
+            $"Hi {userName}, you have been invited to {agency.AgencyName}. " +
             $"Verify your email: {verificationLink}. " +
             $"Email: {user.Email}. Temporary password: {password}";
 
@@ -76,17 +76,16 @@ public class EmailJobService(
             template,
             new Dictionary<string, string>
             {
-                { "AGENCY_NAME", hotel.Name },
-                { "HOTEL_NAME", hotel.Name },
-                { "HOTEL_TAGLINE", "Management Platform" },
+                { "AGENCY_NAME", agency.AgencyName },
+                { "AGENCY_TAGLINE", "Management Platform" },
                 { "USER_NAME", userName },
                 { "USER_EMAIL", user.Email ?? string.Empty },
                 { "GUEST_NAME", userName },
                 { "GUEST_EMAIL", user.Email ?? string.Empty },
                 { "TEMP_PASSWORD", password },
-                { "PRIMARY_COLOR", GetThemeColor(hotel.PrimaryColor, "#173f3a") },
-                { "SECONDARY_COLOR", GetThemeColor(hotel.SecondaryColor, "#d8b879") },
-                { "TERTIARY_COLOR", GetThemeColor(hotel.TertiaryColor, "#f8f5ef") },
+                { "PRIMARY_COLOR", GetThemeColor(agency.PrimaryColor, "#173f3a") },
+                { "SECONDARY_COLOR", GetThemeColor(agency.SecondaryColor, "#d8b879") },
+                { "TERTIARY_COLOR", GetThemeColor(agency.TertiaryColor, "#f8f5ef") },
                 { "VERIFY_LINK", verificationLink },
                 { "SUPPORT_EMAIL", "support@hotelagency.com" },
                 { "HELP_LINK", _appLinkService.GetHelpLink() },
@@ -96,7 +95,7 @@ public class EmailJobService(
             });
 
         _jobs.Enqueue<IEmailService>(svc =>
-            svc.SendEmailAsync(user.Email!, $"You have been invited to {hotel.Name}", plainText, html));
+            svc.SendEmailAsync(user.Email!, $"You have been invited to {agency.AgencyName}", plainText, html));
     }
 
     private async Task EnqueueAsync(
@@ -123,7 +122,7 @@ public class EmailJobService(
         );
     }
 
-    private static string GetThemeColor(string color, string fallback)
+    private static string GetThemeColor(string? color, string fallback)
     {
         return string.IsNullOrWhiteSpace(color) ? fallback : color.Trim();
     }

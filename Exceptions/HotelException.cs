@@ -25,6 +25,31 @@ namespace Booking.Exceptions
         {
         }
     }
+
+    public class ManagerDoesNotBelongToAgencyException : HotelException
+    {
+        public ManagerDoesNotBelongToAgencyException(int managerUserId, int agencyId)
+            : base($"Manager user with id '{managerUserId}' does not belong to agency with id '{agencyId}'.", (int)HttpStatusCode.BadRequest)
+        {
+        }
+    }
+
+    public class ManagerMustBePropertyManagerException : HotelException
+    {
+        public ManagerMustBePropertyManagerException(int managerUserId)
+            : base($"Manager user with id '{managerUserId}' must have the PROPERTY_MANAGER role.", (int)HttpStatusCode.BadRequest)
+        {
+        }
+    }
+
+    public class ManagerAlreadyAssignedToHotelException : HotelException
+    {
+        public ManagerAlreadyAssignedToHotelException(int managerUserId, int hotelId)
+            : base($"Manager user with id '{managerUserId}' is already assigned to hotel with id '{hotelId}'.", (int)HttpStatusCode.Conflict)
+        {
+        }
+    }
+
     public class HotelNotAssignedException : AppException
     {
         public HotelNotAssignedException()

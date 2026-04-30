@@ -12,27 +12,24 @@ namespace Booking.Repositories
         ApplicationDbContext _context,
         UserManager<ApplicationUser> _userManager) : ITeamManagementRepository
     {
-        public Task<int> CountByHotelAsync(int agencyId, int hotelId, int? excludedUserId = null)
+        public Task<int> CountByAgencyAsync(
+            int agencyId,
+            int? excludedUserId,
+            string? role,
+            bool? assigned)
         {
-            return _context.Users
-                .CountAsync(u =>
-                    u.AgencyId == agencyId &&
-                    u.HotelId == hotelId &&
-                    (excludedUserId == null || u.Id != excludedUserId.Value));
+            return AgencyTeamMemberQuery(agencyId, excludedUserId, role, assigned).CountAsync();
         }
 
-        public Task<List<ApplicationUser>> GetByHotelAsync(
+        public Task<List<ApplicationUser>> GetByAgencyAsync(
             int agencyId,
-            int hotelId,
             int? excludedUserId,
+            string? role,
+            bool? assigned,
             int pageNumber,
             int pageSize)
         {
-            return _context.Users
-                .Where(u =>
-                    u.AgencyId == agencyId &&
-                    u.HotelId == hotelId &&
-                    (excludedUserId == null || u.Id != excludedUserId.Value))
+            return AgencyTeamMemberQuery(agencyId, excludedUserId, role, assigned)
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)
                 .Skip((pageNumber - 1) * pageSize)
@@ -46,35 +43,41 @@ namespace Booking.Repositories
                 .FirstOrDefaultAsync(u => u.Id == userId && u.AgencyId == agencyId);
         }
 
-        public Task<bool> HotelHasRoleAsync(int hotelId, string roleName, int? excludedUserId = null)
+        private IQueryable<ApplicationUser> AgencyTeamMemberQuery(
+            int agencyId,
+            int? excludedUserId,
+            string? role,
+            bool? assigned)
         {
-            return (
+            var query = (
                 from user in _context.Users
                 join userRole in _context.UserRoles on user.Id equals userRole.UserId
-                join role in _context.Roles on userRole.RoleId equals role.Id
-                where user.HotelId == hotelId
-                    && role.Name == roleName
+                join identityRole in _context.Roles on userRole.RoleId equals identityRole.Id
+                where user.AgencyId == agencyId
+                    && AllowedAgencyRoleNames.Contains(identityRole.Name!)
                     && (excludedUserId == null || user.Id != excludedUserId.Value)
-                select user.Id)
-                .AnyAsync();
+                    && (role == null || identityRole.Name == role)
+                select user)
+                .Distinct();
+
+            return assigned switch
+            {
+                true => query.Where(user => user.HotelId != null),
+                false => query.Where(user => user.HotelId == null),
+                _ => query
+            };
         }
 
-        public async Task EnsureHotelDoesNotHaveSingleAssigneeRoleAsync(
-            int hotelId,
-            string role,
-            int? excludedUserId = null)
+        private static readonly string[] AllowedAgencyRoleNames =
         {
-            if (!IsSingleAssigneeHotelRole(role))
-                return;
-
-            if (await HotelHasRoleAsync(hotelId, role, excludedUserId))
-                throw new HotelAlreadyHasRoleException(hotelId, role);
-        }
-
-        private static bool IsSingleAssigneeHotelRole(string role)
-        {
-            return role is Roles.PropertyManager or Roles.HousekeepingManager;
-        }
+            Roles.PropertyManager,
+            Roles.FrontDeskStaff,
+            Roles.HousekeepingManager,
+            Roles.HousekeepingEmployee,
+            Roles.Accountant,
+            Roles.CustomerSupport,
+            Roles.Auditor
+        };
 
         public Task<ApplicationUser?> FindByEmailAsync(string email)
         {

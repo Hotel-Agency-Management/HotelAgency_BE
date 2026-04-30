@@ -11,7 +11,7 @@ namespace Booking.Services
 {
     public class TeamManagementService(
         ITeamManagementRepository _teamMemberRepository,
-        IHotelRepository _hotelRepository,
+        IAgencyRepository _agencyRepository,
         IAuthRepository _authRepository,
         IEmailJobService _emailJobService,
         IOptions<AuthSettings> authSettings,
@@ -21,15 +21,24 @@ namespace Booking.Services
 
         public async Task<PaginatedResponse<TeamMemberResponse>> GetAgencyTeamMembersAsync(
             int agencyId,
-            int hotelId,
             int? excludedUserId,
             TeamMemberListRequest request)
         {
-            var totalCount = await _teamMemberRepository.CountByHotelAsync(agencyId, hotelId, excludedUserId);
-            var users = await _teamMemberRepository.GetByHotelAsync(
+            var roleFilter = string.IsNullOrWhiteSpace(request.Role)
+                ? null
+                : TeamMemberUtils.NormalizeAndValidateRole(request.Role);
+
+            var totalCount = await _teamMemberRepository.CountByAgencyAsync(
                 agencyId,
-                hotelId,
                 excludedUserId,
+                roleFilter,
+                request.Assigned);
+
+            var users = await _teamMemberRepository.GetByAgencyAsync(
+                agencyId,
+                excludedUserId,
+                roleFilter,
+                request.Assigned,
                 request.PageNumber,
                 request.PageSize);
 
@@ -52,7 +61,6 @@ namespace Booking.Services
 
         public async Task<TeamMemberResponse> CreateAgencyTeamMemberAsync(
             int agencyId,
-            int hotelId,
             CreateTeamMemberRequest request)
         {
             var role = TeamMemberUtils.NormalizeAndValidateRole(request.Role);
@@ -61,14 +69,13 @@ namespace Booking.Services
             if (await _teamMemberRepository.FindByEmailAsync(email) is not null)
                 throw new EmailAlreadyExistsException(email);
 
-            var hotel = await _hotelRepository.GetByIdAndAgencyIdAsync(hotelId, agencyId);
-
-            await _teamMemberRepository.EnsureHotelDoesNotHaveSingleAssigneeRoleAsync(hotelId, role);
+            var agency = await _agencyRepository.GetByIdAsync(agencyId)
+                ?? throw new AgencyNotFoundException(agencyId);
 
             var user = new ApplicationUser
             {
                 AgencyId = agencyId,
-                HotelId = hotelId,
+                HotelId = null,
                 UserName = email,
                 Email = email,
                 EmailConfirmed = false,
@@ -88,14 +95,13 @@ namespace Booking.Services
                 throw new TeamMemberCreationFailedException();
 
             var link = await _emailVerificationService.GenerateVerificationLinkAsync(user);
-            await _emailJobService.EnqueueTeamMemberVerificationEmailAsync(user, hotel!, link, _authSettings.DefaultPassword);
+            await _emailJobService.EnqueueTeamMemberVerificationEmailAsync(user, agency, link, _authSettings.DefaultPassword);
 
             return new TeamMemberResponse(user, role);
         }
 
         public async Task<TeamMemberResponse> AssignAgencyTeamMemberRoleAsync(
             int agencyId,
-            int hotelId,
             int teamMemberId,
             AssignTeamMemberRoleRequest request)
         {
@@ -103,11 +109,6 @@ namespace Booking.Services
 
             var teamMember = await _teamMemberRepository.GetByIdAndAgencyAsync(teamMemberId, agencyId)
                 ?? throw new TeamMemberNotFoundException(teamMemberId);
-
-            if (teamMember.HotelId != hotelId)
-                throw new TeamMemberNotFoundException(teamMemberId);
-
-            await _teamMemberRepository.EnsureHotelDoesNotHaveSingleAssigneeRoleAsync(hotelId, role, teamMemberId);
 
             var result = await _teamMemberRepository.ReplaceRoleAsync(teamMember, role);
             if (!result.Succeeded)
@@ -118,50 +119,5 @@ namespace Booking.Services
 
             return new TeamMemberResponse(teamMember, role);
         }
-
-        public async Task<TeamMemberResponse> TransferAgencyTeamMemberAsync(
-            int agencyId,
-            int teamMemberId,
-            TransferTeamMemberRequest request)
-        {
-            if (request.SourceHotelId == request.DestinationHotelId)
-                throw new TeamMemberTransferSameHotelException();
-
-            var sourceHotel = await _hotelRepository.GetByIdAsync(request.SourceHotelId)
-                ?? throw new HotelNotFoundException(request.SourceHotelId);
-
-            var destinationHotel = await _hotelRepository.GetByIdAsync(request.DestinationHotelId)
-                ?? throw new HotelNotFoundException(request.DestinationHotelId);
-
-            if (sourceHotel.AgencyId != destinationHotel.AgencyId)
-                throw new TeamMemberTransferAgencyMismatchException(
-                    request.SourceHotelId,
-                    request.DestinationHotelId
-                );
-
-            if (sourceHotel.AgencyId != agencyId)
-                throw new HotelNotFoundException(request.SourceHotelId);
-
-            var teamMember = await _teamMemberRepository.GetByIdAndAgencyAsync(teamMemberId, agencyId)
-                ?? throw new TeamMemberNotFoundException(teamMemberId);
-
-            if (teamMember.HotelId != request.SourceHotelId)
-                throw new TeamMemberHotelMismatchException(teamMemberId, request.SourceHotelId);
-
-            var role = await _teamMemberRepository.GetRoleAsync(teamMember);
-            await _teamMemberRepository.EnsureHotelDoesNotHaveSingleAssigneeRoleAsync(
-                request.DestinationHotelId,
-                role,
-                teamMemberId);
-
-            teamMember.HotelId = request.DestinationHotelId;
-            teamMember.UpdatedAt = DateTime.UtcNow;
-
-            if (!await _authRepository.UpdateUserAsync(teamMember))
-                throw new TeamMemberUpdateFailedException();
-
-            return new TeamMemberResponse(teamMember, role);
-        }
-
     }
 }

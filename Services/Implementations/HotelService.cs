@@ -15,14 +15,12 @@ namespace Booking.Services
     {
         public async Task<HotelResponse> CreateHotelAsync(CreateHotelRequest request)
         {
+            var manager = await GetAvailablePropertyManagerAsync(
+                request.AgencyId,
+                request.ManagerUserId);
+
             var logoUrl = await _blobStorageService.UploadAsync(request.Logo);
             var coverPath = await _blobStorageService.UploadAsync(request.CoverPhoto);
-
-            var manager = await _authRepository.FindByIdAsync(request.ManagerUserId);
-            if (manager is null)
-                throw new ManagerUserNotFoundException(request.ManagerUserId);
-
-
             var hotel = new Hotel
             {
                 AgencyId = request.AgencyId,
@@ -43,6 +41,12 @@ namespace Booking.Services
             };
 
             var saved = await _hotelRepository.CreateAsync(hotel);
+            manager.HotelId = saved.Id;
+            manager.UpdatedAt = DateTime.UtcNow;
+
+            if (!await _authRepository.UpdateUserAsync(manager))
+                throw new TeamMemberUpdateFailedException();
+
             return new HotelResponse(saved);
         }
 
@@ -75,7 +79,8 @@ namespace Booking.Services
             if (request.PrimaryColor is not null) hotel.PrimaryColor = request.PrimaryColor;
             if (request.SecondaryColor is not null) hotel.SecondaryColor = request.SecondaryColor;
             if (request.TertiaryColor is not null) hotel.TertiaryColor = request.TertiaryColor;
-            if (request.ManagerUserId is not null) hotel.ManagerUserId = request.ManagerUserId.Value;
+            if (request.ManagerUserId is not null && request.ManagerUserId.Value != hotel.ManagerUserId)
+                await AssignNewManagerAsync(hotel, request.ManagerUserId.Value);
 
             if (request.Logo is not null)
             {
@@ -93,6 +98,48 @@ namespace Booking.Services
 
             var updated = await _hotelRepository.UpdateAsync(hotel);
             return new HotelResponse(updated);
+        }
+
+        private async Task<ApplicationUser> GetAvailablePropertyManagerAsync(int agencyId, int managerUserId)
+        {
+            var manager = await _authRepository.FindByIdAsync(managerUserId);
+            if (manager is null)
+                throw new ManagerUserNotFoundException(managerUserId);
+
+            if (manager.AgencyId != agencyId)
+                throw new ManagerDoesNotBelongToAgencyException(managerUserId, agencyId);
+
+            var role = await _authRepository.GetRoleAsync(manager);
+            if (role != Roles.PropertyManager)
+                throw new ManagerMustBePropertyManagerException(managerUserId);
+
+            if (manager.HotelId.HasValue)
+                throw new ManagerAlreadyAssignedToHotelException(managerUserId, manager.HotelId.Value);
+
+            return manager;
+        }
+
+        private async Task AssignNewManagerAsync(Hotel hotel, int managerUserId)
+        {
+            var newManager = await GetAvailablePropertyManagerAsync(hotel.AgencyId, managerUserId);
+
+            var oldManager = await _authRepository.FindByIdAsync(hotel.ManagerUserId);
+            if (oldManager is not null && oldManager.HotelId == hotel.Id)
+            {
+                oldManager.HotelId = null;
+                oldManager.UpdatedAt = DateTime.UtcNow;
+
+                if (!await _authRepository.UpdateUserAsync(oldManager))
+                    throw new TeamMemberUpdateFailedException();
+            }
+
+            newManager.HotelId = hotel.Id;
+            newManager.UpdatedAt = DateTime.UtcNow;
+
+            if (!await _authRepository.UpdateUserAsync(newManager))
+                throw new TeamMemberUpdateFailedException();
+
+            hotel.ManagerUserId = managerUserId;
         }
     }
 }
