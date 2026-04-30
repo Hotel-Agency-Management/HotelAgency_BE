@@ -48,6 +48,12 @@ namespace Booking.Services
             };
         }
 
+        public async Task<IReadOnlyCollection<TeamMemberResponse>> GetAvailablePropertyManagersAsync(int agencyId)
+        {
+            var managers = await _teamMemberRepository.GetAvailablePropertyManagersByAgencyAsync(agencyId);
+            return managers.Select(manager => new TeamMemberResponse(manager, Roles.PropertyManager)).ToList();
+        }
+
         public async Task<TeamMemberResponse> CreateAgencyTeamMemberAsync(
             int agencyId,
             CreateTeamMemberRequest request)

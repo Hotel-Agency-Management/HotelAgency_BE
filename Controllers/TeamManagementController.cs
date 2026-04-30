@@ -30,6 +30,17 @@ namespace Booking.Controllers.AgencyOwner
             return Ok(result);
         }
 
+        [HttpGet("available-property-managers")]
+        public async Task<IActionResult> GetAvailablePropertyManagers()
+        {
+            var agencyOwner = await _userManager.GetUserAsync(User);
+
+            var result = await _teamMemberService.GetAvailablePropertyManagersAsync(
+                agencyOwner!.AgencyId!.Value);
+
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateTeamMember(
             [FromBody] CreateTeamMemberRequest request)

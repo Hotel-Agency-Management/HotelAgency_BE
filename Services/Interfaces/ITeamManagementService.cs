@@ -10,6 +10,8 @@ namespace Booking.Interfaces.Services
             int? excludedUserId,
             TeamMemberListRequest request);
 
+        Task<IReadOnlyCollection<TeamMemberResponse>> GetAvailablePropertyManagersAsync(int agencyId);
+
         Task<TeamMemberResponse> CreateAgencyTeamMemberAsync(
             int agencyId,
             CreateTeamMemberRequest request);

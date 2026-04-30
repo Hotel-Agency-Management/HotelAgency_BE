@@ -7,6 +7,7 @@ namespace Booking.Interfaces.Repositories
     {
         Task<int> CountByAgencyAsync(int agencyId, int? excludedUserId = null);
         Task<List<ApplicationUser>> GetByAgencyAsync(int agencyId, int? excludedUserId, int pageNumber, int pageSize);
+        Task<List<ApplicationUser>> GetAvailablePropertyManagersByAgencyAsync(int agencyId);
         Task<ApplicationUser?> GetByIdAndAgencyAsync(int userId, int agencyId);
         Task<ApplicationUser?> FindByEmailAsync(string email);
         Task<IdentityResult> CreateAsync(ApplicationUser user, string password);

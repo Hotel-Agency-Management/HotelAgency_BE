@@ -31,6 +31,21 @@ namespace Booking.Repositories
                 .ToListAsync();
         }
 
+        public Task<List<ApplicationUser>> GetAvailablePropertyManagersByAgencyAsync(int agencyId)
+        {
+            return (
+                from user in _context.Users
+                join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                join role in _context.Roles on userRole.RoleId equals role.Id
+                where user.AgencyId == agencyId
+                    && user.HotelId == null
+                    && role.Name == Roles.PropertyManager
+                orderby user.FirstName, user.LastName
+                select user)
+                .Distinct()
+                .ToListAsync();
+        }
+
         public Task<ApplicationUser?> GetByIdAndAgencyAsync(int userId, int agencyId)
         {
             return _context.Users
