@@ -15,6 +15,14 @@ namespace Booking.Repositories
                 .AnyAsync(a => a.AgencyName.Trim().ToLower() == agencyName.Trim().ToLower());
         }
 
+        public async Task<List<Agency>> GetAllAsync()
+        {
+            return await _context.Agencies
+                .AsNoTracking()
+                .OrderBy(a => a.Id)
+                .ToListAsync();
+        }
+
         public async Task<Agency?> GetByIdAsync(int agencyId)
         {
             return await _context.Agencies

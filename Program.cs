@@ -41,7 +41,8 @@ builder.Services.AddControllers()
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         connectionString,
-        serverVersion
+        serverVersion,
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure()
     )
 );
 

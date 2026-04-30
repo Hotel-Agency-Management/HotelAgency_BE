@@ -13,6 +13,11 @@ namespace Booking.Services
         IAgencyRepository _agencyRepository,
         IBlobStorageService _blobStorageService) : IAgencyService
     {
+        public async Task<List<Agency>> GetAllAgenciesAsync()
+        {
+            return await _agencyRepository.GetAllAsync();
+        }
+
         public async Task<Agency> GetAgencyProfileAsync(int agencyId)
         {
             var agency = await _agencyRepository.GetByIdAsync(agencyId);
@@ -62,6 +67,7 @@ namespace Booking.Services
             var logoUrl = await _blobStorageService.UploadAsync(file);
 
             agency.LogoUrl = logoUrl;
+            agency.UpdatedAt = DateTime.UtcNow;
             await _agencyRepository.UpdateAsync(agency);
 
             return logoUrl;

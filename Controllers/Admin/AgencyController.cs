@@ -9,12 +9,20 @@ namespace Booking.Controllers.Admin
 {
     [ApiController]
     [Authorize(Roles = $"{Roles.SuperAdmin}")]
-    [EnsureAgencyExistsForAdminAttribute]
-    [Route("api/admin/agencies/{agencyId}")]
+    [Route("api/admin/agencies")]
     public class AgencyController(
         IAgencyService _agencyService) : ControllerBase
     {
-        [HttpGet()]
+        [HttpGet]
+        public async Task<IActionResult> GetAgencies()
+        {
+            var agencies = await _agencyService.GetAllAgenciesAsync();
+
+            return Ok(agencies.Select(agency => new AgencyListItemResponse(agency)));
+        }
+
+        [HttpGet("{agencyId:int}")]
+        [EnsureAgencyExistsForAdminAttribute]
         public async Task<IActionResult> GetAgencyProfile([FromRoute] int agencyId)
         {
             var agency = await _agencyService.GetAgencyProfileAsync(agencyId);
@@ -22,7 +30,8 @@ namespace Booking.Controllers.Admin
             return Ok(new AgencyProfileResponse(agency));
         }
 
-        [HttpPatch]
+        [HttpPatch("{agencyId:int}")]
+        [EnsureAgencyExistsForAdminAttribute]
         public async Task<IActionResult> UpdateAgency([FromRoute] int agencyId, [FromBody] UpdateAgencyRequest request)
         {
             await _agencyService.UpdateAgencyAsync(agencyId, request);
@@ -32,7 +41,8 @@ namespace Booking.Controllers.Admin
             });
         }
 
-        [HttpPatch("update-logo")]
+        [HttpPatch("{agencyId:int}/update-logo")]
+        [EnsureAgencyExistsForAdminAttribute]
         public async Task<IActionResult> UpdateAgencyLogo([FromRoute] int agencyId, [FromForm] IFormFile file)
         {
             await _agencyService.UpdateAgencyLogoAsync(agencyId, file);

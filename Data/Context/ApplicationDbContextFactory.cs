@@ -22,7 +22,8 @@ namespace Booking.Data
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             optionsBuilder.UseMySql(
                 connectionString,
-                new MySqlServerVersion(new Version(8, 0, 36)));
+                new MySqlServerVersion(new Version(8, 0, 36)),
+                mySqlOptions => mySqlOptions.EnableRetryOnFailure());
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }
