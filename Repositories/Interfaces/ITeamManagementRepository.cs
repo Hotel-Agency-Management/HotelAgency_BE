@@ -5,11 +5,9 @@ namespace Booking.Interfaces.Repositories
 {
     public interface ITeamManagementRepository
     {
-        Task<int> CountByHotelAsync(int agencyId, int hotelId, int? excludedUserId = null);
-        Task<List<ApplicationUser>> GetByHotelAsync(int agencyId, int hotelId, int? excludedUserId, int pageNumber, int pageSize);
+        Task<int> CountByAgencyAsync(int agencyId, int? excludedUserId = null);
+        Task<List<ApplicationUser>> GetByAgencyAsync(int agencyId, int? excludedUserId, int pageNumber, int pageSize);
         Task<ApplicationUser?> GetByIdAndAgencyAsync(int userId, int agencyId);
-        Task<bool> HotelHasRoleAsync(int hotelId, string roleName, int? excludedUserId = null);
-        Task EnsureHotelDoesNotHaveSingleAssigneeRoleAsync(int hotelId, string role, int? excludedUserId = null);
         Task<ApplicationUser?> FindByEmailAsync(string email);
         Task<IdentityResult> CreateAsync(ApplicationUser user, string password);
         Task<IdentityResult> AddToRoleAsync(ApplicationUser user, string role);
