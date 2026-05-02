@@ -5,6 +5,8 @@ namespace Booking.Constants
         public const string VerifyEmail = "verify-email.html";
         public const string AgencyUnderReview = "agency-under-review.html";
         public const string HotelInvitation = "hotel-invitation-email.html";
+        public const string ReservationConfirmation = "reservation-confirmation.html";
+        public const string NewCustomerAccount = "new-account-credentials.html";
     }
 
 
@@ -13,6 +15,8 @@ namespace Booking.Constants
         public const string VerifyEmail = "Verify your email";
         public const string AgencyUnderReview = "Your agency is under review";
         public const string HotelInvitation = "You have been invited to HotelAgency";
+        public const string ReservationConfirmation = "Your Reservation is Confirmed";
+        public const string NewCustomerAccount = "Your Account Has Been Created";
     }
 
     public static class EmailTemplates

@@ -43,5 +43,13 @@ namespace Booking.Clients
 
             await containerClient.DeleteBlobIfExistsAsync(fileName);
         }
+
+        public string GetBlobUrl(string blobName)
+        {
+            return _blobServiceClient
+                .GetBlobContainerClient(_containerName)
+                .GetBlobClient(blobName)
+                .Uri.ToString();
+        }
     }
 }

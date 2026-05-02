@@ -98,6 +98,56 @@ public class EmailJobService(
             svc.SendEmailAsync(user.Email!, $"You have been invited to {agency.AgencyName}", plainText, html));
     }
 
+    public async Task EnqueueReservationConfirmationEmailAsync(
+        string recipientEmail, string guestName,
+        Reservation reservation, string contractUrl, string invoiceUrl)
+    {
+        await EnqueueAsync(
+            templateFile: EmailTemplateFiles.ReservationConfirmation,
+            to: recipientEmail,
+            subject: EmailSubjects.ReservationConfirmation,
+            plainText: $"Your reservation {reservation.ReservationNumber} at {reservation.Hotel?.Name} is confirmed. Contract: {contractUrl} | Invoice: {invoiceUrl}",
+            placeholders: new Dictionary<string, string>
+            {
+                { "HOTEL_NAME", reservation.Hotel?.Name ?? "" },
+                { "GUEST_NAME", guestName },
+                { "RESERVATION_NUMBER", reservation.ReservationNumber },
+                { "CHECK_IN_DATE", reservation.CheckInDate.ToString("yyyy-MM-dd") },
+                { "CHECK_OUT_DATE", reservation.CheckOutDate.ToString("yyyy-MM-dd") },
+                { "ROOM_NUMBER", reservation.Room?.RoomNumber ?? "" },
+                { "NUMBER_OF_GUESTS", reservation.NumberOfGuests.ToString() },
+                { "NUMBER_OF_ROOMS", reservation.NumberOfRooms.ToString() },
+                { "CONTRACT_LINK", contractUrl },
+                { "INVOICE_LINK", invoiceUrl },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() }
+            });
+    }
+
+    public async Task EnqueueNewCustomerAccountEmailAsync(
+        ApplicationUser user, string verificationLink, string defaultPassword)
+    {
+        var name = $"{user.FirstName} {user.LastName}".Trim();
+        if (string.IsNullOrWhiteSpace(name)) name = "Guest";
+
+        await EnqueueAsync(
+            templateFile: EmailTemplateFiles.NewCustomerAccount,
+            to: user.Email!,
+            subject: EmailSubjects.NewCustomerAccount,
+            plainText: $"Your account has been created. Email: {user.Email}, Temporary password: {defaultPassword}. Verify: {verificationLink}",
+            placeholders: new Dictionary<string, string>
+            {
+                { "GUEST_NAME", name },
+                { "EMAIL", user.Email! },
+                { "DEFAULT_PASSWORD", defaultPassword },
+                { "VERIFY_LINK", verificationLink },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() }
+            });
+    }
+
     private async Task EnqueueAsync(
         string templateFile,
         string to,

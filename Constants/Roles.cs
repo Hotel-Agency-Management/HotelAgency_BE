@@ -6,6 +6,7 @@ namespace Booking.Constants
         public const string AgencyOwner = "AGENCY_OWNER";
         public const string PropertyManager = "PROPERTY_MANAGER";
         public const string FrontDeskStaff = "FRONT_DESK_STAFF";
+        public const string FrontDeskManager = "FRONT_DESK_MANAGER";
         public const string HousekeepingManager = "HOUSEKEEPING_MANAGER";
         public const string HousekeepingEmployee = "HOUSEKEEPING_EMPLOYEE";
         public const string Accountant = "ACCOUNTANT";

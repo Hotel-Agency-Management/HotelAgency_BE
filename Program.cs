@@ -101,6 +101,7 @@ builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomPhotoRepository, RoomPhotoRepository>();
 builder.Services.AddScoped<IRoomAmenityRepository, RoomAmenityRepository>();
 builder.Services.AddScoped<ITeamManagementRepository, TeamManagementRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 
 
 //Services
@@ -117,6 +118,7 @@ builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomPhotoService, RoomPhotoService>();
 builder.Services.AddScoped<IRoomAmenityService, RoomAmenityService>();
 builder.Services.AddScoped<ITeamManagementService, TeamManagementService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 builder.Services.AddSingleton<IAppLinkService, AppLinkService>();
 
