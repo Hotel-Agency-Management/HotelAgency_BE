@@ -102,14 +102,16 @@ public class EmailJobService(
         string recipientEmail, string guestName,
         Reservation reservation, string contractUrl, string invoiceUrl)
     {
+        var hotel = reservation.Hotel;
+
         await EnqueueAsync(
             templateFile: EmailTemplateFiles.ReservationConfirmation,
             to: recipientEmail,
             subject: EmailSubjects.ReservationConfirmation,
-            plainText: $"Your reservation {reservation.ReservationNumber} at {reservation.Hotel?.Name} is confirmed. Contract: {contractUrl} | Invoice: {invoiceUrl}",
+            plainText: $"Your reservation {reservation.ReservationNumber} at {hotel?.Name} is confirmed. Contract: {contractUrl} | Invoice: {invoiceUrl}",
             placeholders: new Dictionary<string, string>
             {
-                { "HOTEL_NAME", reservation.Hotel?.Name ?? "" },
+                { "HOTEL_NAME", hotel?.Name ?? "" },
                 { "GUEST_NAME", guestName },
                 { "RESERVATION_NUMBER", reservation.ReservationNumber },
                 { "CHECK_IN_DATE", reservation.CheckInDate.ToString("yyyy-MM-dd") },
@@ -119,6 +121,9 @@ public class EmailJobService(
                 { "NUMBER_OF_ROOMS", reservation.NumberOfRooms.ToString() },
                 { "CONTRACT_LINK", contractUrl },
                 { "INVOICE_LINK", invoiceUrl },
+                { "PRIMARY_COLOR", GetThemeColor(hotel?.PrimaryColor, "#8b5e34") },
+                { "SECONDARY_COLOR", GetThemeColor(hotel?.SecondaryColor, "#c89b63") },
+                { "TERTIARY_COLOR", GetThemeColor(hotel?.TertiaryColor, "#f8f5ef") },
                 { "HELP_LINK", _appLinkService.GetHelpLink() },
                 { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
                 { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() }

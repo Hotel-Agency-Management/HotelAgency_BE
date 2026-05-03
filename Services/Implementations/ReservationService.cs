@@ -63,6 +63,7 @@ namespace Booking.Services
                 NumberOfGuests = request.NumberOfGuests,
                 NumberOfRooms = rooms.Count,
                 ContractPath = contractPath,
+                TotalAmount = request.TotalAmount,
                 InvoicePath = invoicePath,
                 SpecialRequests = request.SpecialRequests,
                 Notes = request.Notes,
@@ -90,7 +91,7 @@ namespace Booking.Services
             await _emailJobService.EnqueueReservationConfirmationEmailAsync(
                 saved.GuestEmail, saved.GuestFullName, saved, contractUrl, invoiceUrl);
 
-            return new ReservationResponse(saved, contractUrl, invoiceUrl);
+            return new ReservationResponse(saved);
         }
 
         public async Task<ReservationResponse> GetReservationByIdAsync(int hotelId, int reservationId)
@@ -98,13 +99,27 @@ namespace Booking.Services
             var reservation = await _reservationRepository.GetByIdAndHotelIdAsync(reservationId, hotelId)
                 ?? throw new ReservationNotFoundException(reservationId);
 
-            return BuildResponse(reservation);
+            return new ReservationResponse(reservation);
         }
 
-        public async Task<IEnumerable<ListReservationResponse>> GetReservationsByHotelIdAsync(int hotelId)
+        public async Task<PaginatedResponse<ListReservationResponse>> GetReservationsByHotelIdAsync(
+            int hotelId, ReservationListRequest request)
         {
-            var reservations = await _reservationRepository.GetByHotelIdAsync(hotelId);
-            return reservations.Select(r => new ListReservationResponse(r));
+            var totalCount = await _reservationRepository.CountByHotelIdAsync(
+                hotelId, request.Search, request.Status, request.CheckInFrom, request.CheckInTo);
+
+            var reservations = await _reservationRepository.GetByHotelIdAsync(
+                hotelId, request.Search, request.Status, request.CheckInFrom, request.CheckInTo,
+                request.PageNumber, request.PageSize);
+
+            return new PaginatedResponse<ListReservationResponse>
+            {
+                Items = [..reservations.Select(r => new ListReservationResponse(r))],
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
         }
 
         public async Task<ReservationResponse> UpdateReservationAsync(int hotelId, int reservationId, int staffUserId, UpdateReservationRequest request)
@@ -128,10 +143,8 @@ namespace Booking.Services
                     throw new RoomsNotAvailableException(unavailable);
             }
 
-            if (request.CustomerId.HasValue) reservation.CustomerId = request.CustomerId;
             if (request.Source.HasValue) reservation.Source = request.Source.Value;
             if (request.GuestFullName is not null) reservation.GuestFullName = request.GuestFullName;
-            if (request.GuestEmail is not null) reservation.GuestEmail = request.GuestEmail;
             if (request.GuestPhone is not null) reservation.GuestPhone = request.GuestPhone;
             if (request.GuestIdNumber is not null) reservation.GuestIdNumber = request.GuestIdNumber;
             if (request.CheckInDate.HasValue) reservation.CheckInDate = request.CheckInDate.Value;
@@ -144,47 +157,8 @@ namespace Booking.Services
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
-            return BuildResponse(updated);
+            return new ReservationResponse(updated);
         }
 
-        public async Task<ReservationResponse> UpdateReservationStatusAsync(int hotelId, int reservationId, ReservationStatus newStatus)
-        {
-            var reservation = await _reservationRepository.GetByIdAndHotelIdAsync(reservationId, hotelId)
-                ?? throw new ReservationNotFoundException(reservationId);
-
-            var allowedTransitions = new Dictionary<ReservationStatus, ReservationStatus[]>
-            {
-                [ReservationStatus.Pending] = [ReservationStatus.Confirmed, ReservationStatus.Cancelled],
-                [ReservationStatus.Confirmed] = [ReservationStatus.CheckedIn, ReservationStatus.Cancelled],
-                [ReservationStatus.CheckedIn] = [ReservationStatus.CheckedOut],
-                [ReservationStatus.CheckedOut] = [],
-                [ReservationStatus.Cancelled] = []
-            };
-
-            if (!allowedTransitions[reservation.Status].Contains(newStatus))
-                throw new InvalidStatusTransitionException(reservation.Status.ToString(), newStatus.ToString());
-
-            if (newStatus == ReservationStatus.Confirmed)
-            {
-                var roomIds = reservation.ReservationRooms.Select(rr => rr.RoomId);
-                var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
-                    roomIds, reservation.CheckInDate, reservation.CheckOutDate, reservationId)).ToList();
-                if (unavailable.Any())
-                    throw new RoomsNotAvailableException(unavailable);
-            }
-
-            reservation.Status = newStatus;
-            reservation.UpdatedAt = DateTime.UtcNow;
-
-            var updated = await _reservationRepository.UpdateAsync(reservation);
-            return BuildResponse(updated);
-        }
-
-        private ReservationResponse BuildResponse(Reservation r)
-        {
-            var contractUrl = r.ContractPath is not null ? _blobStorageService.GetBlobUrl(r.ContractPath) : null;
-            var invoiceUrl = r.InvoicePath is not null ? _blobStorageService.GetBlobUrl(r.InvoicePath) : null;
-            return new ReservationResponse(r, contractUrl, invoiceUrl);
-        }
     }
 }

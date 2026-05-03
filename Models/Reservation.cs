@@ -24,6 +24,7 @@ namespace Booking.Models
         [Required] public DateOnly CheckOutDate { get; set; }
         [Required] public int NumberOfGuests { get; set; }
         [Required] public int NumberOfRooms { get; set; }
+        [Required] public Decimal TotalAmount { get; set; }
 
         public string? ContractPath { get; set; }
         public string? InvoicePath { get; set; }
@@ -37,8 +38,8 @@ namespace Booking.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        [ForeignKey(nameof(HotelId))]     public Hotel? Hotel { get; set; }
-        [ForeignKey(nameof(CustomerId))]  public ApplicationUser? Customer { get; set; }
+        [ForeignKey(nameof(HotelId))] public Hotel? Hotel { get; set; }
+        [ForeignKey(nameof(CustomerId))] public ApplicationUser? Customer { get; set; }
         [ForeignKey(nameof(CreatedById))] public ApplicationUser? CreatedBy { get; set; }
         [ForeignKey(nameof(UpdatedById))] public ApplicationUser? UpdatedBy { get; set; }
 

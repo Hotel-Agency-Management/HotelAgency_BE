@@ -16,6 +16,7 @@ namespace Booking.DTO
         [Required] public DateOnly CheckInDate { get; set; }
         [Required] public DateOnly CheckOutDate { get; set; }
         [Range(1, int.MaxValue)] public int NumberOfGuests { get; set; }
+        [Required] public Decimal TotalAmount { get; set; }
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
         [Required] public IFormFile ContractFile { get; set; } = null!;
@@ -24,10 +25,8 @@ namespace Booking.DTO
 
     public class UpdateReservationRequest
     {
-        public int? CustomerId { get; set; }
         public ReservationSource? Source { get; set; }
         public string? GuestFullName { get; set; }
-        [EmailAddress] public string? GuestEmail { get; set; }
         public string? GuestPhone { get; set; }
         public string? GuestIdNumber { get; set; }
         public DateOnly? CheckInDate { get; set; }
@@ -40,6 +39,20 @@ namespace Booking.DTO
     public class UpdateReservationStatusRequest
     {
         [Required] public ReservationStatus Status { get; set; }
+    }
+
+    public class ReservationListRequest
+    {
+        [Range(1, int.MaxValue)]
+        public int PageNumber { get; set; } = 1;
+
+        [Range(1, 100)]
+        public int PageSize { get; set; } = 10;
+
+        public string? Search { get; set; }
+        public ReservationStatus? Status { get; set; }
+        public DateOnly? CheckInFrom { get; set; }
+        public DateOnly? CheckInTo { get; set; }
     }
 
     public class ReservationResponse
@@ -55,6 +68,7 @@ namespace Booking.DTO
         public string GuestFullName { get; set; } = string.Empty;
         public string GuestEmail { get; set; } = string.Empty;
         public string GuestPhone { get; set; } = string.Empty;
+        public Decimal TotalAmount { get; set; }
         public string? GuestIdNumber { get; set; }
         public DateOnly CheckInDate { get; set; }
         public DateOnly CheckOutDate { get; set; }
@@ -69,7 +83,7 @@ namespace Booking.DTO
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public ReservationResponse(Reservation r, string? contractUrl = null, string? invoiceUrl = null)
+        public ReservationResponse(Reservation r)
         {
             Id = r.Id;
             ReservationNumber = r.ReservationNumber;
@@ -87,14 +101,15 @@ namespace Booking.DTO
             CheckOutDate = r.CheckOutDate;
             NumberOfGuests = r.NumberOfGuests;
             NumberOfRooms = r.NumberOfRooms;
-            ContractUrl = contractUrl;
-            InvoiceUrl = invoiceUrl;
+            ContractUrl = r.ContractPath;
+            InvoiceUrl = r.InvoicePath;
             SpecialRequests = r.SpecialRequests;
             Notes = r.Notes;
             CreatedById = r.CreatedById;
             UpdatedById = r.UpdatedById;
             CreatedAt = r.CreatedAt;
             UpdatedAt = r.UpdatedAt;
+            TotalAmount = r.TotalAmount;
         }
     }
 
@@ -108,6 +123,7 @@ namespace Booking.DTO
         public DateOnly CheckInDate { get; set; }
         public DateOnly CheckOutDate { get; set; }
         public DateTime CreatedAt { get; set; }
+        public Decimal TotalAmount { get; set; }
 
         public ListReservationResponse(Reservation r)
         {
@@ -119,6 +135,7 @@ namespace Booking.DTO
             CheckInDate = r.CheckInDate;
             CheckOutDate = r.CheckOutDate;
             CreatedAt = r.CreatedAt;
+            TotalAmount = r.TotalAmount;
         }
     }
 }

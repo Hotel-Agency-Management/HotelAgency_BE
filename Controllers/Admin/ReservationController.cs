@@ -39,9 +39,10 @@ namespace Booking.Controllers.Admin
         [HttpGet]
         public async Task<IActionResult> GetReservationsByHotel(
             [FromRoute] int agencyId,
-            [FromRoute] int hotelId)
+            [FromRoute] int hotelId,
+            [FromQuery] ReservationListRequest request)
         {
-            var result = await _reservationService.GetReservationsByHotelIdAsync(hotelId);
+            var result = await _reservationService.GetReservationsByHotelIdAsync(hotelId, request);
             return Ok(result);
         }
 
@@ -70,20 +71,6 @@ namespace Booking.Controllers.Admin
                 return Unauthorized(Messages.Unauthorized);
 
             var result = await _reservationService.UpdateReservationAsync(hotelId, reservationId, user.Id, request);
-            return Ok(result);
-        }
-
-        [HttpPatch("{reservationId}/status")]
-        public async Task<IActionResult> UpdateStatus(
-            [FromRoute] int agencyId,
-            [FromRoute] int hotelId,
-            [FromRoute] int reservationId,
-            [FromBody] UpdateReservationStatusRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _reservationService.UpdateReservationStatusAsync(hotelId, reservationId, request.Status);
             return Ok(result);
         }
     }

@@ -4,17 +4,17 @@
     <meta charset="UTF-8" />
     <title>Reservation Confirmed</title>
   </head>
-  <body style="margin:0;padding:0;background:#f4ede3;font-family:Arial,Helvetica,sans-serif;color:#2f2418;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4ede3;padding:32px 16px;">
+  <body style="margin:0;padding:0;background:{{TERTIARY_COLOR}};font-family:Arial,Helvetica,sans-serif;color:#2f2418;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{TERTIARY_COLOR}};padding:32px 16px;">
       <tr>
         <td align="center">
           <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 20px 45px rgba(92,67,37,0.15);">
             <tr>
-              <td style="height:6px;background:linear-gradient(90deg,#8b5e34,#c89b63);"></td>
+              <td style="height:6px;background:{{PRIMARY_COLOR}};"></td>
             </tr>
 
             <tr>
-              <td style="background:linear-gradient(135deg,#4d341a,#8b5e34);padding:34px 40px;text-align:center;color:#fff;">
+              <td style="background:{{PRIMARY_COLOR}};padding:34px 40px;text-align:center;color:#fff;">
                 <div style="font-size:28px;font-weight:800;letter-spacing:.5px;">{{HOTEL_NAME}}</div>
                 <div style="margin-top:10px;font-size:14px;opacity:.85;">Reservation Confirmation</div>
               </td>
@@ -22,7 +22,7 @@
 
             <tr>
               <td style="padding:40px;">
-                <div style="display:inline-block;background:#f8efe3;color:#8b5e34;padding:8px 16px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">
+                <div style="display:inline-block;background:{{TERTIARY_COLOR}};color:{{PRIMARY_COLOR}};padding:8px 16px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">
                   Booking Confirmed
                 </div>
 
@@ -34,7 +34,7 @@
                   Hi <strong>{{GUEST_NAME}}</strong>, your reservation at <strong>{{HOTEL_NAME}}</strong> has been successfully created. Here are your booking details:
                 </p>
 
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fcf7f1;border-radius:14px;padding:24px;margin-bottom:24px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{TERTIARY_COLOR}};border-radius:14px;padding:24px;margin-bottom:24px;">
                   <tr>
                     <td style="padding:8px 0;font-size:14px;color:#5f4b35;font-weight:700;width:40%;">Reservation Number</td>
                     <td style="padding:8px 0;font-size:14px;color:#2f2418;font-weight:800;">{{RESERVATION_NUMBER}}</td>
@@ -68,12 +68,12 @@
                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
                   <tr>
                     <td style="padding-right:12px;">
-                      <a href="{{CONTRACT_LINK}}" style="display:inline-block;background:linear-gradient(135deg,#8b5e34,#c89b63);color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 24px;border-radius:999px;">
+                      <a href="{{CONTRACT_LINK}}" style="display:inline-block;background:{{PRIMARY_COLOR}};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 24px;border-radius:999px;">
                         Download Contract
                       </a>
                     </td>
                     <td>
-                      <a href="{{INVOICE_LINK}}" style="display:inline-block;background:#ffffff;border:2px solid #8b5e34;color:#8b5e34;text-decoration:none;font-size:14px;font-weight:700;padding:12px 24px;border-radius:999px;">
+                      <a href="{{INVOICE_LINK}}" style="display:inline-block;background:#ffffff;border:2px solid {{PRIMARY_COLOR}};color:{{PRIMARY_COLOR}};text-decoration:none;font-size:14px;font-weight:700;padding:12px 24px;border-radius:999px;">
                         Download Invoice
                       </a>
                     </td>
@@ -88,9 +88,9 @@
 
             <tr>
               <td style="background:#2f2418;padding:22px 28px;text-align:center;color:rgba(255,255,255,.75);font-size:12px;">
-                <a href="{{HELP_LINK}}" style="color:#d7ab72;text-decoration:none;margin:0 8px;">Help Center</a> •
-                <a href="{{SUPPORT_LINK}}" style="color:#d7ab72;text-decoration:none;margin:0 8px;">Support</a> •
-                <a href="{{PRIVACY_LINK}}" style="color:#d7ab72;text-decoration:none;margin:0 8px;">Privacy Policy</a>
+                <a href="{{HELP_LINK}}" style="color:{{SECONDARY_COLOR}};text-decoration:none;margin:0 8px;">Help Center</a> •
+                <a href="{{SUPPORT_LINK}}" style="color:{{SECONDARY_COLOR}};text-decoration:none;margin:0 8px;">Support</a> •
+                <a href="{{PRIVACY_LINK}}" style="color:{{SECONDARY_COLOR}};text-decoration:none;margin:0 8px;">Privacy Policy</a>
                 <p style="margin:10px 0 0;">© {{YEAR}} {{HOTEL_NAME}}. All rights reserved.</p>
               </td>
             </tr>

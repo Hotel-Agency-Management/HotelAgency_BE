@@ -14,7 +14,6 @@ using Booking.Models;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
     [EnsureAgencyExistsForOwner]
     [EnsureHotelExistsForOwner]
     [Route("api/hotels/{hotelId}/reservations")]
@@ -22,6 +21,7 @@ namespace Booking.Controllers
         IReservationService _reservationService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}, {Roles.Customer}")]
         [HttpPost]
         public async Task<IActionResult> CreateReservation(
             [FromRoute] int hotelId,
@@ -38,13 +38,17 @@ namespace Booking.Controllers
             return CreatedAtAction(nameof(GetReservationById), new { hotelId, reservationId = result.Id }, result);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
         [HttpGet]
-        public async Task<IActionResult> GetReservationsByHotel([FromRoute] int hotelId)
+        public async Task<IActionResult> GetReservationsByHotel(
+            [FromRoute] int hotelId,
+            [FromQuery] ReservationListRequest request)
         {
-            var result = await _reservationService.GetReservationsByHotelIdAsync(hotelId);
+            var result = await _reservationService.GetReservationsByHotelIdAsync(hotelId, request);
             return Ok(result);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
         [HttpGet("{reservationId}")]
         public async Task<IActionResult> GetReservationById(
             [FromRoute] int hotelId,
@@ -54,6 +58,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
         [HttpPut("{reservationId}")]
         public async Task<IActionResult> UpdateReservation(
             [FromRoute] int hotelId,
@@ -68,19 +73,6 @@ namespace Booking.Controllers
                 return Unauthorized(Messages.Unauthorized);
 
             var result = await _reservationService.UpdateReservationAsync(hotelId, reservationId, user.Id, request);
-            return Ok(result);
-        }
-
-        [HttpPatch("{reservationId}/status")]
-        public async Task<IActionResult> UpdateStatus(
-            [FromRoute] int hotelId,
-            [FromRoute] int reservationId,
-            [FromBody] UpdateReservationStatusRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _reservationService.UpdateReservationStatusAsync(hotelId, reservationId, request.Status);
             return Ok(result);
         }
     }

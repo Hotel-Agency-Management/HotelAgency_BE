@@ -1,3 +1,4 @@
+using Booking.Enums;
 using Booking.Models;
 
 namespace Booking.Interfaces.Repositories
@@ -7,7 +8,12 @@ namespace Booking.Interfaces.Repositories
         Task<Reservation> CreateAsync(Reservation reservation);
         Task<Reservation?> GetByIdAsync(int reservationId);
         Task<Reservation?> GetByIdAndHotelIdAsync(int reservationId, int hotelId);
-        Task<IEnumerable<Reservation>> GetByHotelIdAsync(int hotelId);
+        Task<IEnumerable<Reservation>> GetByHotelIdAsync(
+            int hotelId, string? search, ReservationStatus? status,
+            DateOnly? checkInFrom, DateOnly? checkInTo, int pageNumber, int pageSize);
+        Task<int> CountByHotelIdAsync(
+            int hotelId, string? search, ReservationStatus? status,
+            DateOnly? checkInFrom, DateOnly? checkInTo);
         Task<IEnumerable<Reservation>> GetByCustomerIdAsync(int customerId);
         Task<IEnumerable<string>> GetUnavailableRoomNumbersAsync(IEnumerable<int> roomIds, DateOnly checkIn, DateOnly checkOut, int? excludeReservationId = null);
         Task<int> CountByYearAsync(int year);

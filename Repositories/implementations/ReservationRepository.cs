@@ -33,12 +33,49 @@ namespace Booking.Repositories
                 .Include(r => r.UpdatedBy)
                 .FirstOrDefaultAsync(r => r.Id == reservationId && r.HotelId == hotelId);
 
-        public async Task<IEnumerable<Reservation>> GetByHotelIdAsync(int hotelId)
-            => await _context.Reservations
+        public async Task<IEnumerable<Reservation>> GetByHotelIdAsync(
+            int hotelId, string? search, ReservationStatus? status,
+            DateOnly? checkInFrom, DateOnly? checkInTo, int pageNumber, int pageSize)
+            => await BuildHotelQuery(hotelId, search, status, checkInFrom, checkInTo)
                 .Include(r => r.ReservationRooms).ThenInclude(rr => rr.Room)
-                .Where(r => r.HotelId == hotelId)
                 .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+        public async Task<int> CountByHotelIdAsync(
+            int hotelId, string? search, ReservationStatus? status,
+            DateOnly? checkInFrom, DateOnly? checkInTo)
+            => await BuildHotelQuery(hotelId, search, status, checkInFrom, checkInTo)
+                .CountAsync();
+
+        private IQueryable<Reservation> BuildHotelQuery(
+            int hotelId, string? search, ReservationStatus? status,
+            DateOnly? checkInFrom, DateOnly? checkInTo)
+        {
+            var q = _context.Reservations.Where(r => r.HotelId == hotelId);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                q = q.Where(r =>
+                    r.GuestFullName.ToLower().Contains(term) ||
+                    r.GuestEmail.ToLower().Contains(term) ||
+                    r.GuestPhone.Contains(term) ||
+                    r.ReservationNumber.ToLower().Contains(term));
+            }
+
+            if (status.HasValue)
+                q = q.Where(r => r.Status == status.Value);
+
+            if (checkInFrom.HasValue)
+                q = q.Where(r => r.CheckInDate >= checkInFrom.Value);
+
+            if (checkInTo.HasValue)
+                q = q.Where(r => r.CheckInDate <= checkInTo.Value);
+
+            return q;
+        }
 
         public async Task<IEnumerable<Reservation>> GetByCustomerIdAsync(int customerId)
             => await _context.Reservations
@@ -54,8 +91,8 @@ namespace Booking.Repositories
             var ids = roomIds.ToList();
             return await _context.ReservationRooms
                 .Where(rr => ids.Contains(rr.RoomId)
-                    && (rr.Reservation!.Status == ReservationStatus.Confirmed
-                        || rr.Reservation.Status == ReservationStatus.CheckedIn)
+                    && rr.Reservation!.Status != ReservationStatus.Cancelled
+                    && rr.Reservation.Status != ReservationStatus.CheckedOut
                     && rr.Reservation.CheckInDate < checkOut
                     && rr.Reservation.CheckOutDate > checkIn
                     && (excludeReservationId == null || rr.ReservationId != excludeReservationId))

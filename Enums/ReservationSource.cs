@@ -1,4 +1,9 @@
 namespace Booking.Enums
 {
-    public enum ReservationSource { Website, WalkIn, Phone }
+    public enum ReservationSource
+    {
+        Website,
+        WalkIn,
+        Phone
+    }
 }
