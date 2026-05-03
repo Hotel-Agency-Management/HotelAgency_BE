@@ -23,7 +23,8 @@ namespace Booking.Services
         IAppLinkService _appLinkService,
         IRegistrationStrategyFactory _strategyFactory,
         IProfileStrategyFactory _profileFactory,
-        IAgencyRepository _agencyRepository) : IAuthService
+        IAgencyRepository _agencyRepository,
+        IHotelRepository _hotelRepository) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -42,6 +43,7 @@ namespace Booking.Services
 
             Agency? agency = null;
             AgencyStatus? agencyStatus = null;
+            Hotel? hotel = null;
 
             if (role != Roles.Customer && role != Roles.SuperAdmin)
             {
@@ -56,6 +58,16 @@ namespace Booking.Services
 
                 if (agencyStatus == AgencyStatus.Pending)
                     throw new AgencyUnderReviewException();
+            }
+
+            if (role != Roles.Customer && role != Roles.SuperAdmin && role != Roles.AgencyOwner)
+            {
+                if (!user.HotelId.HasValue)
+                    throw new Exception("HotelId is required.");
+
+                hotel = await _hotelRepository.GetByIdAsync(user.HotelId.Value);
+                if (hotel == null)
+                    throw new HotelNotFoundException(user.HotelId.Value);
             }
 
             await _authRepository.DeleteUserRefreshTokensAsync(user.Id);
@@ -86,7 +98,7 @@ namespace Booking.Services
                 Role = role,
                 AgencyStatus = agencyStatus,
                 AgencyId = agency?.Id,
-                HotelId = null
+                HotelId = hotel?.Id
             };
         }
 
