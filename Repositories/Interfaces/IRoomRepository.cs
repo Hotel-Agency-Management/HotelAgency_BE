@@ -9,6 +9,7 @@ namespace Booking.Interfaces.Repositories
         Task<Room?> GetByIdAndHotelIdAsync(int roomId, int hotelId);
         Task<IEnumerable<Room>> GetAllByHotelIdAsync(int hotelId);
         Task<bool> ExistsByRoomNumberAndHotelIdAsync(string roomNumber, int hotelId);
+        Task<IEnumerable<Room>> GetByRoomNumbersAndHotelIdAsync(IEnumerable<string> roomNumbers, int hotelId);
         Task<Room> UpdateAsync(Room room);
         Task DeleteAsync(Room room);
     }

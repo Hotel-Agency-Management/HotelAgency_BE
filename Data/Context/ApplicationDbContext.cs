@@ -29,6 +29,7 @@ namespace Booking.Data
             public DbSet<RoomPhoto> RoomPhotos { get; set; }
             public DbSet<RoomAmenity> RoomAmenities { get; set; }
             public DbSet<Reservation> Reservations { get; set; }
+            public DbSet<ReservationRoom> ReservationRooms { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -292,9 +293,6 @@ namespace Booking.Data
                         entity.HasOne(r => r.Hotel).WithMany()
                               .HasForeignKey(r => r.HotelId).OnDelete(DeleteBehavior.Cascade);
 
-                        entity.HasOne(r => r.Room).WithMany()
-                              .HasForeignKey(r => r.RoomId).OnDelete(DeleteBehavior.Restrict);
-
                         entity.HasOne(r => r.Customer).WithMany()
                               .HasForeignKey(r => r.CustomerId)
                               .OnDelete(DeleteBehavior.SetNull).IsRequired(false);
@@ -305,6 +303,18 @@ namespace Booking.Data
                         entity.HasOne(r => r.UpdatedBy).WithMany()
                               .HasForeignKey(r => r.UpdatedById)
                               .OnDelete(DeleteBehavior.SetNull).IsRequired(false);
+                  });
+
+                  builder.Entity<ReservationRoom>(entity =>
+                  {
+                        entity.ToTable("ReservationRooms");
+                        entity.HasKey(rr => new { rr.ReservationId, rr.RoomId });
+
+                        entity.HasOne(rr => rr.Reservation).WithMany(r => r.ReservationRooms)
+                              .HasForeignKey(rr => rr.ReservationId).OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasOne(rr => rr.Room).WithMany()
+                              .HasForeignKey(rr => rr.RoomId).OnDelete(DeleteBehavior.Restrict);
                   });
             }
       }

@@ -114,7 +114,7 @@ public class EmailJobService(
                 { "RESERVATION_NUMBER", reservation.ReservationNumber },
                 { "CHECK_IN_DATE", reservation.CheckInDate.ToString("yyyy-MM-dd") },
                 { "CHECK_OUT_DATE", reservation.CheckOutDate.ToString("yyyy-MM-dd") },
-                { "ROOM_NUMBER", reservation.Room?.RoomNumber ?? "" },
+                { "ROOM_NUMBER", string.Join(", ", reservation.ReservationRooms.Select(rr => rr.Room?.RoomNumber ?? "")) },
                 { "NUMBER_OF_GUESTS", reservation.NumberOfGuests.ToString() },
                 { "NUMBER_OF_ROOMS", reservation.NumberOfRooms.ToString() },
                 { "CONTRACT_LINK", contractUrl },

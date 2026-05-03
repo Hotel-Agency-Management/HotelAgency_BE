@@ -1,6 +1,4 @@
 using Booking.Clients;
-using Booking.Configurations;
-using Booking.Constants;
 using Booking.DTO;
 using Booking.Enums;
 using Booking.Exceptions;
@@ -8,21 +6,16 @@ using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Booking.Services
 {
     public class ReservationService(
         IReservationRepository _reservationRepository,
         IRoomRepository _roomRepository,
-        IAuthRepository _authRepository,
-        IOptions<AuthSettings> authSettings,
-        IEmailVerificationService _emailVerificationService,
+        ICustomerAccountService _customerAccountService,
         IBlobStorageService _blobStorageService,
         IEmailJobService _emailJobService) : IReservationService
     {
-        private readonly AuthSettings _authSettings = authSettings.Value;
-
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
         {
             if (request.ContractFile.ContentType != FileConstants.PdfContentType)
@@ -31,47 +24,52 @@ namespace Booking.Services
             if (request.InvoiceFile.ContentType != FileConstants.PdfContentType)
                 throw new BadRequestException(Messages.InvoiceFileMustBePdf);
 
-            var room = await _roomRepository.GetByIdAndHotelIdAsync(request.RoomId, hotelId)
-                ?? throw new RoomNotFoundException(request.RoomId);
+            var rooms = (await _roomRepository.GetByRoomNumbersAndHotelIdAsync(request.RoomNumbers, hotelId)).ToList();
+
+            var foundNumbers = rooms.Select(r => r.RoomNumber).ToHashSet();
+            var notFound = request.RoomNumbers.Where(n => !foundNumbers.Contains(n)).ToList();
+            if (notFound.Any())
+                throw new BadRequestException($"The following room numbers were not found in this hotel: {string.Join(", ", notFound)}.");
 
             if (request.CheckOutDate <= request.CheckInDate)
                 throw new BadRequestException(Messages.InvalidCheckOutDate);
 
-            if (await _reservationRepository.HasOverlappingReservationAsync(request.RoomId, request.CheckInDate, request.CheckOutDate))
-                throw new RoomNotAvailableException();
+            var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
+                rooms.Select(r => r.Id), request.CheckInDate, request.CheckOutDate)).ToList();
+            if (unavailable.Any())
+                throw new RoomsNotAvailableException(unavailable);
 
-            var customerId = await EnsureCustomerAsync(request);
+            var customerId = await _customerAccountService.EnsureCustomerAsync(
+                request.Source, request.CustomerId, request.GuestEmail, request.GuestFullName, request.GuestPhone);
 
             var contractPath = await _blobStorageService.UploadAsync(request.ContractFile);
             var invoicePath = await _blobStorageService.UploadAsync(request.InvoiceFile);
 
             var year = DateTime.UtcNow.Year;
             var count = await _reservationRepository.CountByYearAsync(year);
-            var reservationNumber = $"RES-{year}-{(count + 1):D6}";
 
             var reservation = new Reservation
             {
-                ReservationNumber = reservationNumber,
+                ReservationNumber = $"RES-{year}-{(count + 1):D6}",
                 HotelId = hotelId,
-                RoomId = request.RoomId,
                 CustomerId = customerId,
                 Source = request.Source,
                 Status = ReservationStatus.Pending,
                 GuestFullName = request.GuestFullName,
                 GuestEmail = request.GuestEmail,
                 GuestPhone = request.GuestPhone,
-                GuestIdNumber = request.GuestIdNumber,
                 CheckInDate = request.CheckInDate,
                 CheckOutDate = request.CheckOutDate,
                 NumberOfGuests = request.NumberOfGuests,
-                NumberOfRooms = request.NumberOfRooms,
+                NumberOfRooms = rooms.Count,
                 ContractPath = contractPath,
                 InvoicePath = invoicePath,
                 SpecialRequests = request.SpecialRequests,
                 Notes = request.Notes,
                 CreatedById = staffUserId,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
             };
 
             Reservation saved;
@@ -121,8 +119,14 @@ namespace Booking.Services
                 throw new BadRequestException("Check-out date must be after check-in date.");
 
             var datesChanged = request.CheckInDate.HasValue || request.CheckOutDate.HasValue;
-            if (datesChanged && await _reservationRepository.HasOverlappingReservationAsync(reservation.RoomId, newCheckIn, newCheckOut, reservationId))
-                throw new RoomNotAvailableException();
+            if (datesChanged)
+            {
+                var roomIds = reservation.ReservationRooms.Select(rr => rr.RoomId);
+                var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
+                    roomIds, newCheckIn, newCheckOut, reservationId)).ToList();
+                if (unavailable.Any())
+                    throw new RoomsNotAvailableException(unavailable);
+            }
 
             if (request.CustomerId.HasValue) reservation.CustomerId = request.CustomerId;
             if (request.Source.HasValue) reservation.Source = request.Source.Value;
@@ -133,7 +137,6 @@ namespace Booking.Services
             if (request.CheckInDate.HasValue) reservation.CheckInDate = request.CheckInDate.Value;
             if (request.CheckOutDate.HasValue) reservation.CheckOutDate = request.CheckOutDate.Value;
             if (request.NumberOfGuests.HasValue) reservation.NumberOfGuests = request.NumberOfGuests.Value;
-            if (request.NumberOfRooms.HasValue) reservation.NumberOfRooms = request.NumberOfRooms.Value;
             if (request.SpecialRequests is not null) reservation.SpecialRequests = request.SpecialRequests;
             if (request.Notes is not null) reservation.Notes = request.Notes;
 
@@ -161,9 +164,14 @@ namespace Booking.Services
             if (!allowedTransitions[reservation.Status].Contains(newStatus))
                 throw new InvalidStatusTransitionException(reservation.Status.ToString(), newStatus.ToString());
 
-            if (newStatus == ReservationStatus.Confirmed
-                && await _reservationRepository.HasOverlappingReservationAsync(reservation.RoomId, reservation.CheckInDate, reservation.CheckOutDate, reservationId))
-                throw new RoomNotAvailableException();
+            if (newStatus == ReservationStatus.Confirmed)
+            {
+                var roomIds = reservation.ReservationRooms.Select(rr => rr.RoomId);
+                var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
+                    roomIds, reservation.CheckInDate, reservation.CheckOutDate, reservationId)).ToList();
+                if (unavailable.Any())
+                    throw new RoomsNotAvailableException(unavailable);
+            }
 
             reservation.Status = newStatus;
             reservation.UpdatedAt = DateTime.UtcNow;
@@ -177,43 +185,6 @@ namespace Booking.Services
             var contractUrl = r.ContractPath is not null ? _blobStorageService.GetBlobUrl(r.ContractPath) : null;
             var invoiceUrl = r.InvoicePath is not null ? _blobStorageService.GetBlobUrl(r.InvoicePath) : null;
             return new ReservationResponse(r, contractUrl, invoiceUrl);
-        }
-
-        private async Task<int?> EnsureCustomerAsync(CreateReservationRequest request)
-        {
-            if (request.Source != ReservationSource.WalkIn && request.Source != ReservationSource.Phone)
-                return request.CustomerId;
-
-            var existing = await _authRepository.FindByEmailAsync(request.GuestEmail);
-            if (existing is not null)
-                return existing.Id;
-
-            var nameParts = request.GuestFullName.Trim().Split(' ', 2);
-            var firstName = nameParts[0];
-            var lastName = nameParts.Length > 1 ? nameParts[1] : string.Empty;
-
-            var user = new ApplicationUser
-            {
-                UserName = request.GuestEmail,
-                Email = request.GuestEmail,
-                FirstName = firstName,
-                LastName = lastName,
-                PhoneNumber = request.GuestPhone,
-                EmailConfirmed = false,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var result = await _authRepository.CreateUserAsync(user, _authSettings.DefaultPassword);
-            if (!result.Succeeded)
-                throw new BadRequestException("Failed to create customer account.");
-
-            await _authRepository.AddToRoleAsync(user, Roles.Customer);
-
-            var verifyLink = await _emailVerificationService.GenerateVerificationLinkAsync(user);
-            await _emailJobService.EnqueueNewCustomerAccountEmailAsync(user, verifyLink, _authSettings.DefaultPassword);
-
-            return user.Id;
         }
     }
 }

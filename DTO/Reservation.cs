@@ -6,7 +6,7 @@ namespace Booking.DTO
 {
     public class CreateReservationRequest
     {
-        [Required] public int RoomId { get; set; }
+        [Required][MinLength(1)] public List<string> RoomNumbers { get; set; } = [];
         public int? CustomerId { get; set; }
         [Required] public ReservationSource Source { get; set; }
         [Required] public string GuestFullName { get; set; } = string.Empty;
@@ -16,7 +16,6 @@ namespace Booking.DTO
         [Required] public DateOnly CheckInDate { get; set; }
         [Required] public DateOnly CheckOutDate { get; set; }
         [Range(1, int.MaxValue)] public int NumberOfGuests { get; set; }
-        [Range(1, int.MaxValue)] public int NumberOfRooms { get; set; }
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
         [Required] public IFormFile ContractFile { get; set; } = null!;
@@ -34,7 +33,6 @@ namespace Booking.DTO
         public DateOnly? CheckInDate { get; set; }
         public DateOnly? CheckOutDate { get; set; }
         [Range(1, int.MaxValue)] public int? NumberOfGuests { get; set; }
-        [Range(1, int.MaxValue)] public int? NumberOfRooms { get; set; }
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
     }
@@ -50,8 +48,7 @@ namespace Booking.DTO
         public string ReservationNumber { get; set; } = string.Empty;
         public int HotelId { get; set; }
         public string? HotelName { get; set; }
-        public int RoomId { get; set; }
-        public string? RoomNumber { get; set; }
+        public List<string> RoomNumbers { get; set; } = [];
         public int? CustomerId { get; set; }
         public string Source { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
@@ -78,8 +75,7 @@ namespace Booking.DTO
             ReservationNumber = r.ReservationNumber;
             HotelId = r.HotelId;
             HotelName = r.Hotel?.Name;
-            RoomId = r.RoomId;
-            RoomNumber = r.Room?.RoomNumber;
+            RoomNumbers = r.ReservationRooms.Select(rr => rr.Room?.RoomNumber ?? string.Empty).ToList();
             CustomerId = r.CustomerId;
             Source = r.Source.ToString();
             Status = r.Status.ToString();
@@ -106,7 +102,7 @@ namespace Booking.DTO
     {
         public int Id { get; set; }
         public string ReservationNumber { get; set; } = string.Empty;
-        public string? RoomNumber { get; set; }
+        public List<string> RoomNumbers { get; set; } = [];
         public string GuestFullName { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public DateOnly CheckInDate { get; set; }
@@ -117,7 +113,7 @@ namespace Booking.DTO
         {
             Id = r.Id;
             ReservationNumber = r.ReservationNumber;
-            RoomNumber = r.Room?.RoomNumber;
+            RoomNumbers = r.ReservationRooms.Select(rr => rr.Room?.RoomNumber ?? string.Empty).ToList();
             GuestFullName = r.GuestFullName;
             Status = r.Status.ToString();
             CheckInDate = r.CheckInDate;

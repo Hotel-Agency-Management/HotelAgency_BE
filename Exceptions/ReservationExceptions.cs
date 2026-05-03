@@ -6,10 +6,10 @@ namespace Booking.Exceptions
             : base($"Reservation with id {id} not found.", 404) { }
     }
 
-    public class RoomNotAvailableException : AppException
+    public class RoomsNotAvailableException : AppException
     {
-        public RoomNotAvailableException()
-            : base("The selected room is not available for the requested dates.", 409) { }
+        public RoomsNotAvailableException(IEnumerable<string> roomNumbers)
+            : base($"The following rooms are not available for the requested dates: {string.Join(", ", roomNumbers)}.", 409) { }
     }
 
     public class InvalidStatusTransitionException : AppException

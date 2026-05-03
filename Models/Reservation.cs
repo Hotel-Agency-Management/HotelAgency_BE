@@ -10,7 +10,6 @@ namespace Booking.Models
         [Required] public string ReservationNumber { get; set; } = string.Empty;
 
         [Required] public int HotelId { get; set; }
-        [Required] public int RoomId { get; set; }
         public int? CustomerId { get; set; }
 
         [Required] public ReservationSource Source { get; set; } = ReservationSource.WalkIn;
@@ -19,7 +18,7 @@ namespace Booking.Models
         [Required] public string GuestFullName { get; set; } = string.Empty;
         [Required] public string GuestEmail { get; set; } = string.Empty;
         [Required] public string GuestPhone { get; set; } = string.Empty;
-        public string? GuestIdNumber { get; set; }
+        public string GuestIdNumber { get; set; } = string.Empty;
 
         [Required] public DateOnly CheckInDate { get; set; }
         [Required] public DateOnly CheckOutDate { get; set; }
@@ -39,9 +38,10 @@ namespace Booking.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(HotelId))]     public Hotel? Hotel { get; set; }
-        [ForeignKey(nameof(RoomId))]      public Room? Room { get; set; }
         [ForeignKey(nameof(CustomerId))]  public ApplicationUser? Customer { get; set; }
         [ForeignKey(nameof(CreatedById))] public ApplicationUser? CreatedBy { get; set; }
         [ForeignKey(nameof(UpdatedById))] public ApplicationUser? UpdatedBy { get; set; }
+
+        public ICollection<ReservationRoom> ReservationRooms { get; set; } = [];
     }
 }
