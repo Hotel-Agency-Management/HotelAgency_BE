@@ -28,8 +28,7 @@ namespace Booking.Data
             public DbSet<Room> Rooms { get; set; }
             public DbSet<RoomPhoto> RoomPhotos { get; set; }
             public DbSet<RoomAmenity> RoomAmenities { get; set; }
-            public DbSet<Reservation> Reservations { get; set; }
-            public DbSet<ReservationRoom> ReservationRooms { get; set; }
+            public DbSet<TermsAndConditions> TermsAndConditions { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -273,48 +272,28 @@ namespace Booking.Data
                         .IsUnique();
                   });
 
-                  builder.Entity<Reservation>(entity =>
+                  builder.Entity<TermsAndConditions>(entity =>
                   {
-                        entity.ToTable("Reservations");
-                        entity.HasIndex(r => r.ReservationNumber).IsUnique();
+                        entity.ToTable("TermsAndConditions");
 
-                        entity.Property(r => r.ReservationNumber).IsRequired().HasMaxLength(30);
-                        entity.Property(r => r.Source).HasConversion<string>().HasMaxLength(20);
-                        entity.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
-                        entity.Property(r => r.GuestFullName).IsRequired().HasMaxLength(200);
-                        entity.Property(r => r.GuestEmail).IsRequired().HasMaxLength(200);
-                        entity.Property(r => r.GuestPhone).IsRequired().HasMaxLength(30);
-                        entity.Property(r => r.GuestIdNumber).HasMaxLength(100);
-                        entity.Property(r => r.ContractPath).HasMaxLength(500);
-                        entity.Property(r => r.InvoicePath).HasMaxLength(500);
-                        entity.Property(r => r.SpecialRequests).HasMaxLength(1000);
-                        entity.Property(r => r.Notes).HasMaxLength(1000);
+                        entity.HasOne(t => t.Hotel)
+                        .WithMany(h => h.TermsAndConditions)
+                        .HasForeignKey(t => t.HotelId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                        entity.HasOne(r => r.Hotel).WithMany()
-                              .HasForeignKey(r => r.HotelId).OnDelete(DeleteBehavior.Cascade);
+                        entity.Property(t => t.Status)
+                        .HasConversion<string>()
+                        .HasMaxLength(20);
 
-                        entity.HasOne(r => r.Customer).WithMany()
-                              .HasForeignKey(r => r.CustomerId)
-                              .OnDelete(DeleteBehavior.SetNull).IsRequired(false);
+                        entity.Property(t => t.Content)
+                        .HasColumnType("TEXT");
 
-                        entity.HasOne(r => r.CreatedBy).WithMany()
-                              .HasForeignKey(r => r.CreatedById).OnDelete(DeleteBehavior.Restrict);
+                        entity.Property(t => t.CreatedAt)
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                        entity.HasOne(r => r.UpdatedBy).WithMany()
-                              .HasForeignKey(r => r.UpdatedById)
-                              .OnDelete(DeleteBehavior.SetNull).IsRequired(false);
-                  });
-
-                  builder.Entity<ReservationRoom>(entity =>
-                  {
-                        entity.ToTable("ReservationRooms");
-                        entity.HasKey(rr => new { rr.ReservationId, rr.RoomId });
-
-                        entity.HasOne(rr => rr.Reservation).WithMany(r => r.ReservationRooms)
-                              .HasForeignKey(rr => rr.ReservationId).OnDelete(DeleteBehavior.Cascade);
-
-                        entity.HasOne(rr => rr.Room).WithMany()
-                              .HasForeignKey(rr => rr.RoomId).OnDelete(DeleteBehavior.Restrict);
+                        entity.Property(t => t.UpdatedAt)
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                        .ValueGeneratedOnAddOrUpdate();
                   });
             }
       }
