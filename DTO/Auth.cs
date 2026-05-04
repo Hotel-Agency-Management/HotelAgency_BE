@@ -39,6 +39,14 @@ namespace Booking.DTO
     }
 
 
+    public class ThemeDto
+    {
+        public string? PrimaryColor { get; set; }
+        public string? SecondaryColor { get; set; }
+        public string? TertiaryColor { get; set; }
+        public string? LogoUrl { get; set; }
+    }
+
     public class AuthResponseDto
     {
         public string Token { get; set; } = string.Empty;
@@ -50,7 +58,8 @@ namespace Booking.DTO
         public AgencyStatus? AgencyStatus { get; set; }
         public int? AgencyId { get; set; }
         public int? HotelId { get; set; }
-
+        public ThemeDto? AgencyTheme { get; set; }
+        public ThemeDto? HotelTheme { get; set; }
     }
 
 
