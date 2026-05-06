@@ -85,23 +85,42 @@ namespace Booking.DTO
         }
     }
 
-    public class ListRoomResponse
+    public class GetHotelRoomsRequest
     {
-        public int Id { get; set; }
-        public int HotelId { get; set; }
-        public string RoomTypeName { get; set; }
-        public string RoomNumber { get; set; } = string.Empty;
-        public int FloorNumber { get; set; }
-        public string Status { get; set; } = string.Empty;
+        [Range(1, int.MaxValue)] public int PageNumber { get; set; } = 1;
+        [Range(1, 100)] public int PageSize { get; set; } = 10;
+        public DateOnly? CheckIn { get; set; }
+        public DateOnly? CheckOut { get; set; }
+        public int? Guests { get; set; }
+        public int? Rooms { get; set; }
+        public decimal? MaxPrice { get; set; }
+        public string? SearchText { get; set; }
+        public int? RoomTypeId { get; set; }
+    }
 
-        public ListRoomResponse(Room room)
+    public class HotelRoomResponse
+    {
+        public int RoomId { get; set; }
+        public string RoomNumber { get; set; } = string.Empty;
+        public string RoomType { get; set; } = string.Empty;
+        public decimal PricePerNight { get; set; }
+        public int Capacity { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public List<string> Amenities { get; set; } = [];
+        public string? MainPhotoUrl { get; set; }
+
+        public HotelRoomResponse(Room room)
         {
-            Id = room.Id;
-            HotelId = room.HotelId;
+            RoomId = room.Id;
             RoomNumber = room.RoomNumber;
-            FloorNumber = room.FloorNumber;
+            RoomType = room.RoomType!.Name;
+            PricePerNight = room.DailyPrice;
+            Capacity = room.Capacity;
             Status = room.Status.ToString();
-            RoomTypeName = room.RoomType!.Name;
+            Description = room.Description;
+            Amenities = room.Amenities.Select(a => a.Name).ToList();
+            MainPhotoUrl = room.CoverPhotoUrl;
         }
     }
 }

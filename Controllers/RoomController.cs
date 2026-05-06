@@ -28,10 +28,15 @@ namespace Booking.Controllers
 
         [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}")]
         [HttpGet]
-        public async Task<IActionResult> GetRoomsByHotel([FromRoute] int hotelId)
+        public async Task<IActionResult> GetRoomsByHotel(
+            [FromRoute] int hotelId,
+            [FromQuery] GetHotelRoomsRequest request)
         {
-            var rooms = await _roomService.GetRoomsByHotelIdAsync(hotelId);
-            return Ok(rooms);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _roomService.GetFilteredRoomsByHotelIdAsync(hotelId, request);
+            return Ok(result);
         }
 
         [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}")]

@@ -1,4 +1,6 @@
 using Booking.Data;
+using Booking.DTO;
+using Booking.Enums;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
 using Microsoft.EntityFrameworkCore;
@@ -27,11 +29,55 @@ namespace Booking.Repositories
                 .Include(r => r.Amenities)
                 .FirstOrDefaultAsync(r => r.Id == roomId && r.HotelId == hotelId);
 
-        public async Task<IEnumerable<Room>> GetAllByHotelIdAsync(int hotelId)
-            => await _context.Rooms
+        public async Task<(IReadOnlyList<Room> Rooms, int TotalCount)> GetFilteredByHotelIdAsync(
+            int hotelId, GetHotelRoomsRequest request)
+        {
+            var query = _context.Rooms
                 .Include(r => r.RoomType)
+                .Include(r => r.Amenities)
                 .Where(r => r.HotelId == hotelId)
+                .AsQueryable();
+
+            if (request.CheckIn.HasValue && request.CheckOut.HasValue)
+            {
+                var checkIn = request.CheckIn.Value;
+                var checkOut = request.CheckOut.Value;
+                var blocked = new List<ReservationStatus> { ReservationStatus.Confirmed, ReservationStatus.CheckedIn };
+                query = query.Where(r => !_context.ReservationRooms.Any(rr =>
+                    rr.RoomId == r.Id &&
+                    blocked.Contains(rr.Reservation!.Status) &&
+                    rr.Reservation.CheckInDate < checkOut &&
+                    rr.Reservation.CheckOutDate > checkIn));
+            }
+
+            if (request.Guests.HasValue)
+                query = query.Where(r => r.Capacity >= request.Guests.Value);
+
+            if (request.MaxPrice.HasValue)
+                query = query.Where(r => r.DailyPrice <= request.MaxPrice.Value);
+
+            if (!string.IsNullOrWhiteSpace(request.SearchText))
+            {
+                var text = request.SearchText.Trim().ToLower();
+                query = query.Where(r =>
+                    r.RoomType!.Name.ToLower().Contains(text) ||
+                    (r.Description != null && r.Description.ToLower().Contains(text)) ||
+                    r.Amenities.Any(a => a.Name.ToLower().Contains(text)));
+            }
+
+            if (request.RoomTypeId.HasValue)
+                query = query.Where(r => r.RoomTypeId == request.RoomTypeId.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var rooms = await query
+                .OrderBy(r => r.DailyPrice)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
                 .ToListAsync();
+
+            return (rooms, totalCount);
+        }
 
         public async Task<bool> ExistsByRoomNumberAndHotelIdAsync(string roomNumber, int hotelId)
             => await _context.Rooms

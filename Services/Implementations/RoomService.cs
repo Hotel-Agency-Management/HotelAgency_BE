@@ -69,10 +69,23 @@ namespace Booking.Services
             return new RoomResponse(room);
         }
 
-        public async Task<IEnumerable<ListRoomResponse>> GetRoomsByHotelIdAsync(int hotelId)
+        public async Task<PaginatedResponse<HotelRoomResponse>> GetFilteredRoomsByHotelIdAsync(
+            int hotelId, GetHotelRoomsRequest request)
         {
-            var rooms = await _roomRepository.GetAllByHotelIdAsync(hotelId);
-            return rooms.Select(r => new ListRoomResponse(r));
+            if (request.CheckIn.HasValue && request.CheckOut.HasValue &&
+                request.CheckOut <= request.CheckIn)
+                throw new BadRequestException("Check-out date must be after check-in date.");
+
+            var (rooms, totalCount) = await _roomRepository.GetFilteredByHotelIdAsync(hotelId, request);
+
+            return new PaginatedResponse<HotelRoomResponse>
+            {
+                Items = rooms.Select(r => new HotelRoomResponse(r)).ToList(),
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
         }
 
         public async Task<RoomResponse> UpdateRoomAsync(int hotelId, int roomId, UpdateRoomRequest request)
