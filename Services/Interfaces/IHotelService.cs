@@ -6,7 +6,7 @@ namespace Booking.Interfaces.Services
     {
         Task<HotelResponse> CreateHotelAsync(CreateHotelRequest request);
         Task<HotelResponse> GetHotelByIdAsync(int hotelId);
-        Task<IEnumerable<HotelResponse>> GetHotelsByAgencyIdAsync(int agencyId);
+        Task<PaginatedResponse<HotelResponse>> GetHotelsByAgencyIdAsync(int agencyId, HotelListRequest request);
         Task<HotelResponse> UpdateHotelAsync(int hotelId, UpdateHotelRequest request);
     }
 }

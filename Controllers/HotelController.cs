@@ -35,11 +35,11 @@ namespace Booking.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetHotelsByAgency()
+        public async Task<IActionResult> GetHotelsByAgency([FromQuery] HotelListRequest request)
         {
             var agencyOwner = await _userManager.GetUserAsync(User);
-            var hotels = await _hotelService.GetHotelsByAgencyIdAsync(agencyOwner!.AgencyId!.Value);
-            return Ok(hotels);
+            var result = await _hotelService.GetHotelsByAgencyIdAsync(agencyOwner!.AgencyId!.Value, request);
+            return Ok(result);
         }
 
         [EnsureHotelExistsForOwnerAttribute]

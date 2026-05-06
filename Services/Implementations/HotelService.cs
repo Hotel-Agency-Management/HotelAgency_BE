@@ -58,10 +58,20 @@ namespace Booking.Services
             return new HotelResponse(hotel);
         }
 
-        public async Task<IEnumerable<HotelResponse>> GetHotelsByAgencyIdAsync(int agencyId)
+        public async Task<PaginatedResponse<HotelResponse>> GetHotelsByAgencyIdAsync(int agencyId, HotelListRequest request)
         {
-            var hotels = await _hotelRepository.GetAllByAgencyIdAsync(agencyId);
-            return hotels.Select(h => new HotelResponse(h));
+            var totalCount = await _hotelRepository.CountByAgencyIdAsync(agencyId, request.Search, request.Location);
+            var hotels = await _hotelRepository.GetAllByAgencyIdAsync(
+                agencyId, request.Search, request.Location, request.PageNumber, request.PageSize);
+
+            return new PaginatedResponse<HotelResponse>
+            {
+                Items = [..hotels.Select(h => new HotelResponse(h))],
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
         }
 
         public async Task<HotelResponse> UpdateHotelAsync(int hotelId, UpdateHotelRequest request)
