@@ -74,6 +74,22 @@ namespace Booking.Services
             };
         }
 
+        public async Task<PaginatedResponse<HotelResponse>> GetAllHotelsAsync(HotelListRequest request)
+        {
+            var totalCount = await _hotelRepository.CountAllAsync(request.Search, request.Location);
+            var hotels = await _hotelRepository.GetAllAsync(
+                request.Search, request.Location, request.PageNumber, request.PageSize);
+
+            return new PaginatedResponse<HotelResponse>
+            {
+                Items = [..hotels.Select(h => new HotelResponse(h))],
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
+        }
+
         public async Task<HotelResponse> UpdateHotelAsync(int hotelId, UpdateHotelRequest request)
         {
 

@@ -31,9 +31,22 @@ namespace Booking.Repositories
         public async Task<int> CountByAgencyIdAsync(int agencyId, string? search, string? location)
             => await BuildQuery(agencyId, search, location).CountAsync();
 
-        private IQueryable<Hotel> BuildQuery(int agencyId, string? search, string? location)
+        public async Task<IEnumerable<Hotel>> GetAllAsync(
+            string? search, string? location, int pageNumber, int pageSize)
+            => await BuildQuery(null, search, location)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+        public async Task<int> CountAllAsync(string? search, string? location)
+            => await BuildQuery(null, search, location).CountAsync();
+
+        private IQueryable<Hotel> BuildQuery(int? agencyId, string? search, string? location)
         {
-            var query = _context.Hotels.Where(h => h.AgencyId == agencyId);
+            var query = _context.Hotels.AsQueryable();
+
+            if (agencyId.HasValue)
+                query = query.Where(h => h.AgencyId == agencyId.Value);
 
             if (!string.IsNullOrWhiteSpace(location))
                 query = query.Where(h =>
