@@ -72,8 +72,10 @@ namespace Booking.Services
         public async Task<PaginatedResponse<HotelRoomResponse>> GetFilteredRoomsByHotelIdAsync(
             int hotelId, GetHotelRoomsRequest request)
         {
-            if (request.CheckIn.HasValue && request.CheckOut.HasValue &&
-                request.CheckOut <= request.CheckIn)
+            if (request.CheckIn.HasValue != request.CheckOut.HasValue)
+                throw new BadRequestException("Both check-in and check-out dates must be provided together.");
+
+            if (request.CheckIn.HasValue && request.CheckOut <= request.CheckIn)
                 throw new BadRequestException("Check-out date must be after check-in date.");
 
             var (rooms, totalCount) = await _roomRepository.GetFilteredByHotelIdAsync(hotelId, request);

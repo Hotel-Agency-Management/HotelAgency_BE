@@ -42,12 +42,11 @@ namespace Booking.Repositories
             {
                 var checkIn = request.CheckIn.Value;
                 var checkOut = request.CheckOut.Value;
-                var blocked = new List<ReservationStatus> { ReservationStatus.Confirmed, ReservationStatus.CheckedIn };
-                query = query.Where(r => !_context.ReservationRooms.Any(rr =>
-                    rr.RoomId == r.Id &&
-                    blocked.Contains(rr.Reservation!.Status) &&
-                    rr.Reservation.CheckInDate < checkOut &&
-                    rr.Reservation.CheckOutDate > checkIn));
+                query = query.Where(r => !_context.Reservations.Any(res =>
+                    (res.Status == ReservationStatus.Confirmed || res.Status == ReservationStatus.CheckedIn) &&
+                    res.CheckInDate < checkOut &&
+                    res.CheckOutDate > checkIn &&
+                    res.ReservationRooms.Any(rr => rr.RoomId == r.Id)));
             }
 
             if (request.Guests.HasValue)
