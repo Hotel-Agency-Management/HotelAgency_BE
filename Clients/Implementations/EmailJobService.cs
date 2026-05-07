@@ -98,6 +98,61 @@ public class EmailJobService(
             svc.SendEmailAsync(user.Email!, $"You have been invited to {agency.AgencyName}", plainText, html));
     }
 
+    public async Task EnqueueReservationConfirmationEmailAsync(
+        string recipientEmail, string guestName,
+        Reservation reservation, string contractUrl, string invoiceUrl)
+    {
+        var hotel = reservation.Hotel;
+
+        await EnqueueAsync(
+            templateFile: EmailTemplateFiles.ReservationConfirmation,
+            to: recipientEmail,
+            subject: EmailSubjects.ReservationConfirmation,
+            plainText: $"Your reservation {reservation.ReservationNumber} at {hotel?.Name} is confirmed. Contract: {contractUrl} | Invoice: {invoiceUrl}",
+            placeholders: new Dictionary<string, string>
+            {
+                { "HOTEL_NAME", hotel?.Name ?? "" },
+                { "GUEST_NAME", guestName },
+                { "RESERVATION_NUMBER", reservation.ReservationNumber },
+                { "CHECK_IN_DATE", reservation.CheckInDate.ToString("yyyy-MM-dd") },
+                { "CHECK_OUT_DATE", reservation.CheckOutDate.ToString("yyyy-MM-dd") },
+                { "ROOM_NUMBER", string.Join(", ", reservation.ReservationRooms.Select(rr => rr.Room?.RoomNumber ?? "")) },
+                { "NUMBER_OF_GUESTS", reservation.NumberOfGuests.ToString() },
+                { "NUMBER_OF_ROOMS", reservation.NumberOfRooms.ToString() },
+                { "CONTRACT_LINK", contractUrl },
+                { "INVOICE_LINK", invoiceUrl },
+                { "PRIMARY_COLOR", GetThemeColor(hotel?.PrimaryColor, "#8b5e34") },
+                { "SECONDARY_COLOR", GetThemeColor(hotel?.SecondaryColor, "#c89b63") },
+                { "TERTIARY_COLOR", GetThemeColor(hotel?.TertiaryColor, "#f8f5ef") },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() }
+            });
+    }
+
+    public async Task EnqueueNewCustomerAccountEmailAsync(
+        ApplicationUser user, string verificationLink, string defaultPassword)
+    {
+        var name = $"{user.FirstName} {user.LastName}".Trim();
+        if (string.IsNullOrWhiteSpace(name)) name = "Guest";
+
+        await EnqueueAsync(
+            templateFile: EmailTemplateFiles.NewCustomerAccount,
+            to: user.Email!,
+            subject: EmailSubjects.NewCustomerAccount,
+            plainText: $"Your account has been created. Email: {user.Email}, Temporary password: {defaultPassword}. Verify: {verificationLink}",
+            placeholders: new Dictionary<string, string>
+            {
+                { "GUEST_NAME", name },
+                { "EMAIL", user.Email! },
+                { "DEFAULT_PASSWORD", defaultPassword },
+                { "VERIFY_LINK", verificationLink },
+                { "HELP_LINK", _appLinkService.GetHelpLink() },
+                { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
+                { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() }
+            });
+    }
+
     private async Task EnqueueAsync(
         string templateFile,
         string to,

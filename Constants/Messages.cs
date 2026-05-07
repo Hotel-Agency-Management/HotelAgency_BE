@@ -44,4 +44,10 @@ public static class Messages
     public const string HotelForbidden = "You do not have permission to access this hotel.";
     public const string FacilityNotFound = "Facility with id '{0}' was not found.";
     public const string FacilityForbidden = "Facility with id '{0}' does not belong to hotel with id '{1}'.";
+
+    //reservation 
+    public const string ContractFileMustBePdf = "Contract file must be a PDF.";
+    public const string InvoiceFileMustBePdf = "Invoice file must be a PDF.";
+    public const string InvalidCheckOutDate = "Check-out date must be after check-in date.";
+
 }

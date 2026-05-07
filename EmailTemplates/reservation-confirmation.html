@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reservation Confirmed</title>
+  </head>
+  <body style="margin:0;padding:0;background:{{TERTIARY_COLOR}};font-family:Arial,Helvetica,sans-serif;color:#2f2418;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{TERTIARY_COLOR}};padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 20px 45px rgba(92,67,37,0.15);">
+            <tr>
+              <td style="height:6px;background:{{PRIMARY_COLOR}};"></td>
+            </tr>
+
+            <tr>
+              <td style="background:{{PRIMARY_COLOR}};padding:34px 40px;text-align:center;color:#fff;">
+                <div style="font-size:28px;font-weight:800;letter-spacing:.5px;">{{HOTEL_NAME}}</div>
+                <div style="margin-top:10px;font-size:14px;opacity:.85;">Reservation Confirmation</div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:40px;">
+                <div style="display:inline-block;background:{{TERTIARY_COLOR}};color:{{PRIMARY_COLOR}};padding:8px 16px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">
+                  Booking Confirmed
+                </div>
+
+                <h1 style="margin:20px 0 12px;font-size:28px;line-height:1.2;color:#2f2418;">
+                  Your reservation is confirmed!
+                </h1>
+
+                <p style="margin:0 0 24px;font-size:16px;line-height:1.8;color:#5f4b35;">
+                  Hi <strong>{{GUEST_NAME}}</strong>, your reservation at <strong>{{HOTEL_NAME}}</strong> has been successfully created. Here are your booking details:
+                </p>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{TERTIARY_COLOR}};border-radius:14px;padding:24px;margin-bottom:24px;">
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#5f4b35;font-weight:700;width:40%;">Reservation Number</td>
+                    <td style="padding:8px 0;font-size:14px;color:#2f2418;font-weight:800;">{{RESERVATION_NUMBER}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#5f4b35;font-weight:700;">Room</td>
+                    <td style="padding:8px 0;font-size:14px;color:#2f2418;">{{ROOM_NUMBER}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#5f4b35;font-weight:700;">Check-in</td>
+                    <td style="padding:8px 0;font-size:14px;color:#2f2418;">{{CHECK_IN_DATE}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#5f4b35;font-weight:700;">Check-out</td>
+                    <td style="padding:8px 0;font-size:14px;color:#2f2418;">{{CHECK_OUT_DATE}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#5f4b35;font-weight:700;">Guests</td>
+                    <td style="padding:8px 0;font-size:14px;color:#2f2418;">{{NUMBER_OF_GUESTS}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#5f4b35;font-weight:700;">Rooms</td>
+                    <td style="padding:8px 0;font-size:14px;color:#2f2418;">{{NUMBER_OF_ROOMS}}</td>
+                  </tr>
+                </table>
+
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#5f4b35;">
+                  Your reservation documents are ready for download:
+                </p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                  <tr>
+                    <td style="padding-right:12px;">
+                      <a href="{{CONTRACT_LINK}}" style="display:inline-block;background:{{PRIMARY_COLOR}};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 24px;border-radius:999px;">
+                        Download Contract
+                      </a>
+                    </td>
+                    <td>
+                      <a href="{{INVOICE_LINK}}" style="display:inline-block;background:#ffffff;border:2px solid {{PRIMARY_COLOR}};color:{{PRIMARY_COLOR}};text-decoration:none;font-size:14px;font-weight:700;padding:12px 24px;border-radius:999px;">
+                        Download Invoice
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0;font-size:13px;line-height:1.7;color:#7a6248;">
+                  If you have any questions about your reservation, please contact our support team.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="background:#2f2418;padding:22px 28px;text-align:center;color:rgba(255,255,255,.75);font-size:12px;">
+                <a href="{{HELP_LINK}}" style="color:{{SECONDARY_COLOR}};text-decoration:none;margin:0 8px;">Help Center</a> •
+                <a href="{{SUPPORT_LINK}}" style="color:{{SECONDARY_COLOR}};text-decoration:none;margin:0 8px;">Support</a> •
+                <a href="{{PRIVACY_LINK}}" style="color:{{SECONDARY_COLOR}};text-decoration:none;margin:0 8px;">Privacy Policy</a>
+                <p style="margin:10px 0 0;">© {{YEAR}} {{HOTEL_NAME}}. All rights reserved.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

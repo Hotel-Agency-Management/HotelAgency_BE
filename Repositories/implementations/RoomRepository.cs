@@ -37,6 +37,14 @@ namespace Booking.Repositories
             => await _context.Rooms
                 .AnyAsync(r => r.RoomNumber == roomNumber && r.HotelId == hotelId);
 
+        public async Task<IEnumerable<Room>> GetByRoomNumbersAndHotelIdAsync(IEnumerable<string> roomNumbers, int hotelId)
+        {
+            var numbers = roomNumbers.ToList();
+            return await _context.Rooms
+                .Where(r => numbers.Contains(r.RoomNumber) && r.HotelId == hotelId)
+                .ToListAsync();
+        }
+
         public async Task<Room> UpdateAsync(Room room)
         {
             _context.Rooms.Update(room);

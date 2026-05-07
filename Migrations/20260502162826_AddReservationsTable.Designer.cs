@@ -4,6 +4,7 @@ using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260502162826_AddReservationsTable")]
+    partial class AddReservationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -589,7 +592,6 @@ namespace Booking.Migrations
                         .HasColumnType("varchar(200)");
 
                     b.Property<string>("GuestIdNumber")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
@@ -620,6 +622,9 @@ namespace Booking.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -633,9 +638,6 @@ namespace Booking.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(65,30)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -654,24 +656,11 @@ namespace Booking.Migrations
                     b.HasIndex("ReservationNumber")
                         .IsUnique();
 
+                    b.HasIndex("RoomId");
+
                     b.HasIndex("UpdatedById");
 
                     b.ToTable("Reservations", (string)null);
-                });
-
-            modelBuilder.Entity("Booking.Models.ReservationRoom", b =>
-                {
-                    b.Property<int>("ReservationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoomId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReservationId", "RoomId");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("ReservationRooms", (string)null);
                 });
 
             modelBuilder.Entity("Booking.Models.Room", b =>
@@ -1112,6 +1101,12 @@ namespace Booking.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Booking.Models.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Booking.Models.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedById")
@@ -1123,26 +1118,9 @@ namespace Booking.Migrations
 
                     b.Navigation("Hotel");
 
-                    b.Navigation("UpdatedBy");
-                });
-
-            modelBuilder.Entity("Booking.Models.ReservationRoom", b =>
-                {
-                    b.HasOne("Booking.Models.Reservation", "Reservation")
-                        .WithMany("ReservationRooms")
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Booking.Models.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Reservation");
-
                     b.Navigation("Room");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("Booking.Models.Room", b =>
@@ -1270,11 +1248,6 @@ namespace Booking.Migrations
             modelBuilder.Entity("Booking.Models.PlanFeature", b =>
                 {
                     b.Navigation("FeatureLimits");
-                });
-
-            modelBuilder.Entity("Booking.Models.Reservation", b =>
-                {
-                    b.Navigation("ReservationRooms");
                 });
 
             modelBuilder.Entity("Booking.Models.Room", b =>
