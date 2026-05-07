@@ -14,9 +14,12 @@ namespace Booking.Strategies
             if (result.Agency == null)
                 throw new AgencyNotAssignedException();
 
-            return new AgencyMemberProfileResponseDto(result);
+            if (result.Hotel == null)
+                throw new HotelNotAssignedException();
+
+            return new HotelStaffProfileResponseDto(result);
         }
-        
+
     }
 
 }

@@ -24,9 +24,22 @@ namespace Booking.Services
         IRegistrationStrategyFactory _strategyFactory,
         IProfileStrategyFactory _profileFactory,
         IAgencyRepository _agencyRepository,
-        IHotelRepository _hotelRepository) : IAuthService
+        IHotelRepository _hotelRepository,
+        ILoginResponseStrategyFactory _loginResponseStrategyFactory) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
+        {
+            var user = await ValidateUserCredentialsAsync(loginDto);
+            var role = await _authRepository.GetRoleAsync(user);
+            var (agency, agencyStatus) = await ResolveAgencyContextAsync(user, role);
+            var hotel = await ResolveHotelContextAsync(user, role);
+            var (token, refreshToken) = await GenerateAndSaveTokensAsync(user, role);
+
+            var strategy = _loginResponseStrategyFactory.GetStrategy(role);
+            return strategy.BuildResponse(user, role, token, refreshToken.Token, agency, agencyStatus, hotel);
+        }
+
+        private async Task<ApplicationUser> ValidateUserCredentialsAsync(LoginDto loginDto)
         {
             var user = await _authRepository.FindByEmailAsync(loginDto.Email)
                 ?? throw new UserNotFoundException(loginDto.Email);
@@ -38,38 +51,40 @@ namespace Booking.Services
             if (!isPasswordValid)
                 throw new InvalidCredentialsException();
 
-            var role = await _authRepository.GetRoleAsync(user);
+            return user;
+        }
 
+        private async Task<(Agency? agency, AgencyStatus? agencyStatus)> ResolveAgencyContextAsync(ApplicationUser user, string role)
+        {
+            if (role == Roles.Customer || role == Roles.SuperAdmin)
+                return (null, null);
 
-            Agency? agency = null;
-            AgencyStatus? agencyStatus = null;
-            Hotel? hotel = null;
+            if (!user.AgencyId.HasValue)
+                throw new Exception("AgencyId is required.");
 
-            if (role != Roles.Customer && role != Roles.SuperAdmin)
-            {
-                if (!user.AgencyId.HasValue)
-                    throw new Exception("AgencyId is required.");
+            var agency = await _agencyRepository.GetByIdAsync(user.AgencyId.Value)
+                ?? throw new AgencyNotFoundException(user.AgencyId.Value);
 
-                agency = await _agencyRepository.GetByIdAsync(user.AgencyId.Value);
-                if (agency == null)
-                    throw new AgencyNotFoundException(user.AgencyId.Value);
+            if (agency.Status == AgencyStatus.Pending)
+                throw new AgencyUnderReviewException();
 
-                agencyStatus = agency.Status;
+            return (agency, agency.Status);
+        }
 
-                if (agencyStatus == AgencyStatus.Pending)
-                    throw new AgencyUnderReviewException();
-            }
+        private async Task<Hotel?> ResolveHotelContextAsync(ApplicationUser user, string role)
+        {
+            if (role == Roles.Customer || role == Roles.SuperAdmin || role == Roles.AgencyOwner)
+                return null;
 
-            if (role != Roles.Customer && role != Roles.SuperAdmin && role != Roles.AgencyOwner)
-            {
-                if (!user.HotelId.HasValue)
-                    throw new Exception("HotelId is required.");
+            if (!user.HotelId.HasValue)
+                throw new Exception("HotelId is required.");
 
-                hotel = await _hotelRepository.GetByIdAsync(user.HotelId.Value);
-                if (hotel == null)
-                    throw new HotelNotFoundException(user.HotelId.Value);
-            }
+            return await _hotelRepository.GetByIdAsync(user.HotelId.Value)
+                ?? throw new HotelNotFoundException(user.HotelId.Value);
+        }
 
+        private async Task<(string token, RefreshToken refreshToken)> GenerateAndSaveTokensAsync(ApplicationUser user, string role)
+        {
             await _authRepository.DeleteUserRefreshTokensAsync(user.Id);
             var token = _jwtService.GenerateToken(user, role);
 
@@ -88,18 +103,7 @@ namespace Booking.Services
             if (!await _authRepository.UpdateUserAsync(user))
                 throw new InvalidOperationException("Failed to update profile.");
 
-            return new AuthResponseDto
-            {
-                Token = token,
-                Email = user.Email ?? string.Empty,
-                RefreshToken = refreshToken.Token,
-                FirstName = user.FirstName ?? string.Empty,
-                LastName = user.LastName ?? string.Empty,
-                Role = role,
-                AgencyStatus = agencyStatus,
-                AgencyId = agency?.Id,
-                HotelId = hotel?.Id
-            };
+            return (token, refreshToken);
         }
 
         public async Task<RegisterResultDto> RegisterAsync(RegisterRequest request)

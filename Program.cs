@@ -130,10 +130,14 @@ builder.Services.AddScoped<CustomerRegistrationStrategy>();
 builder.Services.AddScoped<AgencyOwnerRegistrationStrategy>();
 builder.Services.AddScoped<AgencyOwnerProfileStrategy>();
 builder.Services.AddScoped<HotelStaffProfileStrategy>();
+builder.Services.AddScoped<AgencyOwnerLoginResponseStrategy>();
+builder.Services.AddScoped<HotelStaffLoginResponseStrategy>();
+builder.Services.AddScoped<DefaultLoginResponseStrategy>();
 
 //Factories
 builder.Services.AddScoped<IRegistrationStrategyFactory, RegistrationStrategyFactory>();
 builder.Services.AddScoped<IProfileStrategyFactory, ProfileStrategyFactory>();
+builder.Services.AddScoped<ILoginResponseStrategyFactory, LoginResponseStrategyFactory>();
 
 
 // Email
