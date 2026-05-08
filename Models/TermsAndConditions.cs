@@ -22,9 +22,9 @@ namespace Booking.Models
 
         public TermsStatus Status { get; set; } = TermsStatus.Draft;
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
 
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; }
 
         [ForeignKey(nameof(HotelId))]
         public Hotel? Hotel { get; set; }

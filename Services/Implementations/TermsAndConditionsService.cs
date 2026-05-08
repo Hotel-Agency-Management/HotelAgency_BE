@@ -20,8 +20,6 @@ namespace Booking.Services
                 Title = dto.Title,
                 Content = dto.Content,
                 Status = dto.Status,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
             };
 
             var created = await _termsRepository.CreateAsync(terms);
@@ -52,8 +50,6 @@ namespace Booking.Services
             if (dto.Title is not null) terms.Title = dto.Title;
             if (dto.Content is not null) terms.Content = dto.Content;
             if (dto.Status.HasValue) terms.Status = dto.Status.Value;
-
-            terms.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _termsRepository.UpdateAsync(terms);
             return new TermsResponse(updated);
