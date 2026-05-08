@@ -9,5 +9,4 @@ namespace Booking.Exceptions
             StatusCode = statusCode;
         }
     }
-
 }
