@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(Test-Path \"C:\\\\Users\\\\samya\\\\OneDrive\\\\Desktop\\\\Booking\\\\Booking\\\\Services\"; Get-ChildItem -Path \"C:\\\\Users\\\\samya\\\\OneDrive\\\\Desktop\\\\Booking\\\\Booking\" | Where-Object { $_.PSIsContainer } | Select-Object Name)"
-    ]
-  }
-}
