@@ -295,6 +295,8 @@ namespace Booking.Data
                         .HasDefaultValueSql("CURRENT_TIMESTAMP")
                         .ValueGeneratedOnAddOrUpdate();
                   });
+
+                  
             }
       }
 }
