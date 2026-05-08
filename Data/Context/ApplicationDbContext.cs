@@ -30,6 +30,7 @@ namespace Booking.Data
             public DbSet<RoomAmenity> RoomAmenities { get; set; }
             public DbSet<Reservation> Reservations { get; set; }
             public DbSet<ReservationRoom> ReservationRooms { get; set; }
+            public DbSet<TermsAndConditions> TermsAndConditions { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -316,6 +317,31 @@ namespace Booking.Data
                         entity.HasOne(rr => rr.Room).WithMany()
                               .HasForeignKey(rr => rr.RoomId).OnDelete(DeleteBehavior.Restrict);
                   });
+
+                  builder.Entity<TermsAndConditions>(entity =>
+                  {
+                        entity.ToTable("TermsAndConditions");
+
+                        entity.HasOne(t => t.Hotel)
+                        .WithMany(h => h.TermsAndConditions)
+                        .HasForeignKey(t => t.HotelId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.Property(t => t.Status)
+                        .HasConversion<string>()
+                        .HasMaxLength(20);
+
+                        entity.Property(t => t.Content)
+                        .HasColumnType("TEXT");
+
+                        entity.Property(t => t.CreatedAt)
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                        entity.Property(t => t.UpdatedAt)
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                        .ValueGeneratedOnAddOrUpdate();
+                  });
+
             }
       }
 }

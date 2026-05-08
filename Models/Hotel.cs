@@ -55,6 +55,7 @@ namespace Booking.Models
         public ICollection<Facility> Facilities { get; set; } = new List<Facility>();
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
         public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
+        public ICollection<TermsAndConditions> TermsAndConditions { get; set; } = new List<TermsAndConditions>();
 
     }
 }
