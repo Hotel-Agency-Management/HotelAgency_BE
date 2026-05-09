@@ -205,6 +205,13 @@ namespace Booking.Data
                   });
 
 
+                  builder.Entity<Hotel>(entity =>
+                  {
+                        entity.Property(h => h.CancellationFeePercentage)
+                              .HasColumnType("decimal(5,2)")
+                              .HasDefaultValue(0m);
+                  });
+
                   builder.Entity<Facility>(entity =>
                   {
                         entity.ToTable("Facilities");
@@ -290,6 +297,10 @@ namespace Booking.Data
                         entity.Property(r => r.InvoicePath).HasMaxLength(500);
                         entity.Property(r => r.SpecialRequests).HasMaxLength(1000);
                         entity.Property(r => r.Notes).HasMaxLength(1000);
+                        entity.Property(r => r.CancellationFee)
+                              .HasColumnType("decimal(18,2)")
+                              .HasDefaultValue(0m);
+                        entity.Property(r => r.CancellationReason).HasMaxLength(1000);
 
                         entity.HasOne(r => r.Hotel).WithMany()
                               .HasForeignKey(r => r.HotelId).OnDelete(DeleteBehavior.Cascade);

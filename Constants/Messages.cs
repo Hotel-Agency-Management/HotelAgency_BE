@@ -45,9 +45,15 @@ public static class Messages
     public const string FacilityNotFound = "Facility with id '{0}' was not found.";
     public const string FacilityForbidden = "Facility with id '{0}' does not belong to hotel with id '{1}'.";
 
-    //reservation 
+    //reservation
     public const string ContractFileMustBePdf = "Contract file must be a PDF.";
     public const string InvoiceFileMustBePdf = "Invoice file must be a PDF.";
     public const string InvalidCheckOutDate = "Check-out date must be after check-in date.";
+    public const string ReservationAlreadyCancelled = "Reservation is already cancelled.";
+    public const string ReservationCannotBeCancelledDueToStatus = "Reservation cannot be cancelled in its current status.";
+    public const string FreeCancellationMessage = "Reservation cancelled successfully with no cancellation fee.";
+    public const string PaidCancellationMessage = "Reservation cancelled. A cancellation fee has been applied.";
+    public const string CheckInDateInThePast = "Check-in date cannot be in the past.";
+    public const string RoomsNotAvailableStatus = "The following rooms are not available for booking due to their current status: {0}.";
 
 }

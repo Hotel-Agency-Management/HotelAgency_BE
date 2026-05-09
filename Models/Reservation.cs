@@ -32,6 +32,11 @@ namespace Booking.Models
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
 
+        public DateTime? CancelledAt { get; set; }
+        public decimal CancellationFee { get; set; } = 0;
+        public bool IsFreeCancellation { get; set; } = false;
+        public string? CancellationReason { get; set; }
+
         [Required] public int CreatedById { get; set; }
         public int? UpdatedById { get; set; }
 

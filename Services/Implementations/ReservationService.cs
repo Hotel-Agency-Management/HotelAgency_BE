@@ -24,6 +24,12 @@ namespace Booking.Services
             if (request.InvoiceFile.ContentType != FileConstants.PdfContentType)
                 throw new BadRequestException(Messages.InvoiceFileMustBePdf);
 
+            if (request.CheckInDate < DateOnly.FromDateTime(DateTime.UtcNow))
+                throw new BadRequestException(Messages.CheckInDateInThePast);
+
+            if (request.CheckOutDate <= request.CheckInDate)
+                throw new BadRequestException(Messages.InvalidCheckOutDate);
+
             var rooms = (await _roomRepository.GetByRoomNumbersAndHotelIdAsync(request.RoomNumbers, hotelId)).ToList();
 
             var foundNumbers = rooms.Select(r => r.RoomNumber).ToHashSet();
@@ -31,8 +37,12 @@ namespace Booking.Services
             if (notFound.Any())
                 throw new BadRequestException($"The following room numbers were not found in this hotel: {string.Join(", ", notFound)}.");
 
-            if (request.CheckOutDate <= request.CheckInDate)
-                throw new BadRequestException(Messages.InvalidCheckOutDate);
+            var notAvailable = rooms.Where(r => r.Status != RoomStatus.Available)
+                                    .Select(r => r.RoomNumber)
+                                    .ToList();
+            if (notAvailable.Any())
+                throw new BadRequestException(
+                    string.Format(Messages.RoomsNotAvailableStatus, string.Join(", ", notAvailable)));
 
             var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
                 rooms.Select(r => r.Id), request.CheckInDate, request.CheckOutDate)).ToList();
@@ -160,5 +170,38 @@ namespace Booking.Services
             return new ReservationResponse(updated);
         }
 
+        public async Task<CancellationResponse> CancelReservationAsync(
+            int hotelId, int reservationId, CancelReservationRequest request)
+        {
+            var reservation = await _reservationRepository.GetByIdAndHotelIdAsync(reservationId, hotelId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            if (reservation.Status == ReservationStatus.Cancelled)
+                throw new BadRequestException(Messages.ReservationAlreadyCancelled);
+
+            if (reservation.Status == ReservationStatus.CheckedIn ||
+                reservation.Status == ReservationStatus.CheckedOut)
+                throw new InvalidStatusTransitionException(
+                    reservation.Status.ToString(), ReservationStatus.Cancelled.ToString());
+
+            var isFree = DateTime.UtcNow.Date <
+                reservation.CheckInDate.ToDateTime(TimeOnly.MinValue).AddDays(-3).Date;
+
+            var fee = isFree
+                ? 0m
+                : reservation.TotalAmount * (reservation.Hotel!.CancellationFeePercentage / 100m);
+
+            reservation.Status = ReservationStatus.Cancelled;
+            reservation.CancelledAt = DateTime.UtcNow;
+            reservation.CancellationFee = fee;
+            reservation.IsFreeCancellation = isFree;
+            reservation.CancellationReason = request.CancellationReason;
+            reservation.UpdatedAt = DateTime.UtcNow;
+
+            var updated = await _reservationRepository.UpdateAsync(reservation);
+
+            var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
+            return new CancellationResponse(updated, message);
+        }
     }
 }

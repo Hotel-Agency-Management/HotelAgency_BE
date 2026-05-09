@@ -36,6 +36,7 @@ namespace Booking.Services
                 SecondaryColor = request.SecondaryColor,
                 TertiaryColor = request.TertiaryColor,
                 ManagerUserId = request.ManagerUserId,
+                CancellationFeePercentage = request.CancellationFeePercentage,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -105,6 +106,8 @@ namespace Booking.Services
             if (request.PrimaryColor is not null) hotel.PrimaryColor = request.PrimaryColor;
             if (request.SecondaryColor is not null) hotel.SecondaryColor = request.SecondaryColor;
             if (request.TertiaryColor is not null) hotel.TertiaryColor = request.TertiaryColor;
+            if (request.CancellationFeePercentage.HasValue)
+                hotel.CancellationFeePercentage = request.CancellationFeePercentage.Value;
             if (request.ManagerUserId is not null && request.ManagerUserId.Value != hotel.ManagerUserId)
                 await AssignNewManagerAsync(hotel, request.ManagerUserId.Value);
 
