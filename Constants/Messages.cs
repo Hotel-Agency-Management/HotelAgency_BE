@@ -55,5 +55,9 @@ public static class Messages
     public const string PaidCancellationMessage = "Reservation cancelled. A cancellation fee has been applied.";
     public const string CheckInDateInThePast = "Check-in date cannot be in the past.";
     public const string RoomsNotAvailableStatus = "The following rooms are not available for booking due to their current status: {0}.";
+    public const string ReservationCannotBeCancelledAfterCheckIn =
+        "Reservation cannot be cancelled on or after the check-in date.";
+    public const string ReservationCannotBeCancelledAfterCheckOut =
+        "Reservation cannot be cancelled after the check-out date.";
 
 }

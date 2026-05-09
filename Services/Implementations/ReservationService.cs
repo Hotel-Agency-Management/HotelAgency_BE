@@ -184,6 +184,8 @@ namespace Booking.Services
                 throw new InvalidStatusTransitionException(
                     reservation.Status.ToString(), ReservationStatus.Cancelled.ToString());
 
+            EnsureCancellable(reservation);
+
             var isFree = DateTime.UtcNow.Date <
                 reservation.CheckInDate.ToDateTime(TimeOnly.MinValue).AddDays(-3).Date;
 
@@ -202,6 +204,17 @@ namespace Booking.Services
 
             var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
             return new CancellationResponse(updated, message);
+        }
+
+        private static void EnsureCancellable(Reservation reservation)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            if (today > reservation.CheckOutDate)
+                throw new BadRequestException(Messages.ReservationCannotBeCancelledAfterCheckOut);
+
+            if (today >= reservation.CheckInDate)
+                throw new BadRequestException(Messages.ReservationCannotBeCancelledAfterCheckIn);
         }
     }
 }
