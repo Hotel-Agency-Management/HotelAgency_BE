@@ -124,7 +124,7 @@ namespace Booking.Services
 
             return new PaginatedResponse<ListReservationResponse>
             {
-                Items = [..reservations.Select(r => new ListReservationResponse(r))],
+                Items = [.. reservations.Select(r => new ListReservationResponse(r))],
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
                 TotalCount = totalCount,
@@ -184,7 +184,14 @@ namespace Booking.Services
                 throw new InvalidStatusTransitionException(
                     reservation.Status.ToString(), ReservationStatus.Cancelled.ToString());
 
-            EnsureCancellable(reservation);
+            if (!EnsureCancellable(reservation))
+            {
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                var errorMessage = today > reservation.CheckOutDate
+                    ? Messages.ReservationCannotBeCancelledAfterCheckOut
+                    : Messages.ReservationCannotBeCancelledAfterCheckIn;
+                throw new BadRequestException(errorMessage);
+            }
 
             var isFree = DateTime.UtcNow.Date <
                 reservation.CheckInDate.ToDateTime(TimeOnly.MinValue).AddDays(-3).Date;
@@ -206,15 +213,12 @@ namespace Booking.Services
             return new CancellationResponse(updated, message);
         }
 
-        private static void EnsureCancellable(Reservation reservation)
+        private static bool EnsureCancellable(Reservation reservation)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-            if (today > reservation.CheckOutDate)
-                throw new BadRequestException(Messages.ReservationCannotBeCancelledAfterCheckOut);
-
-            if (today >= reservation.CheckInDate)
-                throw new BadRequestException(Messages.ReservationCannotBeCancelledAfterCheckIn);
+            if (today > reservation.CheckOutDate) return false;
+            if (today >= reservation.CheckInDate) return false;
+            return true;
         }
     }
 }
