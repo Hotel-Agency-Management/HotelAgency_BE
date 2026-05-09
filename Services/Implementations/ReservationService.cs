@@ -54,7 +54,7 @@ namespace Booking.Services
                 HotelId = hotelId,
                 CustomerId = customerId,
                 Source = request.Source,
-                Status = ReservationStatus.Pending,
+                Status = ReservationStatus.Confirmed,
                 GuestFullName = request.GuestFullName,
                 GuestEmail = request.GuestEmail,
                 GuestPhone = request.GuestPhone,

@@ -3,8 +3,9 @@ namespace Booking.Enums
     public enum RoomStatus
     {
         Available,
-        Occupied,
+        Cleaning,
         Maintenance,
         OutOfService
+
     }
 }
