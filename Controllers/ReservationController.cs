@@ -75,5 +75,16 @@ namespace Booking.Controllers
             var result = await _reservationService.UpdateReservationAsync(hotelId, reservationId, user.Id, request);
             return Ok(result);
         }
+
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager},{Roles.Customer}")]
+        [HttpPatch("{reservationId}/cancel")]
+        public async Task<IActionResult> CancelReservation(
+            [FromRoute] int hotelId,
+            [FromRoute] int reservationId,
+            [FromBody] CancelReservationRequest request)
+        {
+            var result = await _reservationService.CancelReservationAsync(hotelId, reservationId, request);
+            return Ok(result);
+        }
     }
 }

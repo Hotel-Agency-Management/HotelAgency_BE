@@ -31,6 +31,9 @@ namespace Booking.DTO
         [Required] public int ManagerUserId { get; set; }
         [Required] public string Phone { get; set; } = string.Empty;
         [Required] public IFormFile CoverPhoto { get; set; } = null!;
+        [Required]
+        [Range(0, 100)]
+        public decimal CancellationFeePercentage { get; set; } = 0;
     }
 
     public class UpdateHotelRequest
@@ -47,6 +50,8 @@ namespace Booking.DTO
         public int? ManagerUserId { get; set; }
         public string? Phone { get; set; }
         public IFormFile? CoverPhoto { get; set; }
+        [Range(0, 100)]
+        public decimal? CancellationFeePercentage { get; set; }
     }
 
     public class HotelResponse
@@ -67,6 +72,7 @@ namespace Booking.DTO
         public int ManagerUserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public decimal CancellationFeePercentage { get; set; }
         public HotelResponse(Hotel hotel)
         {
             Id = hotel.Id;
@@ -85,6 +91,7 @@ namespace Booking.DTO
             ManagerUserId = hotel.ManagerUserId;
             CreatedAt = hotel.CreatedAt;
             UpdatedAt = hotel.UpdatedAt;
+            CancellationFeePercentage = hotel.CancellationFeePercentage;
         }
     }
 

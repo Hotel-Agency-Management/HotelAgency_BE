@@ -113,6 +113,33 @@ namespace Booking.DTO
         }
     }
 
+    public class CancelReservationRequest
+    {
+        public string? CancellationReason { get; set; }
+    }
+
+    public class CancellationResponse
+    {
+        public int ReservationId { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public decimal CancellationFee { get; set; }
+        public bool IsFreeCancellation { get; set; }
+        public DateTime CancelledAt { get; set; }
+        public string Message { get; set; } = string.Empty;
+
+        public CancellationResponse(Reservation r, string message)
+        {
+            ReservationId = r.Id;
+            Status = r.Status.ToString();
+            TotalAmount = r.TotalAmount;
+            CancellationFee = r.CancellationFee;
+            IsFreeCancellation = r.IsFreeCancellation;
+            CancelledAt = r.CancelledAt!.Value;
+            Message = message;
+        }
+    }
+
     public class ListReservationResponse
     {
         public int Id { get; set; }
