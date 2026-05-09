@@ -30,10 +30,11 @@ namespace Booking.Controllers.Admin
 
         [HttpGet]
         public async Task<IActionResult> GetHotelsByAgency(
-            [FromRoute] int agencyId)
+            [FromRoute] int agencyId,
+            [FromQuery] HotelListRequest request)
         {
-            var hotels = await _hotelService.GetHotelsByAgencyIdAsync(agencyId);
-            return Ok(hotels);
+            var result = await _hotelService.GetHotelsByAgencyIdAsync(agencyId, request);
+            return Ok(result);
         }
 
         [EnsureHotelExistsForAdmin]
