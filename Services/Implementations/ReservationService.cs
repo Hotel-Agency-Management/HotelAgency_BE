@@ -49,6 +49,10 @@ namespace Booking.Services
             if (unavailable.Any())
                 throw new RoomsNotAvailableException(unavailable);
 
+            var insuranceAmount = request.HasInsurance
+                ? rooms.Sum(r => r.InsurancePerReservation ?? 0m)
+                : 0m;
+
             var customerId = await _customerAccountService.EnsureCustomerAsync(
                 request.Source, request.CustomerId, request.GuestEmail, request.GuestFullName, request.GuestPhone);
 
@@ -75,6 +79,7 @@ namespace Booking.Services
                 ContractPath = contractPath,
                 TotalAmount = request.TotalAmount,
                 HasInsurance = request.HasInsurance,
+                InsuranceAmount = insuranceAmount,
                 InvoicePath = invoicePath,
                 SpecialRequests = request.SpecialRequests,
                 Notes = request.Notes,
@@ -163,7 +168,13 @@ namespace Booking.Services
             if (request.NumberOfGuests.HasValue) reservation.NumberOfGuests = request.NumberOfGuests.Value;
             if (request.SpecialRequests is not null) reservation.SpecialRequests = request.SpecialRequests;
             if (request.Notes is not null) reservation.Notes = request.Notes;
-            if (request.HasInsurance.HasValue) reservation.HasInsurance = request.HasInsurance.Value;
+            if (request.HasInsurance.HasValue)
+            {
+                reservation.HasInsurance = request.HasInsurance.Value;
+                reservation.InsuranceAmount = request.HasInsurance.Value
+                    ? reservation.ReservationRooms.Sum(rr => rr.Room?.InsurancePerReservation ?? 0m)
+                    : 0m;
+            }
 
             reservation.UpdatedById = staffUserId;
             reservation.UpdatedAt = DateTime.UtcNow;

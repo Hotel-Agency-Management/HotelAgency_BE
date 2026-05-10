@@ -72,6 +72,7 @@ namespace Booking.DTO
         public string GuestPhone { get; set; } = string.Empty;
         public Decimal TotalAmount { get; set; }
         public bool HasInsurance { get; set; }
+        public decimal InsuranceAmount { get; set; }
         public string? GuestIdNumber { get; set; }
         public DateOnly CheckInDate { get; set; }
         public DateOnly CheckOutDate { get; set; }
@@ -114,6 +115,7 @@ namespace Booking.DTO
             UpdatedAt = r.UpdatedAt;
             TotalAmount = r.TotalAmount;
             HasInsurance = r.HasInsurance;
+            InsuranceAmount = r.InsuranceAmount;
         }
     }
 
@@ -156,6 +158,7 @@ namespace Booking.DTO
         public DateTime CreatedAt { get; set; }
         public Decimal TotalAmount { get; set; }
         public bool HasInsurance { get; set; }
+        public decimal InsuranceAmount { get; set; }
 
         public ListReservationResponse(Reservation r)
         {
@@ -169,6 +172,7 @@ namespace Booking.DTO
             CreatedAt = r.CreatedAt;
             TotalAmount = r.TotalAmount;
             HasInsurance = r.HasInsurance;
+            InsuranceAmount = r.InsuranceAmount;
         }
     }
 }

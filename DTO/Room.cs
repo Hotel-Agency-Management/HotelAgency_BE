@@ -20,6 +20,8 @@ namespace Booking.DTO
         [Required] public decimal ExtendPrice { get; set; }
         [Required] public int Capacity { get; set; }
         [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
+        public decimal? InsurancePerReservation { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
         public decimal? YearlyInsurance { get; set; }
 
     }
@@ -38,6 +40,8 @@ namespace Booking.DTO
         public decimal? MonthlyPrice { get; set; }
         public decimal? ExtendPrice { get; set; }
         public int? Capacity { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
+        public decimal? InsurancePerReservation { get; set; }
         [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
         public decimal? YearlyInsurance { get; set; }
 
@@ -59,6 +63,7 @@ namespace Booking.DTO
         public decimal MonthlyPrice { get; set; }
         public decimal ExtendPrice { get; set; }
         public int Capacity { get; set; }
+        public decimal? InsurancePerReservation { get; set; }
         public decimal? YearlyInsurance { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -80,6 +85,7 @@ namespace Booking.DTO
             WeeklyPrice = room.WeeklyPrice;
             ExtendPrice = room.ExtendPrice;
             Capacity = room.Capacity;
+            InsurancePerReservation = room.InsurancePerReservation;
             YearlyInsurance = room.YearlyInsurance;
             CreatedAt = room.CreatedAt;
             UpdatedAt = room.UpdatedAt;

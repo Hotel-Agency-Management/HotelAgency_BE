@@ -51,6 +51,7 @@ namespace Booking.Services
                 WeeklyPrice = request.WeeklyPrice,
                 ExtendPrice = request.ExtendPrice,
                 Capacity = request.Capacity,
+                InsurancePerReservation = request.InsurancePerReservation,
                 YearlyInsurance = request.YearlyInsurance,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -122,6 +123,8 @@ namespace Booking.Services
             if (request.WeeklyPrice is not null) room.WeeklyPrice = request.WeeklyPrice.Value;
             if (request.MonthlyPrice is not null) room.MonthlyPrice = request.MonthlyPrice.Value;
             if (request.ExtendPrice is not null) room.ExtendPrice = request.ExtendPrice.Value;
+            if (request.InsurancePerReservation is not null)
+                room.InsurancePerReservation = request.InsurancePerReservation.Value;
             if (request.YearlyInsurance is not null)
                 room.YearlyInsurance = request.YearlyInsurance.Value;
 
