@@ -119,6 +119,7 @@ namespace Booking.DTO
         public int Capacity { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public decimal? InsurancePerReservation { get; set; }
         public List<string> Amenities { get; set; } = [];
         public string? MainPhotoUrl { get; set; }
 
@@ -131,6 +132,7 @@ namespace Booking.DTO
             Capacity = room.Capacity;
             Status = room.Status.ToString();
             Description = room.Description;
+            InsurancePerReservation = room.InsurancePerReservation;
             Amenities = room.Amenities.Select(a => a.Name).ToList();
             MainPhotoUrl = room.CoverPhotoUrl;
         }
