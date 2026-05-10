@@ -42,6 +42,7 @@ namespace Booking.Models
         [Required] public decimal WeeklyPrice { get; set; }
         [Required] public decimal MonthlyPrice { get; set; }
         [Required] public decimal ExtendPrice { get; set; }
+        public decimal? MonthlyInsurance { get; set; }
         public ICollection<RoomPhoto> Photos { get; set; } = new List<RoomPhoto>();
         public ICollection<RoomAmenity> Amenities { get; set; } = new List<RoomAmenity>();
 

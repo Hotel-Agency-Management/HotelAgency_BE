@@ -19,6 +19,7 @@ namespace Booking.DTO
         [Required] public decimal MonthlyPrice { get; set; }
         [Required] public decimal ExtendPrice { get; set; }
         [Required] public int Capacity { get; set; }
+        public decimal? MonthlyInsurance { get; set; }
 
     }
 
@@ -36,6 +37,7 @@ namespace Booking.DTO
         public decimal? MonthlyPrice { get; set; }
         public decimal? ExtendPrice { get; set; }
         public int? Capacity { get; set; }
+        public decimal? MonthlyInsurance { get; set; }
 
     }
 
@@ -55,6 +57,7 @@ namespace Booking.DTO
         public decimal MonthlyPrice { get; set; }
         public decimal ExtendPrice { get; set; }
         public int Capacity { get; set; }
+        public decimal? MonthlyInsurance { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string CoverPhotoUrl { get; set; }
@@ -75,6 +78,7 @@ namespace Booking.DTO
             WeeklyPrice = room.WeeklyPrice;
             ExtendPrice = room.ExtendPrice;
             Capacity = room.Capacity;
+            MonthlyInsurance = room.MonthlyInsurance;
             CreatedAt = room.CreatedAt;
             UpdatedAt = room.UpdatedAt;
             CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
@@ -107,6 +111,7 @@ namespace Booking.DTO
         public int Capacity { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public decimal? MonthlyInsurance { get; set; }
         public List<string> Amenities { get; set; } = [];
         public string? MainPhotoUrl { get; set; }
 
@@ -119,6 +124,7 @@ namespace Booking.DTO
             Capacity = room.Capacity;
             Status = room.Status.ToString();
             Description = room.Description;
+            MonthlyInsurance = room.MonthlyInsurance;
             Amenities = room.Amenities.Select(a => a.Name).ToList();
             MainPhotoUrl = room.CoverPhotoUrl;
         }

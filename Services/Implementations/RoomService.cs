@@ -16,6 +16,9 @@ namespace Booking.Services
     {
         public async Task<RoomResponse> CreateRoomAsync(int hotelId, CreateRoomRequest request)
         {
+            if (request.MonthlyInsurance < 0)
+                throw new BadRequestException(Messages.InsuranceCannotBeNegative);
+
             var roomType = await _roomTypeRepository.GetByIdAsync(request.RoomTypeId)
                 ?? throw new RoomTypeNotInHotelException();
             var CoverPhotoUrl = await _blobStorageService.UploadAsync(request.coverPhoto);
@@ -51,6 +54,7 @@ namespace Booking.Services
                 WeeklyPrice = request.WeeklyPrice,
                 ExtendPrice = request.ExtendPrice,
                 Capacity = request.Capacity,
+                MonthlyInsurance = request.MonthlyInsurance,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CoverPhotoUrl = CoverPhotoUrl,
@@ -113,6 +117,13 @@ namespace Booking.Services
             if (request.WeeklyPrice is not null) room.WeeklyPrice = request.WeeklyPrice.Value;
             if (request.MonthlyPrice is not null) room.MonthlyPrice = request.MonthlyPrice.Value;
             if (request.ExtendPrice is not null) room.ExtendPrice = request.ExtendPrice.Value;
+            if (request.MonthlyInsurance is not null)
+            {
+                if (request.MonthlyInsurance < 0)
+                    throw new BadRequestException(Messages.InsuranceCannotBeNegative);
+                room.MonthlyInsurance = request.MonthlyInsurance.Value;
+            }
+
             if (request.CoverPhoto is not null)
             {
                 if (room.CoverPhotoUrl is not null)

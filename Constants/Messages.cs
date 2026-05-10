@@ -59,5 +59,6 @@ public static class Messages
         "Reservation cannot be cancelled on or after the check-in date.";
     public const string ReservationCannotBeCancelledAfterCheckOut =
         "Reservation cannot be cancelled after the check-out date.";
+    public const string InsuranceCannotBeNegative = "Insurance value cannot be negative.";
 
 }
