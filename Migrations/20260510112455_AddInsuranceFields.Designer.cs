@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260510091215_AddInsuranceFields")]
+    [Migration("20260510112455_AddInsuranceFields")]
     partial class AddInsuranceFields
     {
         /// <inheritdoc />
@@ -732,9 +732,6 @@ namespace Booking.Migrations
                     b.Property<int>("HotelId")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("MonthlyInsurance")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<decimal>("MonthlyPrice")
                         .HasColumnType("decimal(65,30)");
 
@@ -757,6 +754,9 @@ namespace Booking.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("WeeklyPrice")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<decimal?>("YearlyInsurance")
                         .HasColumnType("decimal(65,30)");
 
                     b.HasKey("Id");

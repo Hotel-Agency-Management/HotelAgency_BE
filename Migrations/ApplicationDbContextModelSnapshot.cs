@@ -729,9 +729,6 @@ namespace Booking.Migrations
                     b.Property<int>("HotelId")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("MonthlyInsurance")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<decimal>("MonthlyPrice")
                         .HasColumnType("decimal(65,30)");
 
@@ -754,6 +751,9 @@ namespace Booking.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("WeeklyPrice")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<decimal?>("YearlyInsurance")
                         .HasColumnType("decimal(65,30)");
 
                     b.HasKey("Id");

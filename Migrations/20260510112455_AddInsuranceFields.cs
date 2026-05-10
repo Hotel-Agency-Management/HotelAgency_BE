@@ -11,7 +11,7 @@ namespace Booking.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<decimal>(
-                name: "MonthlyInsurance",
+                name: "YearlyInsurance",
                 table: "Rooms",
                 type: "decimal(65,30)",
                 nullable: true);
@@ -28,7 +28,7 @@ namespace Booking.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "MonthlyInsurance",
+                name: "YearlyInsurance",
                 table: "Rooms");
 
             migrationBuilder.DropColumn(
