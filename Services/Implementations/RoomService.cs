@@ -51,6 +51,8 @@ namespace Booking.Services
                 WeeklyPrice = request.WeeklyPrice,
                 ExtendPrice = request.ExtendPrice,
                 Capacity = request.Capacity,
+                InsurancePerReservation = request.InsurancePerReservation,
+                YearlyInsurance = request.YearlyInsurance,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 CoverPhotoUrl = CoverPhotoUrl,
@@ -67,6 +69,14 @@ namespace Booking.Services
                 ?? throw new RoomNotFoundException(roomId);
 
             return new RoomResponse(room);
+        }
+
+        public async Task<HotelRoomResponse> GetPublicRoomByIdAsync(int hotelId, int roomId)
+        {
+            var room = await _roomRepository.GetByIdAndHotelIdAsync(roomId, hotelId)
+                ?? throw new RoomNotFoundException(roomId);
+
+            return new HotelRoomResponse(room);
         }
 
         public async Task<PaginatedResponse<HotelRoomResponse>> GetFilteredRoomsByHotelIdAsync(
@@ -113,6 +123,11 @@ namespace Booking.Services
             if (request.WeeklyPrice is not null) room.WeeklyPrice = request.WeeklyPrice.Value;
             if (request.MonthlyPrice is not null) room.MonthlyPrice = request.MonthlyPrice.Value;
             if (request.ExtendPrice is not null) room.ExtendPrice = request.ExtendPrice.Value;
+            if (request.InsurancePerReservation is not null)
+                room.InsurancePerReservation = request.InsurancePerReservation.Value;
+            if (request.YearlyInsurance is not null)
+                room.YearlyInsurance = request.YearlyInsurance.Value;
+
             if (request.CoverPhoto is not null)
             {
                 if (room.CoverPhotoUrl is not null)

@@ -4,6 +4,7 @@ using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510124432_RenameInsuranceField")]
+    partial class RenameInsuranceField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -757,9 +760,6 @@ namespace Booking.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("WeeklyPrice")
-                        .HasColumnType("decimal(65,30)");
-
-                    b.Property<decimal?>("YearlyInsurance")
                         .HasColumnType("decimal(65,30)");
 
                     b.HasKey("Id");

@@ -35,6 +35,8 @@ namespace Booking.Models
         public DateTime? CancelledAt { get; set; }
         public decimal CancellationFee { get; set; } = 0;
         public bool IsFreeCancellation { get; set; } = false;
+        public bool HasInsurance { get; set; } = false;
+        public decimal InsuranceAmount { get; set; } = 0m;
         public string? CancellationReason { get; set; }
 
         [Required] public int CreatedById { get; set; }

@@ -19,6 +19,7 @@ namespace Booking.DTO
         [Required] public Decimal TotalAmount { get; set; }
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
+        public bool HasInsurance { get; set; } = false;
         [Required] public IFormFile ContractFile { get; set; } = null!;
         [Required] public IFormFile InvoiceFile { get; set; } = null!;
     }
@@ -32,6 +33,7 @@ namespace Booking.DTO
         public DateOnly? CheckInDate { get; set; }
         public DateOnly? CheckOutDate { get; set; }
         [Range(1, int.MaxValue)] public int? NumberOfGuests { get; set; }
+        public bool? HasInsurance { get; set; }
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
     }
@@ -69,6 +71,8 @@ namespace Booking.DTO
         public string GuestEmail { get; set; } = string.Empty;
         public string GuestPhone { get; set; } = string.Empty;
         public Decimal TotalAmount { get; set; }
+        public bool HasInsurance { get; set; }
+        public decimal InsuranceAmount { get; set; }
         public string? GuestIdNumber { get; set; }
         public DateOnly CheckInDate { get; set; }
         public DateOnly CheckOutDate { get; set; }
@@ -110,6 +114,8 @@ namespace Booking.DTO
             CreatedAt = r.CreatedAt;
             UpdatedAt = r.UpdatedAt;
             TotalAmount = r.TotalAmount;
+            HasInsurance = r.HasInsurance;
+            InsuranceAmount = r.InsuranceAmount;
         }
     }
 
@@ -151,6 +157,8 @@ namespace Booking.DTO
         public DateOnly CheckOutDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public Decimal TotalAmount { get; set; }
+        public bool HasInsurance { get; set; }
+        public decimal InsuranceAmount { get; set; }
 
         public ListReservationResponse(Reservation r)
         {
@@ -163,6 +171,8 @@ namespace Booking.DTO
             CheckOutDate = r.CheckOutDate;
             CreatedAt = r.CreatedAt;
             TotalAmount = r.TotalAmount;
+            HasInsurance = r.HasInsurance;
+            InsuranceAmount = r.InsuranceAmount;
         }
     }
 }

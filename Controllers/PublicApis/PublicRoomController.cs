@@ -28,7 +28,7 @@ namespace Booking.Controllers
             [FromRoute] int hotelId,
             [FromRoute] int roomId)
         {
-            var room = await _roomService.GetRoomByIdAsync(hotelId, roomId);
+            var room = await _roomService.GetPublicRoomByIdAsync(hotelId, roomId);
             return Ok(room);
         }
     }

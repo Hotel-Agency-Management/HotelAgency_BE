@@ -19,6 +19,10 @@ namespace Booking.DTO
         [Required] public decimal MonthlyPrice { get; set; }
         [Required] public decimal ExtendPrice { get; set; }
         [Required] public int Capacity { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
+        public decimal? InsurancePerReservation { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
+        public decimal? YearlyInsurance { get; set; }
 
     }
 
@@ -36,6 +40,10 @@ namespace Booking.DTO
         public decimal? MonthlyPrice { get; set; }
         public decimal? ExtendPrice { get; set; }
         public int? Capacity { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
+        public decimal? InsurancePerReservation { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Insurance value cannot be negative.")]
+        public decimal? YearlyInsurance { get; set; }
 
     }
 
@@ -55,6 +63,8 @@ namespace Booking.DTO
         public decimal MonthlyPrice { get; set; }
         public decimal ExtendPrice { get; set; }
         public int Capacity { get; set; }
+        public decimal? InsurancePerReservation { get; set; }
+        public decimal? YearlyInsurance { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string CoverPhotoUrl { get; set; }
@@ -75,6 +85,8 @@ namespace Booking.DTO
             WeeklyPrice = room.WeeklyPrice;
             ExtendPrice = room.ExtendPrice;
             Capacity = room.Capacity;
+            InsurancePerReservation = room.InsurancePerReservation;
+            YearlyInsurance = room.YearlyInsurance;
             CreatedAt = room.CreatedAt;
             UpdatedAt = room.UpdatedAt;
             CoverPhotoUrl = room.CoverPhotoUrl ?? string.Empty;
@@ -107,6 +119,7 @@ namespace Booking.DTO
         public int Capacity { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public decimal? InsurancePerReservation { get; set; }
         public List<string> Amenities { get; set; } = [];
         public string? MainPhotoUrl { get; set; }
 
@@ -119,6 +132,7 @@ namespace Booking.DTO
             Capacity = room.Capacity;
             Status = room.Status.ToString();
             Description = room.Description;
+            InsurancePerReservation = room.InsurancePerReservation;
             Amenities = room.Amenities.Select(a => a.Name).ToList();
             MainPhotoUrl = room.CoverPhotoUrl;
         }

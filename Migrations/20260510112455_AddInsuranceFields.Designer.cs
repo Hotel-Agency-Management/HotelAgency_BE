@@ -4,6 +4,7 @@ using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510112455_AddInsuranceFields")]
+    partial class AddInsuranceFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -621,9 +624,6 @@ namespace Booking.Migrations
                     b.Property<int>("HotelId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("InsuranceAmount")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<string>("InvoicePath")
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
@@ -731,9 +731,6 @@ namespace Booking.Migrations
 
                     b.Property<int>("HotelId")
                         .HasColumnType("int");
-
-                    b.Property<decimal?>("InsurancePerReservation")
-                        .HasColumnType("decimal(65,30)");
 
                     b.Property<decimal>("MonthlyPrice")
                         .HasColumnType("decimal(65,30)");
