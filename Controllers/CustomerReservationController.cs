@@ -15,6 +15,22 @@ namespace Booking.Controllers
         IReservationService _reservationService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
+        /*[HttpPost]
+        public async Task<IActionResult> CreateReservation(
+        [FromRoute] int hotelId,
+        [FromForm] CreateReservationRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized(Messages.Unauthorized);
+
+            var result = await _reservationService.CreateReservationAsync(hotelId, user.Id, request);
+            return Ok(result);
+        }*/
+
         [HttpGet]
         public async Task<IActionResult> GetMyReservations([FromQuery] ReservationListRequest request)
         {
