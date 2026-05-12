@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
     [EnsureAgencyExistsForOwner]
     [EnsureHotelExistsForOwnerAttribute]
     [Route("api/hotels/{hotelId}/terms")]
     public class TermsController(ITermsAndConditionsService _termsService) : ControllerBase
     {
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}")]
         [HttpGet]
         public async Task<IActionResult> GetByHotelId([FromRoute] int hotelId)
         {
@@ -21,6 +21,7 @@ namespace Booking.Controllers
             return Ok(terms);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(
             [FromRoute] int hotelId,
