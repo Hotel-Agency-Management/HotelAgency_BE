@@ -10,5 +10,9 @@ namespace Booking.Interfaces.Services
         Task<PaginatedResponse<ListReservationResponse>> GetReservationsByHotelIdAsync(int hotelId, ReservationListRequest request);
         Task<ReservationResponse> UpdateReservationAsync(int hotelId, int reservationId, int staffUserId, UpdateReservationRequest request);
         Task<CancellationResponse> CancelReservationAsync(int hotelId, int reservationId, CancelReservationRequest request);
+        Task<PaginatedResponse<ListReservationResponse>> GetMyReservationsAsync(int customerId, ReservationListRequest request);
+        Task<ReservationResponse> GetMyReservationByIdAsync(int reservationId, int customerId);
+        Task<ReservationResponse> UpdateMyReservationAsync(int reservationId, int customerId, UpdateReservationRequest request);
+        Task<CancellationResponse> CancelMyReservationAsync(int reservationId, int customerId, CancelReservationRequest request);
     }
 }

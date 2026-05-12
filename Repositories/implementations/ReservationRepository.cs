@@ -85,6 +85,38 @@ namespace Booking.Repositories
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
+        public async Task<Reservation?> GetByIdAndCustomerIdAsync(int reservationId, int customerId)
+            => await _context.Reservations
+                .Include(r => r.ReservationRooms).ThenInclude(rr => rr.Room)
+                .Include(r => r.Hotel)
+                .Include(r => r.Customer)
+                .Include(r => r.CreatedBy)
+                .Include(r => r.UpdatedBy)
+                .FirstOrDefaultAsync(r => r.Id == reservationId && r.CustomerId == customerId);
+
+        public async Task<IEnumerable<Reservation>> GetPagedByCustomerIdAsync(
+            int customerId, ReservationStatus? status, int pageNumber, int pageSize)
+        {
+            var q = _context.Reservations.Where(r => r.CustomerId == customerId);
+            if (status.HasValue)
+                q = q.Where(r => r.Status == status.Value);
+            return await q
+                .Include(r => r.ReservationRooms).ThenInclude(rr => rr.Room)
+                .Include(r => r.Hotel)
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> CountByCustomerIdAsync(int customerId, ReservationStatus? status)
+        {
+            var q = _context.Reservations.Where(r => r.CustomerId == customerId);
+            if (status.HasValue)
+                q = q.Where(r => r.Status == status.Value);
+            return await q.CountAsync();
+        }
+
         public async Task<IEnumerable<string>> GetUnavailableRoomNumbersAsync(
             IEnumerable<int> roomIds, DateOnly checkIn, DateOnly checkOut, int? excludeReservationId = null)
         {

@@ -226,6 +226,122 @@ namespace Booking.Services
             return new CancellationResponse(updated, message);
         }
 
+        public async Task<PaginatedResponse<ListReservationResponse>> GetMyReservationsAsync(
+            int customerId, ReservationListRequest request)
+        {
+            var totalCount = await _reservationRepository.CountByCustomerIdAsync(customerId, request.Status);
+            var reservations = await _reservationRepository.GetPagedByCustomerIdAsync(
+                customerId, request.Status, request.PageNumber, request.PageSize);
+
+            return new PaginatedResponse<ListReservationResponse>
+            {
+                Items = [.. reservations.Select(r => new ListReservationResponse(r))],
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
+        }
+
+        public async Task<ReservationResponse> GetMyReservationByIdAsync(int reservationId, int customerId)
+        {
+            var reservation = await _reservationRepository.GetByIdAndCustomerIdAsync(reservationId, customerId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            return new ReservationResponse(reservation);
+        }
+
+        public async Task<ReservationResponse> UpdateMyReservationAsync(
+            int reservationId, int customerId, UpdateReservationRequest request)
+        {
+            var reservation = await _reservationRepository.GetByIdAndCustomerIdAsync(reservationId, customerId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            if (reservation.Status != ReservationStatus.Pending &&
+                reservation.Status != ReservationStatus.Confirmed)
+                throw new BadRequestException(Messages.ReservationNotUpdatable);
+
+            var newCheckIn = request.CheckInDate ?? reservation.CheckInDate;
+            var newCheckOut = request.CheckOutDate ?? reservation.CheckOutDate;
+
+            if (newCheckOut <= newCheckIn)
+                throw new BadRequestException(Messages.InvalidCheckOutDate);
+
+            var datesChanged = request.CheckInDate.HasValue || request.CheckOutDate.HasValue;
+            if (datesChanged)
+            {
+                var roomIds = reservation.ReservationRooms.Select(rr => rr.RoomId);
+                var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
+                    roomIds, newCheckIn, newCheckOut, reservationId)).ToList();
+                if (unavailable.Any())
+                    throw new RoomsNotAvailableException(unavailable);
+            }
+
+            if (request.GuestPhone is not null) reservation.GuestPhone = request.GuestPhone;
+            if (request.GuestIdNumber is not null) reservation.GuestIdNumber = request.GuestIdNumber;
+            if (request.CheckInDate.HasValue) reservation.CheckInDate = request.CheckInDate.Value;
+            if (request.CheckOutDate.HasValue) reservation.CheckOutDate = request.CheckOutDate.Value;
+            if (request.NumberOfGuests.HasValue) reservation.NumberOfGuests = request.NumberOfGuests.Value;
+            if (request.SpecialRequests is not null) reservation.SpecialRequests = request.SpecialRequests;
+            if (request.Notes is not null) reservation.Notes = request.Notes;
+            if (request.HasInsurance.HasValue)
+            {
+                reservation.HasInsurance = request.HasInsurance.Value;
+                reservation.InsuranceAmount = request.HasInsurance.Value
+                    ? reservation.ReservationRooms.Sum(rr => rr.Room?.InsurancePerReservation ?? 0m)
+                    : 0m;
+            }
+
+            reservation.UpdatedById = customerId;
+            reservation.UpdatedAt = DateTime.UtcNow;
+
+            var updated = await _reservationRepository.UpdateAsync(reservation);
+            return new ReservationResponse(updated);
+        }
+
+        public async Task<CancellationResponse> CancelMyReservationAsync(
+            int reservationId, int customerId, CancelReservationRequest request)
+        {
+            var reservation = await _reservationRepository.GetByIdAndCustomerIdAsync(reservationId, customerId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            if (reservation.Status == ReservationStatus.Cancelled)
+                throw new BadRequestException(Messages.ReservationAlreadyCancelled);
+
+            if (reservation.Status == ReservationStatus.CheckedIn ||
+                reservation.Status == ReservationStatus.CheckedOut)
+                throw new InvalidStatusTransitionException(
+                    reservation.Status.ToString(), ReservationStatus.Cancelled.ToString());
+
+            if (!EnsureCancellable(reservation))
+            {
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                var errorMessage = today > reservation.CheckOutDate
+                    ? Messages.ReservationCannotBeCancelledAfterCheckOut
+                    : Messages.ReservationCannotBeCancelledAfterCheckIn;
+                throw new BadRequestException(errorMessage);
+            }
+
+            var isFree = DateTime.UtcNow.Date <
+                reservation.CheckInDate.ToDateTime(TimeOnly.MinValue).AddDays(-3).Date;
+
+            var fee = isFree
+                ? 0m
+                : reservation.TotalAmount * (reservation.Hotel!.CancellationFeePercentage / 100m);
+
+            reservation.Status = ReservationStatus.Cancelled;
+            reservation.CancelledAt = DateTime.UtcNow;
+            reservation.CancellationFee = fee;
+            reservation.IsFreeCancellation = isFree;
+            reservation.CancellationReason = request.CancellationReason;
+            reservation.UpdatedAt = DateTime.UtcNow;
+
+            var updated = await _reservationRepository.UpdateAsync(reservation);
+
+            var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
+            return new CancellationResponse(updated, message);
+        }
+
         private static bool EnsureCancellable(Reservation reservation)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

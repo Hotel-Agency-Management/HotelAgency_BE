@@ -50,6 +50,7 @@ public static class Messages
     public const string InvoiceFileMustBePdf = "Invoice file must be a PDF.";
     public const string InvalidCheckOutDate = "Check-out date must be after check-in date.";
     public const string ReservationAlreadyCancelled = "Reservation is already cancelled.";
+    public const string ReservationNotUpdatable = "Reservation cannot be updated in its current status.";
     public const string ReservationCannotBeCancelledDueToStatus = "Reservation cannot be cancelled in its current status.";
     public const string FreeCancellationMessage = "Reservation cancelled successfully with no cancellation fee.";
     public const string PaidCancellationMessage = "Reservation cancelled. A cancellation fee has been applied.";
