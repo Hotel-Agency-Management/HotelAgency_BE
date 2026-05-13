@@ -187,5 +187,8 @@ namespace Booking.DTO
         public bool HasInsurance { get; set; } = false;
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
+        public string? GuestIdNumber { get; set; }
+        [Required] public IFormFile ContractFile { get; set; } = null!;
+        [Required] public IFormFile InvoiceFile { get; set; } = null!;
     }
 }

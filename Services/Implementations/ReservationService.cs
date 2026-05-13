@@ -18,12 +18,6 @@ namespace Booking.Services
     {
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
         {
-            if (request.ContractFile.ContentType != FileConstants.PdfContentType)
-                throw new BadRequestException(Messages.ContractFileMustBePdf);
-
-            if (request.InvoiceFile.ContentType != FileConstants.PdfContentType)
-                throw new BadRequestException(Messages.InvoiceFileMustBePdf);
-
             ValidateReservationDates(request.CheckInDate, request.CheckOutDate);
 
             var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, hotelId, request.CheckInDate, request.CheckOutDate);
@@ -32,8 +26,7 @@ namespace Booking.Services
             var customerId = await _customerAccountService.EnsureCustomerAsync(
                 request.Source, request.CustomerId, request.GuestEmail, request.GuestFullName, request.GuestPhone);
 
-            var contractPath = await _blobStorageService.UploadAsync(request.ContractFile);
-            var invoicePath = await _blobStorageService.UploadAsync(request.InvoiceFile);
+            var (contractPath, invoicePath) = await ValidateAndUploadFilesAsync(request.ContractFile, request.InvoiceFile);
 
             var saved = await SaveReservationAsync(new Reservation
             {
@@ -44,6 +37,7 @@ namespace Booking.Services
                 GuestFullName = request.GuestFullName,
                 GuestEmail = request.GuestEmail,
                 GuestPhone = request.GuestPhone,
+                GuestIdNumber = request.GuestIdNumber ?? string.Empty,
                 CheckInDate = request.CheckInDate,
                 CheckOutDate = request.CheckOutDate,
                 NumberOfGuests = request.NumberOfGuests,
@@ -61,12 +55,7 @@ namespace Booking.Services
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
             });
 
-            var contractUrl = _blobStorageService.GetBlobUrl(saved.ContractPath!);
-            var invoiceUrl = _blobStorageService.GetBlobUrl(saved.InvoicePath!);
-
-            await _emailJobService.EnqueueReservationConfirmationEmailAsync(
-                saved.GuestEmail, saved.GuestFullName, saved, contractUrl, invoiceUrl);
-
+            await SendConfirmationEmailAsync(saved);
             return new ReservationResponse(saved);
         }
 
@@ -79,6 +68,8 @@ namespace Booking.Services
             var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, request.HotelId, request.CheckInDate, request.CheckOutDate);
             var insuranceAmount = request.HasInsurance ? rooms.Sum(r => r.InsurancePerReservation ?? 0m) : 0m;
 
+            var (contractPath, invoicePath) = await ValidateAndUploadFilesAsync(request.ContractFile, request.InvoiceFile);
+
             var saved = await SaveReservationAsync(new Reservation
             {
                 HotelId = request.HotelId,
@@ -88,13 +79,16 @@ namespace Booking.Services
                 GuestFullName = guestFullName,
                 GuestEmail = guestEmail,
                 GuestPhone = guestPhone,
+                GuestIdNumber = request.GuestIdNumber ?? string.Empty,
                 CheckInDate = request.CheckInDate,
                 CheckOutDate = request.CheckOutDate,
                 NumberOfGuests = request.NumberOfGuests,
                 NumberOfRooms = rooms.Count,
+                ContractPath = contractPath,
                 TotalAmount = request.TotalAmount,
                 HasInsurance = request.HasInsurance,
                 InsuranceAmount = insuranceAmount,
+                InvoicePath = invoicePath,
                 SpecialRequests = request.SpecialRequests,
                 Notes = request.Notes,
                 CreatedById = customerId,
@@ -103,9 +97,7 @@ namespace Booking.Services
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
             });
 
-            await _emailJobService.EnqueueReservationConfirmationEmailAsync(
-                saved.GuestEmail, saved.GuestFullName, saved, string.Empty, string.Empty);
-
+            await SendConfirmationEmailAsync(saved);
             return new ReservationResponse(saved);
         }
 
@@ -287,6 +279,29 @@ namespace Booking.Services
 
             var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
             return new CancellationResponse(updated, message);
+        }
+
+        private async Task<(string contractPath, string invoicePath)> ValidateAndUploadFilesAsync(
+            IFormFile contractFile, IFormFile invoiceFile)
+        {
+            if (contractFile.ContentType != FileConstants.PdfContentType)
+                throw new BadRequestException(Messages.ContractFileMustBePdf);
+
+            if (invoiceFile.ContentType != FileConstants.PdfContentType)
+                throw new BadRequestException(Messages.InvoiceFileMustBePdf);
+
+            var contractPath = await _blobStorageService.UploadAsync(contractFile);
+            var invoicePath = await _blobStorageService.UploadAsync(invoiceFile);
+
+            return (contractPath, invoicePath);
+        }
+
+        private async Task SendConfirmationEmailAsync(Reservation saved)
+        {
+            var contractUrl = _blobStorageService.GetBlobUrl(saved.ContractPath!);
+            var invoiceUrl = _blobStorageService.GetBlobUrl(saved.InvoicePath!);
+            await _emailJobService.EnqueueReservationConfirmationEmailAsync(
+                saved.GuestEmail, saved.GuestFullName, saved, contractUrl, invoiceUrl);
         }
 
         private static void ValidateReservationDates(DateOnly checkInDate, DateOnly checkOutDate)

@@ -16,7 +16,7 @@ namespace Booking.Controllers
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> CreateMyReservation([FromBody] CustomerCreateReservationRequest request)
+        public async Task<IActionResult> CreateMyReservation([FromForm] CustomerCreateReservationRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = await _userManager.GetUserAsync(User);
