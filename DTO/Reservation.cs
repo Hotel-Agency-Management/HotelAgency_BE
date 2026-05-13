@@ -175,4 +175,17 @@ namespace Booking.DTO
             InsuranceAmount = r.InsuranceAmount;
         }
     }
+
+    public class CustomerCreateReservationRequest
+    {
+        [Required] public int HotelId { get; set; }
+        [Required][MinLength(1)] public List<string> RoomNumbers { get; set; } = [];
+        [Required] public DateOnly CheckInDate { get; set; }
+        [Required] public DateOnly CheckOutDate { get; set; }
+        [Range(1, int.MaxValue)] public int NumberOfGuests { get; set; }
+        [Required] public decimal TotalAmount { get; set; }
+        public bool HasInsurance { get; set; } = false;
+        public string? SpecialRequests { get; set; }
+        public string? Notes { get; set; }
+    }
 }

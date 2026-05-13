@@ -14,5 +14,6 @@ namespace Booking.Interfaces.Services
         Task<ReservationResponse> GetMyReservationByIdAsync(int reservationId, int customerId);
         Task<ReservationResponse> UpdateMyReservationAsync(int reservationId, int customerId, UpdateReservationRequest request);
         Task<CancellationResponse> CancelMyReservationAsync(int reservationId, int customerId, CancelReservationRequest request);
+        Task<ReservationResponse> CreateMyReservationAsync(int customerId, string guestFullName, string guestEmail, string guestPhone, CustomerCreateReservationRequest request);
     }
 }
