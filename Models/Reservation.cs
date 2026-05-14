@@ -51,5 +51,6 @@ namespace Booking.Models
         [ForeignKey(nameof(UpdatedById))] public ApplicationUser? UpdatedBy { get; set; }
 
         public ICollection<ReservationRoom> ReservationRooms { get; set; } = [];
+        public ICollection<PaymentLog> PaymentLogs { get; set; } = [];
     }
 }

@@ -14,7 +14,8 @@ namespace Booking.Services
         IRoomRepository _roomRepository,
         ICustomerAccountService _customerAccountService,
         IBlobStorageService _blobStorageService,
-        IEmailJobService _emailJobService) : IReservationService
+        IEmailJobService _emailJobService,
+        IPaymentLogRepository _paymentLogRepository) : IReservationService
     {
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
         {
@@ -53,6 +54,15 @@ namespace Booking.Services
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
+            });
+
+            await _paymentLogRepository.CreateAsync(new PaymentLog
+            {
+                ReservationId = saved.Id,
+                Amount = saved.TotalAmount,
+                Type = PaymentType.Booking,
+                From = saved.CustomerId ?? 0,
+                To = saved.HotelId
             });
 
             await SendConfirmationEmailAsync(saved);
@@ -94,6 +104,15 @@ namespace Booking.Services
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
+            });
+
+            await _paymentLogRepository.CreateAsync(new PaymentLog
+            {
+                ReservationId = saved.Id,
+                Amount = saved.TotalAmount,
+                Type = PaymentType.Booking,
+                From = saved.CustomerId ?? 0,
+                To = saved.HotelId
             });
 
             await SendConfirmationEmailAsync(saved);
@@ -275,6 +294,37 @@ namespace Booking.Services
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
+
+            if (fee > 0m)
+            {
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = fee,
+                    Type = PaymentType.Cancellation,
+                    From = updated.CustomerId ?? 0,
+                    To = updated.HotelId
+                });
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = updated.TotalAmount - fee,
+                    Type = PaymentType.Refund,
+                    From = updated.HotelId,
+                    To = updated.CustomerId ?? 0
+                });
+            }
+            else
+            {
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = updated.TotalAmount,
+                    Type = PaymentType.Refund,
+                    From = updated.HotelId,
+                    To = updated.CustomerId ?? 0
+                });
+            }
 
             var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
             return new CancellationResponse(updated, message);
