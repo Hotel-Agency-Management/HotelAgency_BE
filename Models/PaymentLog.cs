@@ -15,8 +15,6 @@ namespace Booking.Models
         [Required] public int From { get; set; }
         [Required] public int To { get; set; }
 
-        public string? Reason { get; set; }
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(ReservationId))] public Reservation? Reservation { get; set; }

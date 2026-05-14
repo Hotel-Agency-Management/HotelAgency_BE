@@ -329,10 +329,6 @@ namespace Booking.Data
                               .HasConversion<string>()
                               .HasMaxLength(20);
 
-
-                        entity.Property(p => p.Reason)
-                              .HasMaxLength(1000);
-
                         entity.HasOne(p => p.Reservation)
                               .WithMany(r => r.PaymentLogs)
                               .HasForeignKey(p => p.ReservationId)

@@ -240,7 +240,17 @@ namespace Booking.Services
             if (request.GuestPhone is not null) reservation.GuestPhone = request.GuestPhone;
             if (request.GuestIdNumber is not null) reservation.GuestIdNumber = request.GuestIdNumber;
             if (request.CheckInDate.HasValue) reservation.CheckInDate = request.CheckInDate.Value;
-            if (request.CheckOutDate.HasValue) reservation.CheckOutDate = request.CheckOutDate.Value;
+            var extraCharge = 0m;
+            if (request.CheckOutDate.HasValue)
+            {
+                if (request.CheckOutDate.Value > reservation.CheckOutDate)
+                {
+                    var extraDays = request.CheckOutDate.Value.DayNumber - reservation.CheckOutDate.DayNumber;
+                    extraCharge = reservation.ReservationRooms.Sum(rr => rr.Room?.ExtendPrice ?? 0m) * extraDays;
+                    reservation.TotalAmount += extraCharge;
+                }
+                reservation.CheckOutDate = request.CheckOutDate.Value;
+            }
             if (request.NumberOfGuests.HasValue) reservation.NumberOfGuests = request.NumberOfGuests.Value;
             if (request.SpecialRequests is not null) reservation.SpecialRequests = request.SpecialRequests;
             if (request.Notes is not null) reservation.Notes = request.Notes;
@@ -256,6 +266,19 @@ namespace Booking.Services
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
+
+            if (extraCharge > 0m)
+            {
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = extraCharge,
+                    Type = PaymentType.Extend,
+                    From = updated.CustomerId ?? 0,
+                    To = updated.HotelId
+                });
+            }
+
             return new ReservationResponse(updated);
         }
 
@@ -289,6 +312,7 @@ namespace Booking.Services
             reservation.Status = ReservationStatus.Cancelled;
             reservation.CancelledAt = DateTime.UtcNow;
             reservation.CancellationFee = fee;
+            reservation.TotalAmount = fee;
             reservation.IsFreeCancellation = isFree;
             reservation.CancellationReason = request.CancellationReason;
             reservation.UpdatedAt = DateTime.UtcNow;
