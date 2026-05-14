@@ -178,7 +178,6 @@ namespace Booking.DTO
 
     public class CustomerCreateReservationRequest
     {
-        [Required] public int HotelId { get; set; }
         [Required][MinLength(1)] public List<string> RoomNumbers { get; set; } = [];
         [Required] public DateOnly CheckInDate { get; set; }
         [Required] public DateOnly CheckOutDate { get; set; }

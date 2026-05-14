@@ -60,25 +60,24 @@ namespace Booking.Services
         }
 
         public async Task<ReservationResponse> CreateMyReservationAsync(
-            int customerId, string guestFullName, string guestEmail, string guestPhone,
-            CustomerCreateReservationRequest request)
+            int hotelId, ApplicationUser user, CustomerCreateReservationRequest request)
         {
             ValidateReservationDates(request.CheckInDate, request.CheckOutDate);
 
-            var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, request.HotelId, request.CheckInDate, request.CheckOutDate);
+            var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, hotelId, request.CheckInDate, request.CheckOutDate);
             var insuranceAmount = request.HasInsurance ? rooms.Sum(r => r.InsurancePerReservation ?? 0m) : 0m;
 
             var (contractPath, invoicePath) = await ValidateAndUploadFilesAsync(request.ContractFile, request.InvoiceFile);
 
             var saved = await SaveReservationAsync(new Reservation
             {
-                HotelId = request.HotelId,
-                CustomerId = customerId,
+                HotelId = hotelId,
+                CustomerId = user.Id,
                 Source = ReservationSource.Website,
                 Status = ReservationStatus.Confirmed,
-                GuestFullName = guestFullName,
-                GuestEmail = guestEmail,
-                GuestPhone = guestPhone,
+                GuestFullName = $"{user.FirstName} {user.LastName}".Trim(),
+                GuestEmail = user.Email!,
+                GuestPhone = user.PhoneNumber ?? string.Empty,
                 GuestIdNumber = request.GuestIdNumber ?? string.Empty,
                 CheckInDate = request.CheckInDate,
                 CheckOutDate = request.CheckOutDate,
@@ -91,7 +90,7 @@ namespace Booking.Services
                 InvoicePath = invoicePath,
                 SpecialRequests = request.SpecialRequests,
                 Notes = request.Notes,
-                CreatedById = customerId,
+                CreatedById = user.Id,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()

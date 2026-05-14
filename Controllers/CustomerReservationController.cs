@@ -9,27 +9,23 @@ using Microsoft.AspNetCore.Mvc;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Route("api/my-reservations")]
+    [Route("api/")]
     [Authorize(Roles = Roles.Customer)]
     public class CustomerReservationController(
         IReservationService _reservationService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
-        [HttpPost]
-        public async Task<IActionResult> CreateMyReservation([FromForm] CustomerCreateReservationRequest request)
+        [HttpPost("agencies/{agencyId}/hotels/{hotelId}/customers/reservations")]
+        public async Task<IActionResult> CreateMyReservation([FromRoute] int hotelId, [FromForm] CustomerCreateReservationRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
-            var result = await _reservationService.CreateMyReservationAsync(
-                user.Id,
-                $"{user.FirstName} {user.LastName}".Trim(),
-                user.Email!,
-                user.PhoneNumber ?? string.Empty,
-                request);
+            var result = await _reservationService.CreateMyReservationAsync(hotelId, user, request);
             return CreatedAtAction(nameof(GetMyReservationById), new { reservationId = result.Id }, result);
         }
 
+        [Route("my-reservations")]
         [HttpGet]
         public async Task<IActionResult> GetMyReservations([FromQuery] ReservationListRequest request)
         {
@@ -39,7 +35,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{reservationId}")]
+        [HttpGet("my-reservations/{reservationId}")]
         public async Task<IActionResult> GetMyReservationById([FromRoute] int reservationId)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -48,7 +44,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{reservationId}")]
+        [HttpPut("my-reservations/{reservationId}")]
         public async Task<IActionResult> UpdateMyReservation(
             [FromRoute] int reservationId,
             [FromBody] UpdateReservationRequest request)
@@ -60,7 +56,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("{reservationId}/cancel")]
+        [HttpPatch("my-reservations/{reservationId}/cancel")]
         public async Task<IActionResult> CancelMyReservation(
             [FromRoute] int reservationId,
             [FromBody] CancelReservationRequest request)
