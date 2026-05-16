@@ -9,13 +9,13 @@ namespace Booking.Controllers
 {
 
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
     [EnsureAgencyExistsForOwner]
     [EnsureHotelExistsForOwnerAttribute]
     [Route("api/hotels/{hotelId}/facilities")]
     public class FacilityController(IFacilityService _facilityService) : ControllerBase
     {
 
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
         [HttpPost]
         public async Task<IActionResult> CreateFacility(
             [FromRoute] int hotelId,
@@ -28,6 +28,7 @@ namespace Booking.Controllers
             return Created(string.Empty, facility);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}")]
         [HttpGet]
         public async Task<IActionResult> GetFacilitiesByHotel([FromRoute] int hotelId)
         {
@@ -35,16 +36,18 @@ namespace Booking.Controllers
             return Ok(facilities);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
         [HttpGet("{facilityId}")]
         [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> GetFacilityById(
-            [FromRoute] int hotelId,
-            [FromRoute] int facilityId)
+                [FromRoute] int hotelId,
+                [FromRoute] int facilityId)
         {
             var facility = await _facilityService.GetFacilityByIdAsync(facilityId);
             return Ok(facility);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
         [HttpPut("{facilityId}")]
         [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> UpdateFacility(
@@ -59,6 +62,7 @@ namespace Booking.Controllers
             return Ok(updated);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
         [HttpDelete("{facilityId}")]
         [EnsureFacilityBelongsToHotel]
         public async Task<IActionResult> DeleteFacility(

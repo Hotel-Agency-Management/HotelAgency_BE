@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Identity;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner}")]
     [EnsureAgencyExistsForOwner]
     [Route("api/hotels")]
     public class HotelController(
@@ -33,7 +32,7 @@ namespace Booking.Controllers
             return Ok(hotel);
         }
 
-
+        [Authorize(Roles = $"{Roles.AgencyOwner}")]
         [HttpGet]
         public async Task<IActionResult> GetHotelsByAgency([FromQuery] HotelListRequest request)
         {
@@ -42,6 +41,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}")]
         [EnsureHotelExistsForOwnerAttribute]
         [HttpGet("{hotelId}")]
         public async Task<IActionResult> GetHotelById([FromRoute] int hotelId)
