@@ -84,5 +84,19 @@ namespace Booking.Controllers.Admin
             var result = await _reservationService.CancelReservationAsync(hotelId, reservationId, request);
             return Ok(result);
         }
+
+        [HttpPatch("{reservationId}/status")]
+        public async Task<IActionResult> UpdateReservationStatus(
+            [FromRoute] int agencyId,
+            [FromRoute] int hotelId,
+            [FromRoute] int reservationId,
+            [FromBody] UpdateReservationStatusRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _reservationService.UpdateReservationStatusAsync(hotelId, reservationId, request);
+            return Ok(result);
+        }
     }
 }
