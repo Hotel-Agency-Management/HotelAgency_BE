@@ -15,6 +15,9 @@ namespace Booking.Interfaces.Repositories
             int hotelId, string? search, ReservationStatus? status,
             DateOnly? checkInFrom, DateOnly? checkInTo);
         Task<IEnumerable<Reservation>> GetByCustomerIdAsync(int customerId);
+        Task<Reservation?> GetByIdAndCustomerIdAsync(int reservationId, int customerId);
+        Task<IEnumerable<Reservation>> GetPagedByCustomerIdAsync(int customerId, ReservationStatus? status, int pageNumber, int pageSize);
+        Task<int> CountByCustomerIdAsync(int customerId, ReservationStatus? status);
         Task<IEnumerable<string>> GetUnavailableRoomNumbersAsync(IEnumerable<int> roomIds, DateOnly checkIn, DateOnly checkOut, int? excludeReservationId = null);
         Task<int> CountByYearAsync(int year);
         Task<Reservation> UpdateAsync(Reservation reservation);

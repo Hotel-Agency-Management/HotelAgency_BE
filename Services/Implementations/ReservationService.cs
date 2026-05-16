@@ -18,53 +18,18 @@ namespace Booking.Services
     {
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
         {
-            if (request.ContractFile.ContentType != FileConstants.PdfContentType)
-                throw new BadRequestException(Messages.ContractFileMustBePdf);
+            ValidateReservationDates(request.CheckInDate, request.CheckOutDate);
 
-            if (request.InvoiceFile.ContentType != FileConstants.PdfContentType)
-                throw new BadRequestException(Messages.InvoiceFileMustBePdf);
-
-            if (request.CheckInDate < DateOnly.FromDateTime(DateTime.UtcNow))
-                throw new BadRequestException(Messages.CheckInDateInThePast);
-
-            if (request.CheckOutDate <= request.CheckInDate)
-                throw new BadRequestException(Messages.InvalidCheckOutDate);
-
-            var rooms = (await _roomRepository.GetByRoomNumbersAndHotelIdAsync(request.RoomNumbers, hotelId)).ToList();
-
-            var foundNumbers = rooms.Select(r => r.RoomNumber).ToHashSet();
-            var notFound = request.RoomNumbers.Where(n => !foundNumbers.Contains(n)).ToList();
-            if (notFound.Any())
-                throw new BadRequestException($"The following room numbers were not found in this hotel: {string.Join(", ", notFound)}.");
-
-            var notAvailable = rooms.Where(r => r.Status != RoomStatus.Available)
-                                    .Select(r => r.RoomNumber)
-                                    .ToList();
-            if (notAvailable.Any())
-                throw new BadRequestException(
-                    string.Format(Messages.RoomsNotAvailableStatus, string.Join(", ", notAvailable)));
-
-            var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
-                rooms.Select(r => r.Id), request.CheckInDate, request.CheckOutDate)).ToList();
-            if (unavailable.Any())
-                throw new RoomsNotAvailableException(unavailable);
-
-            var insuranceAmount = request.HasInsurance
-                ? rooms.Sum(r => r.InsurancePerReservation ?? 0m)
-                : 0m;
+            var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, hotelId, request.CheckInDate, request.CheckOutDate);
+            var insuranceAmount = request.HasInsurance ? rooms.Sum(r => r.InsurancePerReservation ?? 0m) : 0m;
 
             var customerId = await _customerAccountService.EnsureCustomerAsync(
                 request.Source, request.CustomerId, request.GuestEmail, request.GuestFullName, request.GuestPhone);
 
-            var contractPath = await _blobStorageService.UploadAsync(request.ContractFile);
-            var invoicePath = await _blobStorageService.UploadAsync(request.InvoiceFile);
+            var (contractPath, invoicePath) = await ValidateAndUploadFilesAsync(request.ContractFile, request.InvoiceFile);
 
-            var year = DateTime.UtcNow.Year;
-            var count = await _reservationRepository.CountByYearAsync(year);
-
-            var reservation = new Reservation
+            var saved = await SaveReservationAsync(new Reservation
             {
-                ReservationNumber = $"RES-{year}-{(count + 1):D6}",
                 HotelId = hotelId,
                 CustomerId = customerId,
                 Source = request.Source,
@@ -72,6 +37,7 @@ namespace Booking.Services
                 GuestFullName = request.GuestFullName,
                 GuestEmail = request.GuestEmail,
                 GuestPhone = request.GuestPhone,
+                GuestIdNumber = request.GuestIdNumber ?? string.Empty,
                 CheckInDate = request.CheckInDate,
                 CheckOutDate = request.CheckOutDate,
                 NumberOfGuests = request.NumberOfGuests,
@@ -87,26 +53,50 @@ namespace Booking.Services
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
-            };
+            });
 
-            Reservation saved;
-            try
+            await SendConfirmationEmailAsync(saved);
+            return new ReservationResponse(saved);
+        }
+
+        public async Task<ReservationResponse> CreateMyReservationAsync(
+            int hotelId, ApplicationUser user, CustomerCreateReservationRequest request)
+        {
+            ValidateReservationDates(request.CheckInDate, request.CheckOutDate);
+
+            var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, hotelId, request.CheckInDate, request.CheckOutDate);
+            var insuranceAmount = request.HasInsurance ? rooms.Sum(r => r.InsurancePerReservation ?? 0m) : 0m;
+
+            var (contractPath, invoicePath) = await ValidateAndUploadFilesAsync(request.ContractFile, request.InvoiceFile);
+
+            var saved = await SaveReservationAsync(new Reservation
             {
-                saved = await _reservationRepository.CreateAsync(reservation);
-            }
-            catch (DbUpdateException)
-            {
-                var freshCount = await _reservationRepository.CountByYearAsync(year);
-                reservation.ReservationNumber = $"RES-{year}-{(freshCount + 1):D6}";
-                saved = await _reservationRepository.CreateAsync(reservation);
-            }
+                HotelId = hotelId,
+                CustomerId = user.Id,
+                Source = ReservationSource.Website,
+                Status = ReservationStatus.Confirmed,
+                GuestFullName = $"{user.FirstName} {user.LastName}".Trim(),
+                GuestEmail = user.Email!,
+                GuestPhone = user.PhoneNumber ?? string.Empty,
+                GuestIdNumber = request.GuestIdNumber ?? string.Empty,
+                CheckInDate = request.CheckInDate,
+                CheckOutDate = request.CheckOutDate,
+                NumberOfGuests = request.NumberOfGuests,
+                NumberOfRooms = rooms.Count,
+                ContractPath = contractPath,
+                TotalAmount = request.TotalAmount,
+                HasInsurance = request.HasInsurance,
+                InsuranceAmount = insuranceAmount,
+                InvoicePath = invoicePath,
+                SpecialRequests = request.SpecialRequests,
+                Notes = request.Notes,
+                CreatedById = user.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
+            });
 
-            var contractUrl = _blobStorageService.GetBlobUrl(saved.ContractPath!);
-            var invoiceUrl = _blobStorageService.GetBlobUrl(saved.InvoicePath!);
-
-            await _emailJobService.EnqueueReservationConfirmationEmailAsync(
-                saved.GuestEmail, saved.GuestFullName, saved, contractUrl, invoiceUrl);
-
+            await SendConfirmationEmailAsync(saved);
             return new ReservationResponse(saved);
         }
 
@@ -138,29 +128,96 @@ namespace Booking.Services
             };
         }
 
-        public async Task<ReservationResponse> UpdateReservationAsync(int hotelId, int reservationId, int staffUserId, UpdateReservationRequest request)
+        public async Task<ReservationResponse> UpdateReservationAsync(
+            int hotelId, int reservationId, int staffUserId, UpdateReservationRequest request)
         {
             var reservation = await _reservationRepository.GetByIdAndHotelIdAsync(reservationId, hotelId)
                 ?? throw new ReservationNotFoundException(reservationId);
 
+            if (reservation.Status == ReservationStatus.Cancelled)
+                throw new BadRequestException(Messages.ReservationNotUpdatable);
+
+            if (request.Source.HasValue) reservation.Source = request.Source.Value;
+            if (request.GuestFullName is not null) reservation.GuestFullName = request.GuestFullName;
+
+            return await ApplyUpdateAsync(reservation, staffUserId, request);
+        }
+
+        public async Task<CancellationResponse> CancelReservationAsync(
+            int hotelId, int reservationId, CancelReservationRequest request)
+        {
+            var reservation = await _reservationRepository.GetByIdAndHotelIdAsync(reservationId, hotelId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            return await ApplyCancellationAsync(reservation, request);
+        }
+
+        public async Task<PaginatedResponse<ListReservationResponse>> GetMyReservationsAsync(
+            int customerId, ReservationListRequest request)
+        {
+            var totalCount = await _reservationRepository.CountByCustomerIdAsync(customerId, request.Status);
+            var reservations = await _reservationRepository.GetPagedByCustomerIdAsync(
+                customerId, request.Status, request.PageNumber, request.PageSize);
+
+            return new PaginatedResponse<ListReservationResponse>
+            {
+                Items = [.. reservations.Select(r => new ListReservationResponse(r))],
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
+        }
+
+        public async Task<ReservationResponse> GetMyReservationByIdAsync(int reservationId, int customerId)
+        {
+            var reservation = await _reservationRepository.GetByIdAndCustomerIdAsync(reservationId, customerId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            return new ReservationResponse(reservation);
+        }
+
+        public async Task<ReservationResponse> UpdateMyReservationAsync(
+            int reservationId, int customerId, UpdateReservationRequest request)
+        {
+            var reservation = await _reservationRepository.GetByIdAndCustomerIdAsync(reservationId, customerId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            if (reservation.Status != ReservationStatus.Pending &&
+                reservation.Status != ReservationStatus.Confirmed)
+                throw new BadRequestException(Messages.ReservationNotUpdatable);
+
+            return await ApplyUpdateAsync(reservation, customerId, request);
+        }
+
+        public async Task<CancellationResponse> CancelMyReservationAsync(
+            int reservationId, int customerId, CancelReservationRequest request)
+        {
+            var reservation = await _reservationRepository.GetByIdAndCustomerIdAsync(reservationId, customerId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            return await ApplyCancellationAsync(reservation, request);
+        }
+
+        private async Task<ReservationResponse> ApplyUpdateAsync(
+            Reservation reservation, int updatedById, UpdateReservationRequest request)
+        {
             var newCheckIn = request.CheckInDate ?? reservation.CheckInDate;
             var newCheckOut = request.CheckOutDate ?? reservation.CheckOutDate;
 
             if (newCheckOut <= newCheckIn)
-                throw new BadRequestException("Check-out date must be after check-in date.");
+                throw new BadRequestException(Messages.InvalidCheckOutDate);
 
             var datesChanged = request.CheckInDate.HasValue || request.CheckOutDate.HasValue;
             if (datesChanged)
             {
                 var roomIds = reservation.ReservationRooms.Select(rr => rr.RoomId);
                 var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
-                    roomIds, newCheckIn, newCheckOut, reservationId)).ToList();
+                    roomIds, newCheckIn, newCheckOut, reservation.Id)).ToList();
                 if (unavailable.Any())
                     throw new RoomsNotAvailableException(unavailable);
             }
 
-            if (request.Source.HasValue) reservation.Source = request.Source.Value;
-            if (request.GuestFullName is not null) reservation.GuestFullName = request.GuestFullName;
             if (request.GuestPhone is not null) reservation.GuestPhone = request.GuestPhone;
             if (request.GuestIdNumber is not null) reservation.GuestIdNumber = request.GuestIdNumber;
             if (request.CheckInDate.HasValue) reservation.CheckInDate = request.CheckInDate.Value;
@@ -176,19 +233,16 @@ namespace Booking.Services
                     : 0m;
             }
 
-            reservation.UpdatedById = staffUserId;
+            reservation.UpdatedById = updatedById;
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
             return new ReservationResponse(updated);
         }
 
-        public async Task<CancellationResponse> CancelReservationAsync(
-            int hotelId, int reservationId, CancelReservationRequest request)
+        private async Task<CancellationResponse> ApplyCancellationAsync(
+            Reservation reservation, CancelReservationRequest request)
         {
-            var reservation = await _reservationRepository.GetByIdAndHotelIdAsync(reservationId, hotelId)
-                ?? throw new ReservationNotFoundException(reservationId);
-
             if (reservation.Status == ReservationStatus.Cancelled)
                 throw new BadRequestException(Messages.ReservationAlreadyCancelled);
 
@@ -224,6 +278,80 @@ namespace Booking.Services
 
             var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
             return new CancellationResponse(updated, message);
+        }
+
+        private async Task<(string contractPath, string invoicePath)> ValidateAndUploadFilesAsync(
+            IFormFile contractFile, IFormFile invoiceFile)
+        {
+            if (contractFile.ContentType != FileConstants.PdfContentType)
+                throw new BadRequestException(Messages.ContractFileMustBePdf);
+
+            if (invoiceFile.ContentType != FileConstants.PdfContentType)
+                throw new BadRequestException(Messages.InvoiceFileMustBePdf);
+
+            var contractPath = await _blobStorageService.UploadAsync(contractFile);
+            var invoicePath = await _blobStorageService.UploadAsync(invoiceFile);
+
+            return (contractPath, invoicePath);
+        }
+
+        private async Task SendConfirmationEmailAsync(Reservation saved)
+        {
+            var contractUrl = _blobStorageService.GetBlobUrl(saved.ContractPath!);
+            var invoiceUrl = _blobStorageService.GetBlobUrl(saved.InvoicePath!);
+            await _emailJobService.EnqueueReservationConfirmationEmailAsync(
+                saved.GuestEmail, saved.GuestFullName, saved, contractUrl, invoiceUrl);
+        }
+
+        private static void ValidateReservationDates(DateOnly checkInDate, DateOnly checkOutDate)
+        {
+            if (checkInDate < DateOnly.FromDateTime(DateTime.UtcNow))
+                throw new BadRequestException(Messages.CheckInDateInThePast);
+
+            if (checkOutDate <= checkInDate)
+                throw new BadRequestException(Messages.InvalidCheckOutDate);
+        }
+
+        private async Task<List<Room>> ValidateAndFetchRoomsAsync(
+            List<string> roomNumbers, int hotelId, DateOnly checkIn, DateOnly checkOut)
+        {
+            var rooms = (await _roomRepository.GetByRoomNumbersAndHotelIdAsync(roomNumbers, hotelId)).ToList();
+
+            var foundNumbers = rooms.Select(r => r.RoomNumber).ToHashSet();
+            var notFound = roomNumbers.Where(n => !foundNumbers.Contains(n)).ToList();
+            if (notFound.Any())
+                throw new BadRequestException($"The following room numbers were not found in this hotel: {string.Join(", ", notFound)}.");
+
+            var notAvailable = rooms.Where(r => r.Status != RoomStatus.Available)
+                                    .Select(r => r.RoomNumber).ToList();
+            if (notAvailable.Any())
+                throw new BadRequestException(
+                    string.Format(Messages.RoomsNotAvailableStatus, string.Join(", ", notAvailable)));
+
+            var unavailable = (await _reservationRepository.GetUnavailableRoomNumbersAsync(
+                rooms.Select(r => r.Id), checkIn, checkOut)).ToList();
+            if (unavailable.Any())
+                throw new RoomsNotAvailableException(unavailable);
+
+            return rooms;
+        }
+
+        private async Task<Reservation> SaveReservationAsync(Reservation reservation)
+        {
+            var year = DateTime.UtcNow.Year;
+            var count = await _reservationRepository.CountByYearAsync(year);
+            reservation.ReservationNumber = $"RES-{year}-{(count + 1):D6}";
+
+            try
+            {
+                return await _reservationRepository.CreateAsync(reservation);
+            }
+            catch (DbUpdateException)
+            {
+                var freshCount = await _reservationRepository.CountByYearAsync(year);
+                reservation.ReservationNumber = $"RES-{year}-{(freshCount + 1):D6}";
+                return await _reservationRepository.CreateAsync(reservation);
+            }
         }
 
         private static bool EnsureCancellable(Reservation reservation)
