@@ -32,6 +32,7 @@ namespace Booking.Data
             public DbSet<ReservationRoom> ReservationRooms { get; set; }
             public DbSet<PaymentLog> PaymentLogs { get; set; }
             public DbSet<TermsAndConditions> TermsAndConditions { get; set; }
+            public DbSet<HousekeepingTicket> HousekeepingTickets { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -369,6 +370,62 @@ namespace Booking.Data
                         entity.Property(t => t.UpdatedAt)
                         .HasDefaultValueSql("CURRENT_TIMESTAMP")
                         .ValueGeneratedOnAddOrUpdate();
+                  });
+
+                  builder.Entity<HousekeepingTicket>(entity =>
+                  {
+                        entity.ToTable("HousekeepingTickets");
+
+                        entity.Property(t => t.Title)
+                              .IsRequired()
+                              .HasMaxLength(200);
+
+                        entity.Property(t => t.Description)
+                              .HasColumnType("TEXT");
+
+                        entity.Property(t => t.Status)
+                              .HasConversion<string>()
+                              .HasMaxLength(20);
+
+                        entity.Property(t => t.Priority)
+                              .HasConversion<string>()
+                              .HasMaxLength(20);
+
+                        entity.Property(t => t.Type)
+                              .HasConversion<string>()
+                              .HasMaxLength(30);
+
+                        entity.Property(t => t.LocationType)
+                              .HasConversion<string>()
+                              .HasMaxLength(20);
+
+                        entity.HasOne(t => t.Hotel)
+                              .WithMany()
+                              .HasForeignKey(t => t.HotelId)
+                              .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasOne(t => t.AssignedTo)
+                              .WithMany()
+                              .HasForeignKey(t => t.AssignedToId)
+                              .OnDelete(DeleteBehavior.SetNull)
+                              .IsRequired(false);
+
+                        entity.HasOne(t => t.CreatedBy)
+                              .WithMany()
+                              .HasForeignKey(t => t.CreatedById)
+                              .OnDelete(DeleteBehavior.Restrict);
+
+                        entity.HasOne(t => t.Room)
+                              .WithMany()
+                              .HasForeignKey(t => t.RoomId)
+                              .OnDelete(DeleteBehavior.Restrict)
+                              .IsRequired(false);
+
+                        entity.HasOne(t => t.Facility)
+                              .WithMany()
+                              .HasForeignKey(t => t.FacilityId)
+                              .OnDelete(DeleteBehavior.Restrict)
+                              .IsRequired(false);
                   });
 
             }
