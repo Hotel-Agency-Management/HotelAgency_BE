@@ -12,7 +12,7 @@ namespace Booking.Controllers
     [EnsureHotelExistsForOwnerAttribute]
     [Route("api/hotels/{hotelId:int}/staff")]
     [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}," +
-                       $"{Roles.FrontDeskManager},{Roles.HousekeepingManager}")]
+                       $"{Roles.FrontDeskStaff},{Roles.HousekeepingManager}")]
     public class HotelStaffController(ITeamManagementService _teamManagementService) : ControllerBase
     {
         [HttpGet]

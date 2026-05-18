@@ -12,17 +12,15 @@ namespace Booking.Controllers
     [ApiController]
     [EnsureAgencyExistsForOwnerAttribute]
     [EnsureHotelExistsForOwnerAttribute]
-    [Route("api/hotels/{hotelId}/housekeeping-tickets")]
     [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}," +
-                       $"{Roles.HousekeepingManager},{Roles.HousekeepingEmployee}," +
-                       $"{Roles.FrontDeskManager},{Roles.FrontDeskStaff}")]
+                       $"{Roles.HousekeepingManager},{Roles.FrontDeskStaff}")]
+                       
+    [Route("api/hotels/{hotelId}/housekeeping-tickets")]
     public class HousekeepingTicketController(
         IHousekeepingTicketService _ticketService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
         [HttpPost]
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}," +
-                           $"{Roles.HousekeepingManager},{Roles.FrontDeskManager}")]
         public async Task<IActionResult> CreateTicket(
             [FromRoute] int hotelId,
             [FromBody] CreateTicketRequest request)
@@ -66,8 +64,6 @@ namespace Booking.Controllers
 
         [HttpPut("{ticketId:int}")]
         [EnsureTicketBelongsToHotelAttribute]
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}," +
-                           $"{Roles.HousekeepingManager},{Roles.FrontDeskManager}")]
         public async Task<IActionResult> UpdateTicket(
             [FromRoute] int hotelId,
             [FromRoute] int ticketId,
@@ -82,9 +78,6 @@ namespace Booking.Controllers
 
         [HttpPatch("{ticketId:int}/status")]
         [EnsureTicketBelongsToHotelAttribute]
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}," +
-                           $"{Roles.HousekeepingManager},{Roles.HousekeepingEmployee}," +
-                           $"{Roles.FrontDeskManager}")]
         public async Task<IActionResult> UpdateTicketStatus(
             [FromRoute] int hotelId,
             [FromRoute] int ticketId,
@@ -99,8 +92,6 @@ namespace Booking.Controllers
 
         [HttpDelete("{ticketId:int}")]
         [EnsureTicketBelongsToHotelAttribute]
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}," +
-                           $"{Roles.HousekeepingManager}")]
         public async Task<IActionResult> DeleteTicket(
             [FromRoute] int hotelId,
             [FromRoute] int ticketId)
