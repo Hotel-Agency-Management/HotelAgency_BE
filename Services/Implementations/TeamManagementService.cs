@@ -59,6 +59,39 @@ namespace Booking.Services
             };
         }
 
+        public async Task<PaginatedResponse<TeamMemberResponse>> GetHotelStaffAsync(
+            int hotelId,
+            TeamMemberListRequest request)
+        {
+            string? roleFilter = null;
+            if (!string.IsNullOrWhiteSpace(request.Role))
+            {
+                var normalized = TeamMemberUtils.NormalizeAndValidateRole(request.Role);
+                if (normalized != Roles.FrontDeskStaff && normalized != Roles.HousekeepingEmployee)
+                    throw new InvalidTeamMemberRoleException(request.Role);
+                roleFilter = normalized;
+            }
+
+            var totalCount = await _teamMemberRepository.CountByHotelAsync(hotelId, roleFilter);
+            var users = await _teamMemberRepository.GetByHotelAsync(hotelId, roleFilter, request.PageNumber, request.PageSize);
+
+            var items = new List<TeamMemberResponse>();
+            foreach (var user in users)
+            {
+                var role = await _teamMemberRepository.GetRoleAsync(user);
+                items.Add(new TeamMemberResponse(user, role));
+            }
+
+            return new PaginatedResponse<TeamMemberResponse>
+            {
+                Items = items,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
+        }
+
         public async Task<TeamMemberResponse> CreateAgencyTeamMemberAsync(
             int agencyId,
             CreateTeamMemberRequest request)
