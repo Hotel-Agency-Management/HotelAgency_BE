@@ -6,15 +6,22 @@ namespace Booking.Interfaces.Repositories
     public interface IPaymentLogRepository
     {
         Task<PaymentLog> CreateAsync(PaymentLog paymentLog);
-        Task<IEnumerable<PaymentLog>> GetAllAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize);
+
+        // Admin — all platform logs
+        Task<IEnumerable<PaymentLog>> GetAllPagedAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
         Task<int> CountAllAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
-        Task<IEnumerable<PaymentLog>> GetByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize);
-        Task<int> CountByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
-        Task<IEnumerable<PaymentLog>> GetIncomingByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize);
-        Task<int> CountIncomingByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
-        Task<decimal> SumIncomingByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
-        Task<IEnumerable<PaymentLog>> GetOutgoingByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, int pageNumber, int pageSize);
-        Task<int> CountOutgoingByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
-        Task<decimal> SumOutgoingByHotelIdAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
+
+        // Hotel — paged (incoming=null=all, true=incoming only, false=outgoing only)
+        Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
+        Task<int> CountHotelLogsAsync(int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
+
+        // Hotel — unfiltered summary totals
+        Task<decimal> SumHotelIncomingAsync(int hotelId);
+        Task<decimal> SumHotelOutgoingAsync(int hotelId);
+        Task<int> CountHotelIncomingAsync(int hotelId);
+        Task<int> CountHotelOutgoingAsync(int hotelId);
+
+        // Single record with Reservation included
+        Task<PaymentLog?> GetByIdAsync(int paymentLogId);
     }
 }

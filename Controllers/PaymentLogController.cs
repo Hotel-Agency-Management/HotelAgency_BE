@@ -12,18 +12,6 @@ namespace Booking.Controllers
     [Route("api/hotels/{hotelId}")]
     public class PaymentLogController(IPaymentLogService _paymentLogService) : ControllerBase
     {
-        [EnsureHotelExistsForOwner]
-        [HttpGet("payment-logs")]
-        public async Task<IActionResult> GetByHotel(
-            [FromRoute] int hotelId,
-            [FromQuery] PaymentLogListRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _paymentLogService.GetByHotelIdAsync(hotelId, request);
-            return Ok(result);
-        }
 
         [EnsureHotelExistsForOwner]
         [HttpGet("payment-logs/incoming")]
@@ -34,7 +22,7 @@ namespace Booking.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _paymentLogService.GetIncomingByHotelIdAsync(hotelId, request);
+            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, true, request);
             return Ok(result);
         }
 
@@ -47,7 +35,17 @@ namespace Booking.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _paymentLogService.GetOutgoingByHotelIdAsync(hotelId, request);
+            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, false, request);
+            return Ok(result);
+        }
+
+        [EnsureHotelExistsForOwner]
+        [HttpGet("payment-logs/{paymentLogId}")]
+        public async Task<IActionResult> GetDetails(
+            [FromRoute] int hotelId,
+            [FromRoute] int paymentLogId)
+        {
+            var result = await _paymentLogService.GetDetailsAsync(hotelId, paymentLogId);
             return Ok(result);
         }
     }

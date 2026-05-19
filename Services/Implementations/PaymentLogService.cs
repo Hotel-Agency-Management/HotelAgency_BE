@@ -1,95 +1,209 @@
 using Booking.DTO;
+using Booking.Enums;
+using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Models;
+using Microsoft.AspNetCore.Identity;
+
 namespace Booking.Services
 {
-    public class PaymentLogService(IPaymentLogRepository _paymentLogRepository) : IPaymentLogService
+    public class PaymentLogService(
+        IPaymentLogRepository _paymentLogRepository,
+        UserManager<ApplicationUser> _userManager,
+        IHotelRepository _hotelRepository) : IPaymentLogService
     {
-        public async Task<PaginatedResponse<PaymentLogResponse>> GetAllAsync(PaymentLogListRequest request)
+        public async Task<PaginatedResponse<PaymentLogItemResponse>> GetAllAsync(PaymentLogListRequest request)
         {
-            var items = await _paymentLogRepository.GetAllAsync(
-                request.Type, request.DateFrom, request.DateTo,
-                request.PageNumber, request.PageSize);
+            bool ascending = IsAscending(request.SortOrder);
+
+            var items = (await _paymentLogRepository.GetAllPagedAsync(
+                request.Type, request.DateFrom, request.DateTo, ascending,
+                request.PageNumber, request.PageSize)).ToList();
             var total = await _paymentLogRepository.CountAllAsync(
                 request.Type, request.DateFrom, request.DateTo);
 
-            return BuildPaginatedResponse(items, total, request.PageNumber, request.PageSize);
-        }
 
-        public async Task<PaginatedResponse<PaymentLogResponse>> GetByHotelIdAsync(
-            int hotelId, PaymentLogListRequest request)
-        {
-            var items = await _paymentLogRepository.GetByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo,
-                request.PageNumber, request.PageSize);
-            var total = await _paymentLogRepository.CountByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo);
+            var allIds = items.SelectMany(p => new[] { p.From, p.To }).Distinct().ToList();
+            var nameMap = new Dictionary<int, string>();
+            var hotelIdSet = new HashSet<int>();
 
-            return BuildPaginatedResponse(items, total, request.PageNumber, request.PageSize);
-        }
-
-        public async Task<PaymentLogExpenseResponse> GetIncomingByHotelIdAsync(
-            int hotelId, PaymentLogListRequest request)
-        {
-            var items = await _paymentLogRepository.GetIncomingByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo,
-                request.PageNumber, request.PageSize);
-            var total = await _paymentLogRepository.CountIncomingByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo);
-            var sum = await _paymentLogRepository.SumIncomingByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo);
-
-            return BuildExpenseResponse(items, total, sum, request.PageNumber, request.PageSize);
-        }
-
-        public async Task<PaymentLogExpenseResponse> GetOutgoingByHotelIdAsync(
-            int hotelId, PaymentLogListRequest request)
-        {
-            var items = await _paymentLogRepository.GetOutgoingByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo,
-                request.PageNumber, request.PageSize);
-            var total = await _paymentLogRepository.CountOutgoingByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo);
-            var sum = await _paymentLogRepository.SumOutgoingByHotelIdAsync(
-                hotelId, request.Type, request.DateFrom, request.DateTo);
-
-            return BuildExpenseResponse(items, total, sum, request.PageNumber, request.PageSize);
-        }
-
-        private static PaginatedResponse<PaymentLogResponse> BuildPaginatedResponse(
-            IEnumerable<PaymentLog> items, int total, int pageNumber, int pageSize)
-            => new()
+            foreach (var id in allIds)
             {
-                Items = items.Select(ToResponse).ToList(),
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalCount = total,
-                TotalPages = (int)Math.Ceiling(total / (double)pageSize)
-            };
+                var user = await _userManager.FindByIdAsync(id.ToString());
+                if (user is not null)
+                {
+                    nameMap[id] = $"{user.FirstName} {user.LastName}";
+                    continue;
+                }
+                var hotel = await _hotelRepository.GetByIdAsync(id);
+                if (hotel is not null)
+                {
+                    nameMap[id] = hotel.Name;
+                    hotelIdSet.Add(id);
+                }
+            }
 
-        private static PaymentLogResponse ToResponse(PaymentLog p) => new()
-        {
-            Id = p.Id,
-            ReservationId = p.ReservationId,
-            Amount = p.Amount,
-            Type = p.Type.ToString(),
-            From = p.From,
-            To = p.To,
-            CreatedAt = p.CreatedAt
-        };
+            string ResolveName(int id) =>
+                nameMap.TryGetValue(id, out var name) ? name : id.ToString();
 
-        private static PaymentLogExpenseResponse BuildExpenseResponse(
-            IEnumerable<PaymentLog> items, int total, decimal sum, int pageNumber, int pageSize)
-            => new()
+            var mapped = items.Select(p => new PaymentLogItemResponse
             {
-                Items = items.Select(ToResponse).ToList(),
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalCount = total,
-                TotalPages = (int)Math.Ceiling(total / (double)pageSize),
-                TotalAmount = sum
-            };
+                PaymentId = p.Id,
+                ReservationReference = p.Reservation?.ReservationNumber,
+                PaymentType = p.Type.ToString(),
+                Amount = p.Amount,
+                FromName = ResolveName(p.From),
+                ToName = ResolveName(p.To),
+                CreatedAt = p.CreatedAt,
+            }).ToList();
 
+            return new PaginatedResponse<PaymentLogItemResponse>
+            {
+                Items = mapped,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = total,
+                TotalPages = (int)Math.Ceiling(total / (double)request.PageSize)
+            };
+        }
+
+        public async Task<PaymentLogSummaryResponse> GetHotelLogsAsync(
+            int hotelId, bool? incoming, PaymentLogListRequest request)
+        {
+            bool ascending = IsAscending(request.SortOrder);
+
+            var items    = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
+            var total    = await _paymentLogRepository.CountHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo);
+            var sumIn    = await _paymentLogRepository.SumHotelIncomingAsync(hotelId);
+            var sumOut   = await _paymentLogRepository.SumHotelOutgoingAsync(hotelId);
+            var cntIn    = await _paymentLogRepository.CountHotelIncomingAsync(hotelId);
+            var cntOut   = await _paymentLogRepository.CountHotelOutgoingAsync(hotelId);
+
+            var hotel = await _hotelRepository.GetByIdAsync(hotelId);
+            var hotelName = hotel?.Name ?? hotelId.ToString();
+
+            var userIds = items
+                .Select(p => p.To == hotelId ? p.From : p.To)
+                .Distinct()
+                .ToList();
+
+            var userMap = new Dictionary<int, string>();
+            foreach (var uid in userIds)
+            {
+                var user = await _userManager.FindByIdAsync(uid.ToString());
+                userMap[uid] = user is not null ? $"{user.FirstName} {user.LastName}" : uid.ToString();
+            }
+
+            var mapped = items.Select(p =>
+            {
+                bool isIncoming = p.To == hotelId;
+                int userId = isIncoming ? p.From : p.To;
+                string userName = userMap.TryGetValue(userId, out var n) ? n : userId.ToString();
+
+                return new PaymentLogItemResponse
+                {
+                    PaymentId = p.Id,
+                    ReservationReference = p.Reservation?.ReservationNumber,
+                    PaymentType = p.Type.ToString(),
+                    Amount = p.Amount,
+                    FromName = isIncoming ? userName : hotelName,
+                    ToName = isIncoming ? hotelName : userName,
+                    CreatedAt = p.CreatedAt,
+                };
+            }).ToList();
+
+            var groups = mapped
+                .GroupBy(p => GetWeekStart(p.CreatedAt))
+                .OrderByDescending(g => g.Key)
+                .Select(g => new PaymentLogGroupResponse
+                {
+                    WeekStart = g.Key,
+                    WeekEnd = g.Key.AddDays(6),
+                    Items = g.ToList()
+                })
+                .ToList();
+
+            return new PaymentLogSummaryResponse
+            {
+                TotalIncoming = sumIn,
+                TotalOutgoing = sumOut,
+                IncomingCount = cntIn,
+                OutgoingCount = cntOut,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = total,
+                TotalPages = (int)Math.Ceiling(total / (double)request.PageSize),
+                Groups = groups
+            };
+        }
+
+        public async Task<PaymentLogDetailsResponse> GetDetailsAsync(int hotelId, int paymentLogId)
+        {
+            var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
+                ?? throw new PaymentLogNotFoundException(paymentLogId);
+
+            if (log.To != hotelId && log.From != hotelId)
+                throw new PaymentLogForbiddenException(paymentLogId, hotelId);
+
+            var hotel = await _hotelRepository.GetByIdAsync(hotelId);
+            var hotelName = hotel?.Name ?? hotelId.ToString();
+
+            bool isIncoming = log.To == hotelId;
+            int userId = isIncoming ? log.From : log.To;
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : userId.ToString();
+
+            return new PaymentLogDetailsResponse
+            {
+                PaymentId = log.Id,
+                PaymentType = log.Type.ToString(),
+                Amount = log.Amount,
+                CreatedAt = log.CreatedAt,
+                ReservationReference = log.Reservation?.ReservationNumber,
+                ReservationId = log.ReservationId,
+                FromName = isIncoming ? userName : hotelName,
+                ToName = isIncoming ? hotelName : userName,
+                Timeline = BuildTimeline(log)
+            };
+        }
+
+        private static DateOnly GetWeekStart(DateTime dt)
+        {
+            var date = DateOnly.FromDateTime(dt);
+            int daysFromMonday = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+            return date.AddDays(-daysFromMonday);
+        }
+
+        private static bool IsAscending(string sortOrder) =>
+            sortOrder.Equals("Oldest", StringComparison.OrdinalIgnoreCase);
+
+
+        private static IReadOnlyCollection<PaymentTimelineItem> BuildTimeline(PaymentLog log)
+        {
+            var timeline = new List<PaymentTimelineItem>();
+            var res = log.Reservation;
+
+            if (res is not null)
+            {
+                timeline.Add(new() { Event = "Reservation Created", OccurredAt = res.CreatedAt });
+                timeline.Add(new() { Event = "Payment Recorded",    OccurredAt = log.CreatedAt });
+
+                if (res.Status is ReservationStatus.CheckedIn or ReservationStatus.CheckedOut)
+                    timeline.Add(new() { Event = "Checked In", OccurredAt = res.CheckInDate.ToDateTime(TimeOnly.MinValue) });
+
+                if (res.Status == ReservationStatus.CheckedOut)
+                    timeline.Add(new() { Event = "Checked Out", OccurredAt = res.CheckOutDate.ToDateTime(TimeOnly.MinValue) });
+
+                if (res.Status == ReservationStatus.Cancelled && res.CancelledAt.HasValue)
+                    timeline.Add(new() { Event = "Cancelled", OccurredAt = res.CancelledAt.Value });
+            }
+            else
+            {
+                timeline.Add(new() { Event = "Payment Recorded", OccurredAt = log.CreatedAt });
+            }
+
+            return [.. timeline.OrderBy(t => t.OccurredAt)];
+        }
     }
 }

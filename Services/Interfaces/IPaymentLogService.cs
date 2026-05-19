@@ -4,9 +4,8 @@ namespace Booking.Interfaces.Services
 {
     public interface IPaymentLogService
     {
-        Task<PaginatedResponse<PaymentLogResponse>> GetAllAsync(PaymentLogListRequest request);
-        Task<PaginatedResponse<PaymentLogResponse>> GetByHotelIdAsync(int hotelId, PaymentLogListRequest request);
-        Task<PaymentLogExpenseResponse> GetIncomingByHotelIdAsync(int hotelId, PaymentLogListRequest request);
-        Task<PaymentLogExpenseResponse> GetOutgoingByHotelIdAsync(int hotelId, PaymentLogListRequest request);
+        Task<PaginatedResponse<PaymentLogItemResponse>> GetAllAsync(PaymentLogListRequest request);
+        Task<PaymentLogSummaryResponse> GetHotelLogsAsync(int hotelId, bool? incoming, PaymentLogListRequest request);
+        Task<PaymentLogDetailsResponse> GetDetailsAsync(int hotelId, int paymentLogId);
     }
 }

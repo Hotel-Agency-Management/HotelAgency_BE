@@ -32,7 +32,7 @@ namespace Booking.Controllers.Admin
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _paymentLogService.GetByHotelIdAsync(hotelId, request);
+            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, null, request);
             return Ok(result);
         }
 
@@ -46,7 +46,7 @@ namespace Booking.Controllers.Admin
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _paymentLogService.GetIncomingByHotelIdAsync(hotelId, request);
+            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, true, request);
             return Ok(result);
         }
 
@@ -60,7 +60,18 @@ namespace Booking.Controllers.Admin
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _paymentLogService.GetOutgoingByHotelIdAsync(hotelId, request);
+            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, false, request);
+            return Ok(result);
+        }
+
+        [EnsureAgencyExistsForAdmin]
+        [EnsureHotelExistsForAdmin]
+        [HttpGet("agencies/{agencyId}/hotels/{hotelId}/payment-logs/{paymentLogId}")]
+        public async Task<IActionResult> GetDetails(
+            [FromRoute] int hotelId,
+            [FromRoute] int paymentLogId)
+        {
+            var result = await _paymentLogService.GetDetailsAsync(hotelId, paymentLogId);
             return Ok(result);
         }
     }
