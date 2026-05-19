@@ -14,7 +14,8 @@ namespace Booking.Services
         IRoomRepository _roomRepository,
         ICustomerAccountService _customerAccountService,
         IBlobStorageService _blobStorageService,
-        IEmailJobService _emailJobService) : IReservationService
+        IEmailJobService _emailJobService,
+        IPaymentLogRepository _paymentLogRepository) : IReservationService
     {
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
         {
@@ -22,6 +23,8 @@ namespace Booking.Services
 
             var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, hotelId, request.CheckInDate, request.CheckOutDate);
             var insuranceAmount = request.HasInsurance ? rooms.Sum(r => r.InsurancePerReservation ?? 0m) : 0m;
+            var days = request.CheckOutDate.DayNumber - request.CheckInDate.DayNumber;
+            var totalAmount = rooms.Sum(r => r.DailyPrice) * days + insuranceAmount;
 
             var customerId = await _customerAccountService.EnsureCustomerAsync(
                 request.Source, request.CustomerId, request.GuestEmail, request.GuestFullName, request.GuestPhone);
@@ -43,7 +46,7 @@ namespace Booking.Services
                 NumberOfGuests = request.NumberOfGuests,
                 NumberOfRooms = rooms.Count,
                 ContractPath = contractPath,
-                TotalAmount = request.TotalAmount,
+                TotalAmount = totalAmount,
                 HasInsurance = request.HasInsurance,
                 InsuranceAmount = insuranceAmount,
                 InvoicePath = invoicePath,
@@ -54,6 +57,25 @@ namespace Booking.Services
                 UpdatedAt = DateTime.UtcNow,
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
             });
+
+            await _paymentLogRepository.CreateAsync(new PaymentLog
+            {
+                ReservationId = saved.Id,
+                Amount = saved.TotalAmount,
+                Type = PaymentType.Booking,
+                From = saved.CustomerId ?? 0,
+                To = saved.HotelId
+            });
+
+            if (saved.HasInsurance && saved.InsuranceAmount > 0)
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = saved.Id,
+                    Amount = saved.InsuranceAmount,
+                    Type = PaymentType.ReservationInsurance,
+                    From = saved.CustomerId ?? 0,
+                    To = saved.HotelId
+                });
 
             await SendConfirmationEmailAsync(saved);
             return new ReservationResponse(saved);
@@ -66,6 +88,8 @@ namespace Booking.Services
 
             var rooms = await ValidateAndFetchRoomsAsync(request.RoomNumbers, hotelId, request.CheckInDate, request.CheckOutDate);
             var insuranceAmount = request.HasInsurance ? rooms.Sum(r => r.InsurancePerReservation ?? 0m) : 0m;
+            var days = request.CheckOutDate.DayNumber - request.CheckInDate.DayNumber;
+            var totalAmount = rooms.Sum(r => r.DailyPrice) * days + insuranceAmount;
 
             var (contractPath, invoicePath) = await ValidateAndUploadFilesAsync(request.ContractFile, request.InvoiceFile);
 
@@ -84,7 +108,7 @@ namespace Booking.Services
                 NumberOfGuests = request.NumberOfGuests,
                 NumberOfRooms = rooms.Count,
                 ContractPath = contractPath,
-                TotalAmount = request.TotalAmount,
+                TotalAmount = totalAmount,
                 HasInsurance = request.HasInsurance,
                 InsuranceAmount = insuranceAmount,
                 InvoicePath = invoicePath,
@@ -95,6 +119,25 @@ namespace Booking.Services
                 UpdatedAt = DateTime.UtcNow,
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
             });
+
+            await _paymentLogRepository.CreateAsync(new PaymentLog
+            {
+                ReservationId = saved.Id,
+                Amount = saved.TotalAmount,
+                Type = PaymentType.Booking,
+                From = saved.CustomerId ?? 0,
+                To = saved.HotelId
+            });
+
+            if (saved.HasInsurance && saved.InsuranceAmount > 0)
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = saved.Id,
+                    Amount = saved.InsuranceAmount,
+                    Type = PaymentType.ReservationInsurance,
+                    From = saved.CustomerId ?? 0,
+                    To = saved.HotelId
+                });
 
             await SendConfirmationEmailAsync(saved);
             return new ReservationResponse(saved);
@@ -221,7 +264,17 @@ namespace Booking.Services
             if (request.GuestPhone is not null) reservation.GuestPhone = request.GuestPhone;
             if (request.GuestIdNumber is not null) reservation.GuestIdNumber = request.GuestIdNumber;
             if (request.CheckInDate.HasValue) reservation.CheckInDate = request.CheckInDate.Value;
-            if (request.CheckOutDate.HasValue) reservation.CheckOutDate = request.CheckOutDate.Value;
+            var extraCharge = 0m;
+            if (request.CheckOutDate.HasValue)
+            {
+                if (request.CheckOutDate.Value > reservation.CheckOutDate)
+                {
+                    var extraDays = request.CheckOutDate.Value.DayNumber - reservation.CheckOutDate.DayNumber;
+                    extraCharge = reservation.ReservationRooms.Sum(rr => rr.Room?.ExtendPrice ?? 0m) * extraDays;
+                    reservation.TotalAmount += extraCharge;
+                }
+                reservation.CheckOutDate = request.CheckOutDate.Value;
+            }
             if (request.NumberOfGuests.HasValue) reservation.NumberOfGuests = request.NumberOfGuests.Value;
             if (request.SpecialRequests is not null) reservation.SpecialRequests = request.SpecialRequests;
             if (request.Notes is not null) reservation.Notes = request.Notes;
@@ -237,6 +290,19 @@ namespace Booking.Services
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
+
+            if (extraCharge > 0m)
+            {
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = extraCharge,
+                    Type = PaymentType.Extend,
+                    From = updated.CustomerId ?? 0,
+                    To = updated.HotelId
+                });
+            }
+
             return new ReservationResponse(updated);
         }
 
@@ -267,14 +333,48 @@ namespace Booking.Services
                 ? 0m
                 : reservation.TotalAmount * (reservation.Hotel!.CancellationFeePercentage / 100m);
 
+            var originalTotal = reservation.TotalAmount;
+
             reservation.Status = ReservationStatus.Cancelled;
             reservation.CancelledAt = DateTime.UtcNow;
             reservation.CancellationFee = fee;
+            reservation.TotalAmount = fee;
             reservation.IsFreeCancellation = isFree;
             reservation.CancellationReason = request.CancellationReason;
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
+
+            if (fee > 0m)
+            {
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = fee,
+                    Type = PaymentType.Cancellation,
+                    From = updated.CustomerId ?? 0,
+                    To = updated.HotelId
+                });
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = originalTotal - fee,
+                    Type = PaymentType.Refund,
+                    From = updated.HotelId,
+                    To = updated.CustomerId ?? 0
+                });
+            }
+            else
+            {
+                await _paymentLogRepository.CreateAsync(new PaymentLog
+                {
+                    ReservationId = updated.Id,
+                    Amount = originalTotal,
+                    Type = PaymentType.Refund,
+                    From = updated.HotelId,
+                    To = updated.CustomerId ?? 0
+                });
+            }
 
             var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
             return new CancellationResponse(updated, message);

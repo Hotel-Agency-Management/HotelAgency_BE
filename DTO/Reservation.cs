@@ -16,7 +16,6 @@ namespace Booking.DTO
         [Required] public DateOnly CheckInDate { get; set; }
         [Required] public DateOnly CheckOutDate { get; set; }
         [Range(1, int.MaxValue)] public int NumberOfGuests { get; set; }
-        [Required] public Decimal TotalAmount { get; set; }
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }
         public bool HasInsurance { get; set; } = false;
@@ -182,7 +181,6 @@ namespace Booking.DTO
         [Required] public DateOnly CheckInDate { get; set; }
         [Required] public DateOnly CheckOutDate { get; set; }
         [Range(1, int.MaxValue)] public int NumberOfGuests { get; set; }
-        [Required] public decimal TotalAmount { get; set; }
         public bool HasInsurance { get; set; } = false;
         public string? SpecialRequests { get; set; }
         public string? Notes { get; set; }

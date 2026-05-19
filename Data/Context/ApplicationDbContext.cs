@@ -30,6 +30,7 @@ namespace Booking.Data
             public DbSet<RoomAmenity> RoomAmenities { get; set; }
             public DbSet<Reservation> Reservations { get; set; }
             public DbSet<ReservationRoom> ReservationRooms { get; set; }
+            public DbSet<PaymentLog> PaymentLogs { get; set; }
             public DbSet<TermsAndConditions> TermsAndConditions { get; set; }
 
 
@@ -315,6 +316,23 @@ namespace Booking.Data
                         entity.HasOne(r => r.UpdatedBy).WithMany()
                               .HasForeignKey(r => r.UpdatedById)
                               .OnDelete(DeleteBehavior.SetNull).IsRequired(false);
+                  });
+
+                  builder.Entity<PaymentLog>(entity =>
+                  {
+                        entity.ToTable("PaymentLogs");
+
+                        entity.Property(p => p.Amount)
+                              .HasColumnType("decimal(18,2)");
+
+                        entity.Property(p => p.Type)
+                              .HasConversion<string>()
+                              .HasMaxLength(20);
+
+                        entity.HasOne(p => p.Reservation)
+                              .WithMany(r => r.PaymentLogs)
+                              .HasForeignKey(p => p.ReservationId)
+                              .OnDelete(DeleteBehavior.Cascade);
                   });
 
                   builder.Entity<ReservationRoom>(entity =>
