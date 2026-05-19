@@ -73,12 +73,9 @@ namespace Booking.Services
         {
             bool ascending = IsAscending(request.SortOrder);
 
-            var items    = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
-            var total    = await _paymentLogRepository.CountHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo);
-            var sumIn    = await _paymentLogRepository.SumHotelIncomingAsync(hotelId);
-            var sumOut   = await _paymentLogRepository.SumHotelOutgoingAsync(hotelId);
-            var cntIn    = await _paymentLogRepository.CountHotelIncomingAsync(hotelId);
-            var cntOut   = await _paymentLogRepository.CountHotelOutgoingAsync(hotelId);
+            var items   = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
+            var total   = await _paymentLogRepository.CountHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo);
+            var summary = await _paymentLogRepository.GetHotelSummaryAsync(hotelId);
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var hotelName = hotel?.Name ?? hotelId.ToString();
@@ -126,10 +123,10 @@ namespace Booking.Services
 
             return new PaymentLogSummaryResponse
             {
-                TotalIncoming = sumIn,
-                TotalOutgoing = sumOut,
-                IncomingCount = cntIn,
-                OutgoingCount = cntOut,
+                TotalIncoming = summary.TotalIncoming,
+                TotalOutgoing = summary.TotalOutgoing,
+                IncomingCount = summary.IncomingCount,
+                OutgoingCount = summary.OutgoingCount,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
                 TotalCount = total,

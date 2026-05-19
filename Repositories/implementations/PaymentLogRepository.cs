@@ -39,17 +39,19 @@ namespace Booking.Repositories
             int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo)
             => await BuildHotelQuery(hotelId, incoming, type, dateFrom, dateTo, ascending: false).CountAsync();
 
-        public async Task<decimal> SumHotelIncomingAsync(int hotelId)
-            => await _context.PaymentLogs.Where(p => p.To == hotelId).SumAsync(p => p.Amount);
+        public async Task<HotelPaymentSummary> GetHotelSummaryAsync(int hotelId)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(p => p.To == hotelId || p.From == hotelId)
+                .Select(p => new { IsIncoming = p.To == hotelId, p.Amount })
+                .GroupBy(x => x.IsIncoming)
+                .Select(g => new { IsIncoming = g.Key, Count = g.Count(), Total = g.Sum(x => x.Amount) })
+                .ToListAsync();
 
-        public async Task<decimal> SumHotelOutgoingAsync(int hotelId)
-            => await _context.PaymentLogs.Where(p => p.From == hotelId).SumAsync(p => p.Amount);
-
-        public async Task<int> CountHotelIncomingAsync(int hotelId)
-            => await _context.PaymentLogs.CountAsync(p => p.To == hotelId);
-
-        public async Task<int> CountHotelOutgoingAsync(int hotelId)
-            => await _context.PaymentLogs.CountAsync(p => p.From == hotelId);
+            var inc = rows.FirstOrDefault(r => r.IsIncoming);
+            var outg = rows.FirstOrDefault(r => !r.IsIncoming);
+            return new(inc?.Total ?? 0, outg?.Total ?? 0, inc?.Count ?? 0, outg?.Count ?? 0);
+        }
 
         public async Task<PaymentLog?> GetByIdAsync(int paymentLogId)
             => await _context.PaymentLogs

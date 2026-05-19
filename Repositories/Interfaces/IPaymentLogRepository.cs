@@ -3,6 +3,12 @@ using Booking.Models;
 
 namespace Booking.Interfaces.Repositories
 {
+    public record HotelPaymentSummary(
+        decimal TotalIncoming,
+        decimal TotalOutgoing,
+        int IncomingCount,
+        int OutgoingCount);
+
     public interface IPaymentLogRepository
     {
         Task<PaymentLog> CreateAsync(PaymentLog paymentLog);
@@ -15,11 +21,8 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
         Task<int> CountHotelLogsAsync(int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
 
-        // Hotel — unfiltered summary totals
-        Task<decimal> SumHotelIncomingAsync(int hotelId);
-        Task<decimal> SumHotelOutgoingAsync(int hotelId);
-        Task<int> CountHotelIncomingAsync(int hotelId);
-        Task<int> CountHotelOutgoingAsync(int hotelId);
+        // Hotel — unfiltered summary totals in one query
+        Task<HotelPaymentSummary> GetHotelSummaryAsync(int hotelId);
 
         // Single record with Reservation included
         Task<PaymentLog?> GetByIdAsync(int paymentLogId);
