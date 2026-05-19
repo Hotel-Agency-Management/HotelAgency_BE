@@ -195,6 +195,26 @@ namespace Booking.Services
             return await ApplyCancellationAsync(reservation, request);
         }
 
+        public async Task<ReservationResponse> UpdateReservationStatusAsync(
+            int hotelId, int reservationId, UpdateReservationStatusRequest request)
+        {
+            var reservation = await _reservationRepository.GetByIdAndHotelIdAsync(reservationId, hotelId)
+                ?? throw new ReservationNotFoundException(reservationId);
+
+            var isValidTransition =
+                (reservation.Status == ReservationStatus.Confirmed  && request.Status == ReservationStatus.CheckedIn) ||
+                (reservation.Status == ReservationStatus.CheckedIn && request.Status == ReservationStatus.CheckedOut);
+
+            if (!isValidTransition)
+                throw new BadRequestException(Messages.InvalidReservationStatusTransition);
+
+            reservation.Status = request.Status;
+            reservation.UpdatedAt = DateTime.UtcNow;
+
+            var updated = await _reservationRepository.UpdateAsync(reservation);
+            return new ReservationResponse(updated);
+        }
+
         public async Task<PaginatedResponse<ListReservationResponse>> GetMyReservationsAsync(
             int customerId, ReservationListRequest request)
         {
