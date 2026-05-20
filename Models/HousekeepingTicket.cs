@@ -58,5 +58,7 @@ namespace Booking.Models
 
         [ForeignKey(nameof(CreatedById))]
         public ApplicationUser? CreatedBy { get; set; }
+
+        public ICollection<TicketComment> Comments { get; set; } = new List<TicketComment>();
     }
 }
