@@ -241,6 +241,17 @@ namespace Booking.Services
             return result;
         }
 
+        public async Task<IReadOnlyList<HotelRevenueItem>> GetAgencyRevenuePerHotelAsync(int agencyId)
+        {
+            var rows = await _paymentLogRepository.GetRevenuePerHotelByAgencyAsync(agencyId);
+            return rows.Select(r => new HotelRevenueItem
+            {
+                HotelId   = r.HotelId,
+                HotelName = r.HotelName,
+                Revenue   = r.Revenue
+            }).ToList();
+        }
+
         private static DateOnly GetWeekStart(DateTime dt)
         {
             var date = DateOnly.FromDateTime(dt);

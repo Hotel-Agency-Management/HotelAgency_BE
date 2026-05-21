@@ -57,6 +57,16 @@ namespace Booking.Controllers
             return Ok(distribution);
         }
 
+        [HttpGet("revenue-per-hotel")]
+        public async Task<IActionResult> GetRevenuePerHotel(int agencyId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized(Messages.Unauthorized);
+
+            var result = await _paymentLogService.GetAgencyRevenuePerHotelAsync(user.AgencyId!.Value);
+            return Ok(result);
+        }
+
         [HttpGet("profit-expenses")]
         public async Task<IActionResult> GetProfitExpenses(int agencyId)
         {

@@ -36,4 +36,11 @@ namespace Booking.DTO
         public int Count { get; set; }
         public decimal Percentage { get; set; }
     }
+
+    public class HotelRevenueItem
+    {
+        public int HotelId { get; set; }
+        public string HotelName { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+    }
 }

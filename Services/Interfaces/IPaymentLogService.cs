@@ -11,5 +11,6 @@ namespace Booking.Interfaces.Services
         Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId);
         Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyProfitAsync(int agencyId);
         Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyExpensesAsync(int agencyId);
+        Task<IReadOnlyList<HotelRevenueItem>> GetAgencyRevenuePerHotelAsync(int agencyId);
     }
 }

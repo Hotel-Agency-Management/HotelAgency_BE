@@ -99,6 +99,24 @@ namespace Booking.Repositories
             return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
         }
 
+        public async Task<IEnumerable<HotelRevenue>> GetRevenuePerHotelByAgencyAsync(int agencyId)
+        {
+            var rows = await _context.Hotels
+                .Where(h => h.AgencyId == agencyId)
+                .Select(h => new
+                {
+                    h.Id,
+                    h.Name,
+                    Revenue = _context.PaymentLogs
+                        .Where(pl => pl.To == h.Id)
+                        .Sum(pl => (decimal?)pl.Amount) ?? 0m
+                })
+                .OrderByDescending(x => x.Revenue)
+                .ToListAsync();
+
+            return rows.Select(r => new HotelRevenue(r.Id, r.Name, r.Revenue));
+        }
+
         private IQueryable<PaymentLog> BuildBaseQuery(
             PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {
