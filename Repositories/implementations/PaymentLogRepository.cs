@@ -83,6 +83,22 @@ namespace Booking.Repositories
             return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
         }
 
+        public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByAgencyAsync(
+            int agencyId, DateTime from, DateTime to)
+        {
+            var rows = await _context.PaymentLogs
+                .Join(_context.Hotels,
+                      pl => pl.From,
+                      h => h.Id,
+                      (pl, h) => new { pl.Amount, pl.CreatedAt, h.AgencyId })
+                .Where(x => x.AgencyId == agencyId && x.CreatedAt >= from && x.CreatedAt < to)
+                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+
+            return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
+        }
+
         private IQueryable<PaymentLog> BuildBaseQuery(
             PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {

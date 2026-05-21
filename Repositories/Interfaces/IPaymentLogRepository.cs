@@ -32,5 +32,6 @@ namespace Booking.Interfaces.Repositories
         // Agency overview stats
         Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId);
         Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByAgencyAsync(int agencyId, DateTime from, DateTime to);
+        Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByAgencyAsync(int agencyId, DateTime from, DateTime to);
     }
 }

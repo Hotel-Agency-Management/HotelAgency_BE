@@ -21,4 +21,12 @@ namespace Booking.DTO
         public int Year { get; set; }
         public decimal Revenue { get; set; }
     }
+
+    public class MonthlyProfitExpensesItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Profit { get; set; }
+        public decimal Expenses { get; set; }
+    }
 }

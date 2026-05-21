@@ -13,13 +13,13 @@ namespace Booking.Controllers
     [ApiController]
     [Authorize(Roles = $"{Roles.AgencyOwner}")]
     [EnsureAgencyExistsForOwnerAttribute]
-    [Route("api/agencies/{agencyId}")]
+    [Route("api/agencies/{agencyId}/overview")]
     public class AgencyOverviewController(
         IReservationService _reservationService,
         IPaymentLogService _paymentLogService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
-        [HttpGet("overview")]
+        [HttpGet]
         public async Task<IActionResult> GetOverview(int agencyId)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -37,7 +37,7 @@ namespace Booking.Controllers
             });
         }
 
-        [HttpGet("overview/revenue-trend")]
+        [HttpGet("revenue-trend")]
         public async Task<IActionResult> GetRevenueTrend(int agencyId)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -45,6 +45,27 @@ namespace Booking.Controllers
 
             var trend = await _paymentLogService.GetAgencyRevenueTrendAsync(user.AgencyId!.Value);
             return Ok(trend);
+        }
+
+        [HttpGet("profit-expenses")]
+        public async Task<IActionResult> GetProfitExpenses(int agencyId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized(Messages.Unauthorized);
+
+            var resolvedId = user.AgencyId!.Value;
+            var profit   = await _paymentLogService.GetAgencyMonthlyProfitAsync(resolvedId);
+            var expenses = await _paymentLogService.GetAgencyMonthlyExpensesAsync(resolvedId);
+
+            var result = profit.Select((p, i) => new MonthlyProfitExpensesItem
+            {
+                Month    = p.Month,
+                Year     = p.Year,
+                Profit   = p.Revenue,
+                Expenses = expenses[i].Revenue
+            }).ToList();
+
+            return Ok(result);
         }
     }
 }

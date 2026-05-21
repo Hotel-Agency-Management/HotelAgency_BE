@@ -164,5 +164,6 @@ namespace Booking.Repositories
                 .AverageAsync(r => (decimal?)r.TotalAmount);
             return avg ?? 0m;
         }
+
     }
 }

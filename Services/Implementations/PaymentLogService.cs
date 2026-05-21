@@ -168,6 +168,54 @@ namespace Booking.Services
         public async Task<decimal> GetAgencyRevenueStatsAsync(int agencyId)
             => await _paymentLogRepository.GetTotalIncomingByAgencyAsync(agencyId);
 
+        public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyProfitAsync(int agencyId)
+        {
+            var now = DateTime.UtcNow;
+            var from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+            var to   = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1);
+
+            var dbRows = (await _paymentLogRepository.GetMonthlyIncomingByAgencyAsync(agencyId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var result = new List<MonthlyRevenueItem>(12);
+            for (int i = 0; i < 12; i++)
+            {
+                var month = from.AddMonths(i);
+                dbRows.TryGetValue((month.Year, month.Month), out var profit);
+                result.Add(new MonthlyRevenueItem
+                {
+                    Month   = month.ToString("MMM"),
+                    Year    = month.Year,
+                    Revenue = profit
+                });
+            }
+            return result;
+        }
+
+        public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyExpensesAsync(int agencyId)
+        {
+            var now = DateTime.UtcNow;
+            var from = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+            var to   = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1);
+
+            var dbRows = (await _paymentLogRepository.GetMonthlyOutgoingByAgencyAsync(agencyId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var result = new List<MonthlyRevenueItem>(12);
+            for (int i = 0; i < 12; i++)
+            {
+                var month = from.AddMonths(i);
+                dbRows.TryGetValue((month.Year, month.Month), out var expenses);
+                result.Add(new MonthlyRevenueItem
+                {
+                    Month   = month.ToString("MMM"),
+                    Year    = month.Year,
+                    Revenue = expenses
+                });
+            }
+            return result;
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;

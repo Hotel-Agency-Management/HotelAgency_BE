@@ -9,5 +9,7 @@ namespace Booking.Interfaces.Services
         Task<PaymentLogDetailsResponse> GetDetailsAsync(int hotelId, int paymentLogId);
         Task<decimal> GetAgencyRevenueStatsAsync(int agencyId);
         Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId);
+        Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyProfitAsync(int agencyId);
+        Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyExpensesAsync(int agencyId);
     }
 }
