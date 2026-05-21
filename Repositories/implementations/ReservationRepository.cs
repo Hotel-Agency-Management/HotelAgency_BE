@@ -188,5 +188,29 @@ namespace Booking.Repositories
 
             return rows.Select(r => (r.Status, r.Count));
         }
+
+        public async Task<IEnumerable<RoomTypeReservationCount>> GetReservationsByRoomTypeForAgencyAsync(
+            int agencyId, DateTime from)
+        {
+            var allTypes = await _context.RoomTypes
+                .Where(rt => rt.Rooms!.Any(r => r.Hotel!.AgencyId == agencyId))
+                .Select(rt => new { rt.Id, rt.Name })
+                .ToListAsync();
+
+            var counts = (await _context.ReservationRooms
+                .Where(rr => rr.Room!.Hotel!.AgencyId == agencyId && rr.Reservation!.CreatedAt >= from)
+                .GroupBy(rr => rr.Room!.RoomTypeId)
+                .Select(g => new { RoomTypeId = g.Key, Count = g.Count() })
+                .ToListAsync())
+                .ToDictionary(x => x.RoomTypeId, x => x.Count);
+
+            return allTypes
+                .Select(t =>
+                {
+                    counts.TryGetValue(t.Id, out var count);
+                    return new RoomTypeReservationCount(t.Id, t.Name, count);
+                })
+                .OrderByDescending(x => x.Count);
+        }
     }
 }

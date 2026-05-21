@@ -545,6 +545,19 @@ namespace Booking.Services
             };
         }
 
+        public async Task<IReadOnlyList<RoomTypeReservationsItem>> GetAgencyReservationsByRoomTypeAsync(int agencyId)
+        {
+            var from = DateTime.UtcNow.AddMonths(-12);
+            var rows = await _reservationRepository.GetReservationsByRoomTypeForAgencyAsync(agencyId, from);
+
+            return rows.Select(r => new RoomTypeReservationsItem
+            {
+                RoomTypeId        = r.RoomTypeId,
+                RoomTypeName      = r.RoomTypeName,
+                ReservationsCount = r.Count
+            }).ToList();
+        }
+
         private static bool EnsureCancellable(Reservation reservation)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

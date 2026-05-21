@@ -97,5 +97,15 @@ namespace Booking.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("reservations-by-room-type")]
+        public async Task<IActionResult> GetReservationsByRoomType(int agencyId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized(Messages.Unauthorized);
+
+            var result = await _reservationService.GetAgencyReservationsByRoomTypeAsync(user.AgencyId!.Value);
+            return Ok(result);
+        }
     }
 }

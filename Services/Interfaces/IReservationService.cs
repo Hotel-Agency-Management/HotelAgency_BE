@@ -20,5 +20,6 @@ namespace Booking.Interfaces.Services
         Task<AgencyReservationStats> GetAgencyStatsAsync(int agencyId);
         Task<IReadOnlyList<BookingTypeDistributionItem>> GetAgencyBookingTypeDistributionAsync(int agencyId);
         Task<IReadOnlyList<ReservationStatusDistributionItem>> GetAgencyStatusDistributionAsync(int agencyId);
+        Task<IReadOnlyList<RoomTypeReservationsItem>> GetAgencyReservationsByRoomTypeAsync(int agencyId);
     }
 }

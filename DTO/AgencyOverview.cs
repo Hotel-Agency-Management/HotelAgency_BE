@@ -50,4 +50,11 @@ namespace Booking.DTO
         public int Count { get; set; }
         public decimal Percentage { get; set; }
     }
+
+    public class RoomTypeReservationsItem
+    {
+        public int RoomTypeId { get; set; }
+        public string RoomTypeName { get; set; } = string.Empty;
+        public int ReservationsCount { get; set; }
+    }
 }
