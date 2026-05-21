@@ -36,5 +36,15 @@ namespace Booking.Controllers
                 AverageBookingValue = bookingStats.AverageBookingValue
             });
         }
+
+        [HttpGet("overview/revenue-trend")]
+        public async Task<IActionResult> GetRevenueTrend(int agencyId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized(Messages.Unauthorized);
+
+            var trend = await _paymentLogService.GetAgencyRevenueTrendAsync(user.AgencyId!.Value);
+            return Ok(trend);
+        }
     }
 }

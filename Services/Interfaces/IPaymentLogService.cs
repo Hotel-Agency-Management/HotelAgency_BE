@@ -8,5 +8,6 @@ namespace Booking.Interfaces.Services
         Task<PaymentLogSummaryResponse> GetHotelLogsAsync(int hotelId, bool? incoming, PaymentLogListRequest request);
         Task<PaymentLogDetailsResponse> GetDetailsAsync(int hotelId, int paymentLogId);
         Task<decimal> GetAgencyRevenueStatsAsync(int agencyId);
+        Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId);
     }
 }

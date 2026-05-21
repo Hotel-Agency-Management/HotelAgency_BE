@@ -14,4 +14,11 @@ namespace Booking.DTO
         public int PendingCount { get; set; }
         public decimal AverageBookingValue { get; set; }
     }
+
+    public class MonthlyRevenueItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Revenue { get; set; }
+    }
 }
