@@ -27,5 +27,6 @@ namespace Booking.Interfaces.Repositories
         Task<int> GetPendingCountByAgencyAsync(int agencyId);
         Task<decimal> GetAverageValueByAgencyAsync(int agencyId);
         Task<IEnumerable<(ReservationSource Source, int Count)>> GetBookingSourceDistributionByAgencyAsync(int agencyId, DateTime from);
+        Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByAgencyAsync(int agencyId, DateTime from);
     }
 }

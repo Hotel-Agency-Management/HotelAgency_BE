@@ -176,5 +176,17 @@ namespace Booking.Repositories
 
             return rows.Select(r => (r.Source, r.Count));
         }
+
+        public async Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByAgencyAsync(
+            int agencyId, DateTime from)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId && r.CreatedAt >= from)
+                .GroupBy(r => r.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Status, r.Count));
+        }
     }
 }

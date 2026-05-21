@@ -502,6 +502,35 @@ namespace Booking.Services
             }).ToList();
         }
 
+        public async Task<IReadOnlyList<ReservationStatusDistributionItem>> GetAgencyStatusDistributionAsync(int agencyId)
+        {
+            var from = DateTime.UtcNow.AddMonths(-12);
+            var raw  = (await _reservationRepository.GetStatusDistributionByAgencyAsync(agencyId, from))
+                        .ToDictionary(x => x.Status, x => x.Count);
+
+            var allStatuses = new[]
+            {
+                ReservationStatus.Pending,
+                ReservationStatus.Confirmed,
+                ReservationStatus.CheckedIn,
+                ReservationStatus.CheckedOut,
+                ReservationStatus.Cancelled,
+            };
+
+            var total = raw.Values.Sum();
+
+            return allStatuses.Select(s =>
+            {
+                raw.TryGetValue(s, out var count);
+                return new ReservationStatusDistributionItem
+                {
+                    Status     = s.ToString(),
+                    Count      = count,
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                };
+            }).ToList();
+        }
+
         public async Task<AgencyReservationStats> GetAgencyStatsAsync(int agencyId)
         {
             var total    = await _reservationRepository.GetTotalCountByAgencyAsync(agencyId);
