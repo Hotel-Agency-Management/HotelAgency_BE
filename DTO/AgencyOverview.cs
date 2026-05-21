@@ -29,4 +29,11 @@ namespace Booking.DTO
         public decimal Profit { get; set; }
         public decimal Expenses { get; set; }
     }
+
+    public class BookingTypeDistributionItem
+    {
+        public string Type { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public decimal Percentage { get; set; }
+    }
 }

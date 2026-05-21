@@ -47,6 +47,16 @@ namespace Booking.Controllers
             return Ok(trend);
         }
 
+        [HttpGet("booking-distribution")]
+        public async Task<IActionResult> GetBookingDistribution(int agencyId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized(Messages.Unauthorized);
+
+            var distribution = await _reservationService.GetAgencyBookingTypeDistributionAsync(user.AgencyId!.Value);
+            return Ok(distribution);
+        }
+
         [HttpGet("profit-expenses")]
         public async Task<IActionResult> GetProfitExpenses(int agencyId)
         {

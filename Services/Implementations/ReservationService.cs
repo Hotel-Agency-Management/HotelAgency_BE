@@ -474,6 +474,34 @@ namespace Booking.Services
             }
         }
 
+        public async Task<IReadOnlyList<BookingTypeDistributionItem>> GetAgencyBookingTypeDistributionAsync(int agencyId)
+        {
+            var from = DateTime.UtcNow.AddMonths(-12);
+            var raw  = (await _reservationRepository.GetBookingSourceDistributionByAgencyAsync(agencyId, from))
+                        .ToDictionary(x => x.Source, x => x.Count);
+
+            var allSources = new[]
+            {
+                (ReservationSource.Website, "Online"),
+                (ReservationSource.OTA,     "OTA"),
+                (ReservationSource.Phone,   "Phone"),
+                (ReservationSource.WalkIn,  "Walk-in"),
+            };
+
+            var total = raw.Values.Sum();
+
+            return allSources.Select(s =>
+            {
+                raw.TryGetValue(s.Item1, out var count);
+                return new BookingTypeDistributionItem
+                {
+                    Type       = s.Item2,
+                    Count      = count,
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                };
+            }).ToList();
+        }
+
         public async Task<AgencyReservationStats> GetAgencyStatsAsync(int agencyId)
         {
             var total    = await _reservationRepository.GetTotalCountByAgencyAsync(agencyId);
