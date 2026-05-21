@@ -144,5 +144,25 @@ namespace Booking.Repositories
             await _context.SaveChangesAsync();
             return await GetByIdAsync(reservation.Id) ?? reservation;
         }
+
+        public async Task<int> GetTotalCountByAgencyAsync(int agencyId)
+            => await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId)
+                .CountAsync();
+
+        public async Task<int> GetPendingCountByAgencyAsync(int agencyId)
+            => await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId && r.Status == ReservationStatus.Pending)
+                .CountAsync();
+
+        public async Task<decimal> GetAverageValueByAgencyAsync(int agencyId)
+        {
+            var avg = await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId &&
+                            r.Status != ReservationStatus.Pending &&
+                            r.Status != ReservationStatus.Cancelled)
+                .AverageAsync(r => (decimal?)r.TotalAmount);
+            return avg ?? 0m;
+        }
     }
 }

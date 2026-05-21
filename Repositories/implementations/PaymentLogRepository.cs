@@ -58,6 +58,15 @@ namespace Booking.Repositories
                 .Include(p => p.Reservation)
                 .FirstOrDefaultAsync(p => p.Id == paymentLogId);
 
+        public async Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId)
+            => await _context.PaymentLogs
+                .Join(_context.Hotels,
+                      pl => pl.To,
+                      h => h.Id,
+                      (pl, h) => new { pl.Amount, h.AgencyId })
+                .Where(x => x.AgencyId == agencyId)
+                .SumAsync(x => x.Amount);
+
         private IQueryable<PaymentLog> BuildBaseQuery(
             PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {

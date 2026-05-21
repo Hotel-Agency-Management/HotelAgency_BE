@@ -474,6 +474,20 @@ namespace Booking.Services
             }
         }
 
+        public async Task<AgencyReservationStats> GetAgencyStatsAsync(int agencyId)
+        {
+            var total    = await _reservationRepository.GetTotalCountByAgencyAsync(agencyId);
+            var pending  = await _reservationRepository.GetPendingCountByAgencyAsync(agencyId);
+            var avgValue = await _reservationRepository.GetAverageValueByAgencyAsync(agencyId);
+
+            return new AgencyReservationStats
+            {
+                TotalBookings       = total,
+                PendingCount        = pending,
+                AverageBookingValue = avgValue
+            };
+        }
+
         private static bool EnsureCancellable(Reservation reservation)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

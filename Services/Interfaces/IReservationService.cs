@@ -17,5 +17,6 @@ namespace Booking.Interfaces.Services
         Task<CancellationResponse> CancelMyReservationAsync(int reservationId, int customerId, CancelReservationRequest request);
         Task<ReservationResponse> CreateMyReservationAsync(int hotelId, ApplicationUser user, CustomerCreateReservationRequest request);
         Task<ReservationResponse> UpdateReservationStatusAsync(int hotelId, int reservationId, UpdateReservationStatusRequest request);
+        Task<AgencyReservationStats> GetAgencyStatsAsync(int agencyId);
     }
 }

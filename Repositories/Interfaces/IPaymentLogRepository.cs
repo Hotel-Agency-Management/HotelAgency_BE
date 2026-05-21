@@ -26,5 +26,8 @@ namespace Booking.Interfaces.Repositories
 
         // Single record with Reservation included
         Task<PaymentLog?> GetByIdAsync(int paymentLogId);
+
+        // Agency overview stats
+        Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId);
     }
 }

@@ -165,6 +165,9 @@ namespace Booking.Services
             };
         }
 
+        public async Task<decimal> GetAgencyRevenueStatsAsync(int agencyId)
+            => await _paymentLogRepository.GetTotalIncomingByAgencyAsync(agencyId);
+
         private static DateOnly GetWeekStart(DateTime dt)
         {
             var date = DateOnly.FromDateTime(dt);
