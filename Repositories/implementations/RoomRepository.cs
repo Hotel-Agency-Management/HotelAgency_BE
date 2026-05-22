@@ -102,5 +102,12 @@ namespace Booking.Repositories
             _context.Rooms.Remove(room);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<Dictionary<RoomStatus, int>> GetStatusCountsByHotelIdAsync(int hotelId)
+            => await _context.Rooms
+                .Where(r => r.HotelId == hotelId)
+                .GroupBy(r => r.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Status, x => x.Count);
     }
 }

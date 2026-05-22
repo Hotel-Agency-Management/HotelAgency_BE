@@ -1,6 +1,7 @@
 using Booking.Clients;
 using Booking.Constants;
 using Booking.DTO;
+using Booking.Enums;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
@@ -149,6 +150,28 @@ namespace Booking.Services
             await _roomRepository.DeleteAsync(room);
             if (room.CoverPhotoUrl is not null)
                 await _blobStorageService.DeleteAsync(room.CoverPhotoUrl);
+        }
+
+        public async Task<RoomStatusDistributionResponse> GetRoomStatusDistributionAsync(int hotelId)
+        {
+            var counts = await _roomRepository.GetStatusCountsByHotelIdAsync(hotelId);
+            var total = counts.Values.Sum();
+
+            var items = Enum.GetValues<RoomStatus>()
+                .Select(status =>
+                {
+                    var count = counts.GetValueOrDefault(status, 0);
+                    var pct = total == 0 ? 0m : Math.Round((count / (decimal)total) * 100, 2);
+                    return new RoomStatusDistributionItem
+                    {
+                        Status = status.ToString(),
+                        Count = count,
+                        Percentage = pct
+                    };
+                })
+                .ToList();
+
+            return new RoomStatusDistributionResponse { TotalRooms = total, Items = items };
         }
     }
 }
