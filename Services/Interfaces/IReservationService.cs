@@ -21,5 +21,6 @@ namespace Booking.Interfaces.Services
         Task<IReadOnlyList<BookingTypeDistributionItem>> GetAgencyBookingTypeDistributionAsync(int agencyId);
         Task<IReadOnlyList<ReservationStatusDistributionItem>> GetAgencyStatusDistributionAsync(int agencyId);
         Task<IReadOnlyList<RoomTypeReservationsItem>> GetAgencyReservationsByRoomTypeAsync(int agencyId);
+        Task<PropertyManagerOverviewCardsResponse> GetHotelOverviewCardsAsync(int hotelId);
     }
 }

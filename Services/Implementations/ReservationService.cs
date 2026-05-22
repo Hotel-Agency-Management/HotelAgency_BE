@@ -558,6 +558,18 @@ namespace Booking.Services
             }).ToList();
         }
 
+        public async Task<PropertyManagerOverviewCardsResponse> GetHotelOverviewCardsAsync(int hotelId)
+        {
+            var cards = await _reservationRepository.GetHotelOverviewCardsAsync(hotelId);
+            return new PropertyManagerOverviewCardsResponse
+            {
+                TotalReservations  = cards.TotalReservations,
+                TodayCheckIns      = cards.TodayCheckIns,
+                TodayCheckOuts     = cards.TodayCheckOuts,
+                PendingReservations = cards.PendingReservations
+            };
+        }
+
         private static bool EnsureCancellable(Reservation reservation)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

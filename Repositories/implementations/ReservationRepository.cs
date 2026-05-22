@@ -212,5 +212,18 @@ namespace Booking.Repositories
                 })
                 .OrderByDescending(x => x.Count);
         }
+
+        public async Task<HotelOverviewCards> GetHotelOverviewCardsAsync(int hotelId)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var baseQuery = _context.Reservations.Where(r => r.HotelId == hotelId);
+
+            var total = await baseQuery.CountAsync();
+            var todayCheckIns = await baseQuery.CountAsync(r => r.CheckInDate == today);
+            var todayCheckOuts = await baseQuery.CountAsync(r => r.CheckOutDate == today);
+            var pending = await baseQuery.CountAsync(r => r.Status == ReservationStatus.Pending);
+
+            return new HotelOverviewCards(total, todayCheckIns, todayCheckOuts, pending);
+        }
     }
 }
