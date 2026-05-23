@@ -28,5 +28,12 @@ namespace Booking.Controllers
             var result = await _reservationService.GetHotelOverviewCardsAsync(hotelId);
             return Ok(result);
         }
+
+        [HttpGet("reservation-status-distribution")]
+        public async Task<IActionResult> GetReservationStatusDistribution([FromRoute] int hotelId)
+        {
+            var result = await _reservationService.GetHotelReservationStatusDistributionAsync(hotelId);
+            return Ok(result);
+        }
     }
 }

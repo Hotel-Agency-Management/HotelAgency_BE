@@ -213,6 +213,17 @@ namespace Booking.Repositories
                 .OrderByDescending(x => x.Count);
         }
 
+        public async Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByHotelIdAsync(int hotelId)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.HotelId == hotelId)
+                .GroupBy(r => r.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Status, r.Count));
+        }
+
         public async Task<HotelOverviewCards> GetHotelOverviewCardsAsync(int hotelId)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

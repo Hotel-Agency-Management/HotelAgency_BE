@@ -21,4 +21,10 @@ namespace Booking.DTO
         public int TotalRooms { get; set; }
         public List<OccupancyRateItem> Items { get; set; } = new();
     }
+
+    public class HotelReservationStatusDistributionResponse
+    {
+        public int TotalReservations { get; set; }
+        public List<ReservationStatusDistributionItem> Items { get; set; } = new();
+    }
 }

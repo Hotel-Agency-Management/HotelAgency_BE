@@ -33,5 +33,6 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByAgencyAsync(int agencyId, DateTime from);
         Task<IEnumerable<RoomTypeReservationCount>> GetReservationsByRoomTypeForAgencyAsync(int agencyId, DateTime from);
         Task<HotelOverviewCards> GetHotelOverviewCardsAsync(int hotelId);
+        Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByHotelIdAsync(int hotelId);
     }
 }

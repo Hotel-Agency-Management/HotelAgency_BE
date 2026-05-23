@@ -570,6 +570,40 @@ namespace Booking.Services
             };
         }
 
+        public async Task<HotelReservationStatusDistributionResponse> GetHotelReservationStatusDistributionAsync(int hotelId)
+        {
+            var raw = (await _reservationRepository.GetStatusDistributionByHotelIdAsync(hotelId))
+                        .ToDictionary(x => x.Status, x => x.Count);
+
+            var allStatuses = new[]
+            {
+                ReservationStatus.Pending,
+                ReservationStatus.Confirmed,
+                ReservationStatus.CheckedIn,
+                ReservationStatus.CheckedOut,
+                ReservationStatus.Cancelled,
+            };
+
+            var total = raw.Values.Sum();
+
+            var items = allStatuses.Select(s =>
+            {
+                raw.TryGetValue(s, out var count);
+                return new ReservationStatusDistributionItem
+                {
+                    Status     = s.ToString(),
+                    Count      = count,
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                };
+            }).ToList();
+
+            return new HotelReservationStatusDistributionResponse
+            {
+                TotalReservations = total,
+                Items             = items
+            };
+        }
+
         private static bool EnsureCancellable(Reservation reservation)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
