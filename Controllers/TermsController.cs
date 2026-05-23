@@ -13,7 +13,7 @@ namespace Booking.Controllers
     [Route("api/hotels/{hotelId}/terms")]
     public class TermsController(ITermsAndConditionsService _termsService) : ControllerBase
     {
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}, {Roles.Customer}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}, {Roles.FrontDeskStaff}, {Roles.Customer}")]
         [HttpGet]
         public async Task<IActionResult> GetByHotelId([FromRoute] int hotelId)
         {
@@ -21,7 +21,7 @@ namespace Booking.Controllers
             return Ok(terms);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}, {Roles.Customer}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}, {Roles.FrontDeskStaff}, {Roles.Customer}")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(
             [FromRoute] int hotelId,

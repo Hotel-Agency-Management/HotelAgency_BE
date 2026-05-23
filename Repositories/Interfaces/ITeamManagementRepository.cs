@@ -15,6 +15,8 @@ namespace Booking.Interfaces.Repositories
             int pageSize);
 
         Task<ApplicationUser?> GetByIdAndAgencyAsync(int userId, int agencyId);
+        Task<int> CountByHotelAsync(int hotelId, string? role);
+        Task<List<ApplicationUser>> GetByHotelAsync(int hotelId, string? role, int pageNumber, int pageSize);
         Task<ApplicationUser?> FindByEmailAsync(string email);
         Task<IdentityResult> CreateAsync(ApplicationUser user, string password);
         Task<IdentityResult> AddToRoleAsync(ApplicationUser user, string role);

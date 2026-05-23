@@ -28,7 +28,7 @@ namespace Booking.Controllers
             return Created(string.Empty, facility);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}, {Roles.FrontDeskStaff}")]
         [HttpGet]
         public async Task<IActionResult> GetFacilitiesByHotel([FromRoute] int hotelId)
         {

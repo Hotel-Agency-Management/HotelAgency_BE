@@ -14,6 +14,8 @@ namespace Booking.Interfaces.Services
             int agencyId,
             CreateTeamMemberRequest request);
 
+        Task<PaginatedResponse<TeamMemberResponse>> GetHotelStaffAsync(int hotelId, TeamMemberListRequest request);
+
         Task<TeamMemberResponse> AssignAgencyTeamMemberRoleAsync(
             int agencyId,
             int teamMemberId,

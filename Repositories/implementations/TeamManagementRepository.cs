@@ -68,6 +68,42 @@ namespace Booking.Repositories
             };
         }
 
+        public Task<int> CountByHotelAsync(int hotelId, string? role)
+        {
+            return HotelStaffQuery(hotelId, role).CountAsync();
+        }
+
+        public Task<List<ApplicationUser>> GetByHotelAsync(int hotelId, string? role, int pageNumber, int pageSize)
+        {
+            return HotelStaffQuery(hotelId, role)
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        private IQueryable<ApplicationUser> HotelStaffQuery(int hotelId, string? role)
+        {
+            return (
+                from user in _context.Users
+                join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                join identityRole in _context.Roles on userRole.RoleId equals identityRole.Id
+                where user.HotelId == hotelId
+                    && HotelStaffRoleNames.Contains(identityRole.Name!)
+                    && (role == null || identityRole.Name == role)
+                select user)
+                .Distinct();
+        }
+
+        private static readonly string[] HotelStaffRoleNames =
+        {
+            Roles.PropertyManager,
+            Roles.HousekeepingManager,
+            Roles.FrontDeskStaff,
+            Roles.HousekeepingEmployee
+        };
+
         private static readonly string[] AllowedAgencyRoleNames =
         {
             Roles.PropertyManager,
