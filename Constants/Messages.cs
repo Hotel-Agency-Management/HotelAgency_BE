@@ -45,6 +45,11 @@ public static class Messages
     public const string FacilityNotFound = "Facility with id '{0}' was not found.";
     public const string FacilityForbidden = "Facility with id '{0}' does not belong to hotel with id '{1}'.";
 
+    // Housekeeping Tickets
+    public const string TicketIdMissing = "TicketId is missing.";
+    public const string TicketNotFound = "Ticket with id '{0}' was not found.";
+    public const string TicketForbidden = "Ticket with id '{0}' does not belong to hotel with id '{1}'.";
+
     //reservation
     public const string ContractFileMustBePdf = "Contract file must be a PDF.";
     public const string InvoiceFileMustBePdf = "Invoice file must be a PDF.";

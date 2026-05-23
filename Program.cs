@@ -104,6 +104,7 @@ builder.Services.AddScoped<ITeamManagementRepository, TeamManagementRepository>(
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IPaymentLogRepository, PaymentLogRepository>();
 builder.Services.AddScoped<ITermsAndConditionsRepository, TermsAndConditionsRepository>();
+builder.Services.AddScoped<IHousekeepingTicketRepository, HousekeepingTicketRepository>();
 
 
 
@@ -125,6 +126,7 @@ builder.Services.AddScoped<ICustomerAccountService, CustomerAccountService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IPaymentLogService, PaymentLogService>();
 builder.Services.AddScoped<ITermsAndConditionsService, TermsAndConditionsService>();
+builder.Services.AddScoped<IHousekeepingTicketService, HousekeepingTicketService>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 builder.Services.AddSingleton<IAppLinkService, AppLinkService>();
 
