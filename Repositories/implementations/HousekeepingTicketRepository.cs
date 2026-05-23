@@ -63,7 +63,7 @@ namespace Booking.Repositories
                 .Include(t => t.AssignedTo)
                 .Include(t => t.Room)
                 .Include(t => t.Facility)
-                .OrderBy(t => t.Deadline)
+                .OrderBy(t => t.CreatedAt)
                 .ThenByDescending(t => t.Priority)
                 .ToListAsync();
 
