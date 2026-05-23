@@ -98,6 +98,8 @@ namespace Booking.Repositories
 
         private static readonly string[] HotelStaffRoleNames =
         {
+            Roles.PropertyManager,
+            Roles.HousekeepingManager,
             Roles.FrontDeskStaff,
             Roles.HousekeepingEmployee
         };

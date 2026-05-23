@@ -26,7 +26,7 @@ namespace Booking.Controllers
             return Ok(room);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}, {Roles.FrontDeskStaff}")]
         [HttpGet]
         public async Task<IActionResult> GetRoomsByHotel(
             [FromRoute] int hotelId,
@@ -39,7 +39,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}, {Roles.FrontDeskManager}, {Roles.FrontDeskStaff}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.HousekeepingManager}, {Roles.FrontDeskStaff}")]
         [HttpGet("{roomId}")]
         public async Task<IActionResult> GetRoomById(
             [FromRoute] int hotelId,

@@ -21,7 +21,7 @@ namespace Booking.Controllers
         IReservationService _reservationService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
     {
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}, {Roles.Customer}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff}, {Roles.PropertyManager}, {Roles.Customer}")]
         [HttpPost]
         public async Task<IActionResult> CreateReservation(
             [FromRoute] int hotelId,
@@ -38,7 +38,7 @@ namespace Booking.Controllers
             return CreatedAtAction(nameof(GetReservationById), new { hotelId, reservationId = result.Id }, result);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff}, {Roles.PropertyManager}")]
         [HttpGet]
         public async Task<IActionResult> GetReservationsByHotel(
             [FromRoute] int hotelId,
@@ -48,7 +48,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager}")]
         [HttpGet("{reservationId}")]
         public async Task<IActionResult> GetReservationById(
             [FromRoute] int hotelId,
@@ -58,7 +58,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff}, {Roles.PropertyManager}")]
         [HttpPut("{reservationId}")]
         public async Task<IActionResult> UpdateReservation(
             [FromRoute] int hotelId,
@@ -76,7 +76,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager},{Roles.Customer}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.FrontDeskStaff}, {Roles.PropertyManager}, {Roles.Customer}")]
         [HttpPatch("{reservationId}/cancel")]
         public async Task<IActionResult> CancelReservation(
             [FromRoute] int hotelId,
@@ -87,7 +87,7 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.FrontDeskStaff},{Roles.PropertyManager},{Roles.FrontDeskManager}")]
+        [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.FrontDeskStaff},{Roles.PropertyManager}")]
         [HttpPatch("{reservationId}/status")]
         public async Task<IActionResult> UpdateReservationStatus(
             [FromRoute] int hotelId,

@@ -67,7 +67,8 @@ namespace Booking.Services
             if (!string.IsNullOrWhiteSpace(request.Role))
             {
                 var normalized = TeamMemberUtils.NormalizeAndValidateRole(request.Role);
-                if (normalized != Roles.FrontDeskStaff && normalized != Roles.HousekeepingEmployee)
+                if (normalized != Roles.FrontDeskStaff && normalized != Roles.HousekeepingEmployee
+                    && normalized != Roles.HousekeepingManager && normalized != Roles.PropertyManager)
                     throw new InvalidTeamMemberRoleException(request.Role);
                 roleFilter = normalized;
             }
