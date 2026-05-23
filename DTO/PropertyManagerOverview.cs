@@ -27,4 +27,22 @@ namespace Booking.DTO
         public int TotalReservations { get; set; }
         public List<ReservationStatusDistributionItem> Items { get; set; } = new();
     }
+
+    public class HotelBookingTypeDistributionResponse
+    {
+        public int TotalReservations { get; set; }
+        public List<BookingTypeDistributionItem> Items { get; set; } = new();
+    }
+
+    public class RevenueTrendItem
+    {
+        public string Label { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+    }
+
+    public class HotelRevenueTrendResponse
+    {
+        public string GroupBy { get; set; } = string.Empty;
+        public List<RevenueTrendItem> Items { get; set; } = new();
+    }
 }

@@ -213,6 +213,17 @@ namespace Booking.Repositories
                 .OrderByDescending(x => x.Count);
         }
 
+        public async Task<IEnumerable<(ReservationSource Source, int Count)>> GetBookingTypeDistributionByHotelIdAsync(int hotelId)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.HotelId == hotelId)
+                .GroupBy(r => r.Source)
+                .Select(g => new { Source = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Source, r.Count));
+        }
+
         public async Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByHotelIdAsync(int hotelId)
         {
             var rows = await _context.Reservations
@@ -222,6 +233,34 @@ namespace Booking.Repositories
                 .ToListAsync();
 
             return rows.Select(r => (r.Status, r.Count));
+        }
+
+        public async Task<IEnumerable<(int Year, int Month, decimal Revenue)>> GetMonthlyRevenueByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.HotelId == hotelId
+                         && r.CreatedAt >= from && r.CreatedAt < to
+                         && r.Status != ReservationStatus.Cancelled)
+                .GroupBy(r => new { r.CreatedAt.Year, r.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(r => r.TotalAmount) })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Year, r.Month, r.Revenue));
+        }
+
+        public async Task<IEnumerable<(int Year, int Month, int Day, decimal Revenue)>> GetDailyRevenueByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.HotelId == hotelId
+                         && r.CreatedAt >= from && r.CreatedAt < to
+                         && r.Status != ReservationStatus.Cancelled)
+                .GroupBy(r => new { r.CreatedAt.Year, r.CreatedAt.Month, r.CreatedAt.Day })
+                .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Revenue = g.Sum(r => r.TotalAmount) })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Year, r.Month, r.Day, r.Revenue));
         }
 
         public async Task<HotelOverviewCards> GetHotelOverviewCardsAsync(int hotelId)

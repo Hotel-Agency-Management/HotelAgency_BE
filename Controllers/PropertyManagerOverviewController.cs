@@ -35,5 +35,21 @@ namespace Booking.Controllers
             var result = await _reservationService.GetHotelReservationStatusDistributionAsync(hotelId);
             return Ok(result);
         }
+
+        [HttpGet("booking-types-distribution")]
+        public async Task<IActionResult> GetBookingTypesDistribution([FromRoute] int hotelId)
+        {
+            var result = await _reservationService.GetHotelBookingTypeDistributionAsync(hotelId);
+            return Ok(result);
+        }
+
+        [HttpGet("revenue-trend")]
+        public async Task<IActionResult> GetRevenueTrend(
+            [FromRoute] int hotelId,
+            [FromQuery] string groupBy = "monthly")
+        {
+            var result = await _reservationService.GetHotelRevenueTrendAsync(hotelId, groupBy);
+            return Ok(result);
+        }
     }
 }
