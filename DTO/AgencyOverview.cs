@@ -57,4 +57,5 @@ namespace Booking.DTO
         public string RoomTypeName { get; set; } = string.Empty;
         public int ReservationsCount { get; set; }
     }
+
 }
