@@ -58,6 +58,7 @@ namespace Booking.Repositories
                 .Include(p => p.Reservation)
                 .FirstOrDefaultAsync(p => p.Id == paymentLogId);
 
+
         public async Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId)
             => await _context.PaymentLogs
                 .Join(_context.Hotels,
@@ -117,6 +118,19 @@ namespace Booking.Repositories
             return rows.Select(r => new HotelRevenue(r.Id, r.Name, r.Revenue));
         }
 
+        public async Task<PaymentLog> UpdateAsync(PaymentLog paymentLog)
+        {
+            _context.PaymentLogs.Update(paymentLog);
+            await _context.SaveChangesAsync();
+            return paymentLog;
+        }
+
+        public async Task DeleteAsync(PaymentLog paymentLog)
+        {
+            _context.PaymentLogs.Remove(paymentLog);
+            await _context.SaveChangesAsync();
+        }
+
         private IQueryable<PaymentLog> BuildBaseQuery(
             PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {
@@ -139,9 +153,9 @@ namespace Booking.Repositories
         {
             var query = incoming switch
             {
-                true  => _context.PaymentLogs.Where(p => p.To == hotelId),
+                true => _context.PaymentLogs.Where(p => p.To == hotelId),
                 false => _context.PaymentLogs.Where(p => p.From == hotelId),
-                null  => _context.PaymentLogs.Where(p => p.To == hotelId || p.From == hotelId)
+                null => _context.PaymentLogs.Where(p => p.To == hotelId || p.From == hotelId)
             };
 
             if (type.HasValue)

@@ -29,11 +29,12 @@ namespace Booking.Interfaces.Repositories
 
         // Single record with Reservation included
         Task<PaymentLog?> GetByIdAsync(int paymentLogId);
-
         // Agency overview stats
         Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId);
         Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByAgencyAsync(int agencyId, DateTime from, DateTime to);
         Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByAgencyAsync(int agencyId, DateTime from, DateTime to);
         Task<IEnumerable<HotelRevenue>> GetRevenuePerHotelByAgencyAsync(int agencyId);
+        Task<PaymentLog> UpdateAsync(PaymentLog paymentLog);
+        Task DeleteAsync(PaymentLog paymentLog);
     }
 }

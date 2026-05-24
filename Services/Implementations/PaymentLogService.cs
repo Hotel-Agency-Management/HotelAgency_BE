@@ -271,6 +271,95 @@ namespace Booking.Services
             }).ToList();
         }
 
+        public async Task<PaymentLogDetailsResponse> CreateAsync(int hotelId, CreatePaymentLogRequest request)
+        {
+            var log = await _paymentLogRepository.CreateAsync(new PaymentLog
+            {
+                ReservationId = request.ReservationId,
+                Amount = request.Amount,
+                Type = request.Type,
+                Reason = ResolveReason(request.Type, request.Reason),
+                From = request.From,
+                To = request.To
+            });
+
+            var saved = await _paymentLogRepository.GetByIdAsync(log.Id);
+            return await MapToDetailsAsync(hotelId, saved!);
+        }
+
+        public async Task<PaymentLogDetailsResponse> UpdateAsync(int hotelId, int paymentLogId, UpdatePaymentLogRequest request)
+        {
+            var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
+                ?? throw new PaymentLogNotFoundException(paymentLogId);
+
+            if (log.To != hotelId && log.From != hotelId)
+                throw new PaymentLogForbiddenException(paymentLogId, hotelId);
+
+            if (request.Amount.HasValue) log.Amount = request.Amount.Value;
+            if (request.Type.HasValue)
+            {
+                log.Type = request.Type.Value;
+                log.Reason = ResolveReason(request.Type.Value, request.Reason);
+            }
+            else if (request.Reason is not null)
+            {
+                log.Reason = request.Reason;
+            }
+
+            await _paymentLogRepository.UpdateAsync(log);
+            return await MapToDetailsAsync(hotelId, log);
+        }
+
+        public async Task DeleteAsync(int hotelId, int paymentLogId)
+        {
+            var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
+                ?? throw new PaymentLogNotFoundException(paymentLogId);
+
+            if (log.To != hotelId && log.From != hotelId)
+                throw new PaymentLogForbiddenException(paymentLogId, hotelId);
+
+            await _paymentLogRepository.DeleteAsync(log);
+        }
+
+        private async Task<PaymentLogDetailsResponse> MapToDetailsAsync(int hotelId, PaymentLog log)
+        {
+            var hotel = await _hotelRepository.GetByIdAsync(hotelId);
+            var hotelName = hotel?.Name ?? hotelId.ToString();
+
+            bool isIncoming = log.To == hotelId;
+            int userId = isIncoming ? log.From : log.To;
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : userId.ToString();
+
+            return new PaymentLogDetailsResponse
+            {
+                PaymentId = log.Id,
+                PaymentType = log.Type.ToString(),
+                Reason = log.Reason,
+                Amount = log.Amount,
+                CreatedAt = log.CreatedAt,
+                ReservationReference = log.Reservation?.ReservationNumber,
+                ReservationId = log.ReservationId,
+                FromName = isIncoming ? userName : hotelName,
+                ToName = isIncoming ? hotelName : userName,
+                Timeline = BuildTimeline(log)
+            };
+        }
+
+        private static string ResolveReason(PaymentType type, string? overrideReason) =>
+            overrideReason ?? type switch
+            {
+                PaymentType.Booking => PaymentReason.Booking,
+                PaymentType.Cancellation => PaymentReason.Cancellation,
+                PaymentType.ReservationInsurance => PaymentReason.ReservationInsurance,
+                PaymentType.YearlyInsurance => PaymentReason.YearlyInsurance,
+                PaymentType.Extend => PaymentReason.Extend,
+                PaymentType.Damage => PaymentReason.Damage,
+                PaymentType.Refund => PaymentReason.Refund,
+                _ => string.Empty
+            };
+
+
         private static DateOnly GetWeekStart(DateTime dt)
         {
             var date = DateOnly.FromDateTime(dt);
