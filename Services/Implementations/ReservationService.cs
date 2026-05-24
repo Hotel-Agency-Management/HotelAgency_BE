@@ -1,4 +1,5 @@
 using Booking.Clients;
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Enums;
 using Booking.Exceptions;
@@ -63,6 +64,7 @@ namespace Booking.Services
                 ReservationId = saved.Id,
                 Amount = saved.TotalAmount,
                 Type = PaymentType.Booking,
+                Reason = PaymentReason.Booking,
                 From = saved.CustomerId ?? 0,
                 To = saved.HotelId
             });
@@ -73,6 +75,7 @@ namespace Booking.Services
                     ReservationId = saved.Id,
                     Amount = saved.InsuranceAmount,
                     Type = PaymentType.ReservationInsurance,
+                    Reason = PaymentReason.ReservationInsurance,
                     From = saved.CustomerId ?? 0,
                     To = saved.HotelId
                 });
@@ -125,6 +128,7 @@ namespace Booking.Services
                 ReservationId = saved.Id,
                 Amount = saved.TotalAmount,
                 Type = PaymentType.Booking,
+                Reason = PaymentReason.Booking,
                 From = saved.CustomerId ?? 0,
                 To = saved.HotelId
             });
@@ -135,6 +139,7 @@ namespace Booking.Services
                     ReservationId = saved.Id,
                     Amount = saved.InsuranceAmount,
                     Type = PaymentType.ReservationInsurance,
+                    Reason = PaymentReason.ReservationInsurance,
                     From = saved.CustomerId ?? 0,
                     To = saved.HotelId
                 });
@@ -318,6 +323,7 @@ namespace Booking.Services
                     ReservationId = updated.Id,
                     Amount = extraCharge,
                     Type = PaymentType.Extend,
+                    Reason = PaymentReason.Extend,
                     From = updated.CustomerId ?? 0,
                     To = updated.HotelId
                 });
@@ -372,6 +378,7 @@ namespace Booking.Services
                     ReservationId = updated.Id,
                     Amount = fee,
                     Type = PaymentType.Cancellation,
+                    Reason = PaymentReason.Cancellation,
                     From = updated.CustomerId ?? 0,
                     To = updated.HotelId
                 });
@@ -380,6 +387,7 @@ namespace Booking.Services
                     ReservationId = updated.Id,
                     Amount = originalTotal - fee,
                     Type = PaymentType.Refund,
+                    Reason = PaymentReason.Refund,
                     From = updated.HotelId,
                     To = updated.CustomerId ?? 0
                 });
@@ -391,6 +399,7 @@ namespace Booking.Services
                     ReservationId = updated.Id,
                     Amount = originalTotal,
                     Type = PaymentType.Refund,
+                    Reason = PaymentReason.Refund,
                     From = updated.HotelId,
                     To = updated.CustomerId ?? 0
                 });

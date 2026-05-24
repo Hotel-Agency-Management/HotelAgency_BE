@@ -11,6 +11,7 @@ namespace Booking.Models
         [Required] public int? ReservationId { get; set; }
         [Required] public decimal Amount { get; set; }
         [Required] public PaymentType Type { get; set; }
+        public string? Reason { get; set; }
 
         [Required] public int From { get; set; }
         [Required] public int To { get; set; }

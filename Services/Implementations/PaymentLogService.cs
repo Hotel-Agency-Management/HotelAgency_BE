@@ -53,6 +53,7 @@ namespace Booking.Services
                 PaymentId = p.Id,
                 ReservationReference = p.Reservation?.ReservationNumber,
                 PaymentType = p.Type.ToString(),
+                Reason = p.Reason,
                 Amount = p.Amount,
                 FromName = ResolveName(p.From),
                 ToName = ResolveName(p.To),
@@ -104,6 +105,7 @@ namespace Booking.Services
                     PaymentId = p.Id,
                     ReservationReference = p.Reservation?.ReservationNumber,
                     PaymentType = p.Type.ToString(),
+                    Reason = p.Reason,
                     Amount = p.Amount,
                     FromName = isIncoming ? userName : hotelName,
                     ToName = isIncoming ? hotelName : userName,
@@ -156,6 +158,7 @@ namespace Booking.Services
             {
                 PaymentId = log.Id,
                 PaymentType = log.Type.ToString(),
+                Reason = log.Reason,
                 Amount = log.Amount,
                 CreatedAt = log.CreatedAt,
                 ReservationReference = log.Reservation?.ReservationNumber,
