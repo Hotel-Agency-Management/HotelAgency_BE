@@ -15,7 +15,7 @@ namespace Booking.Controllers
     [Route("api/hotels/{hotelId}/housekeeping-tickets/{ticketId}/comments")]
     [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}," +
                        $"{Roles.HousekeepingManager},{Roles.HousekeepingEmployee}," +
-                       $"{Roles.FrontDeskManager},{Roles.FrontDeskStaff}," +
+                       $"{Roles.FrontDeskStaff}," +
                        $"{Roles.CustomerSupport}")]
     public class TicketCommentController(
         ITicketCommentService _commentService,
