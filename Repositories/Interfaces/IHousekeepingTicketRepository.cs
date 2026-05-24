@@ -15,14 +15,17 @@ namespace Booking.Interfaces.Repositories
             TicketPriority? priority,
             int? assignedToId,
             int pageNumber,
-            int pageSize);
+            int pageSize,
+            int? visibleToUserId = null);
         Task<int> CountByHotelIdAsync(
             int hotelId,
             TicketStatus? status,
             TicketType? type,
             TicketPriority? priority,
-            int? assignedToId);
-        Task<IEnumerable<HousekeepingTicket>> GetAllByHotelIdAsync(int hotelId);
+            int? assignedToId,
+            int? visibleToUserId = null);
+        Task<IEnumerable<HousekeepingTicket>> GetAllByHotelIdAsync(int hotelId,
+            int? visibleToUserId = null);
         Task<HousekeepingTicket> UpdateAsync(HousekeepingTicket ticket);
         Task DeleteAsync(HousekeepingTicket ticket);
     }

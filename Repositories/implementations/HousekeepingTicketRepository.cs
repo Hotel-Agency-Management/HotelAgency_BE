@@ -39,8 +39,9 @@ namespace Booking.Repositories
             TicketPriority? priority,
             int? assignedToId,
             int pageNumber,
-            int pageSize)
-            => await BuildQuery(hotelId, status, type, priority, assignedToId)
+            int pageSize,
+            int? visibleToUserId = null)
+            => await BuildQuery(hotelId, status, type, priority, assignedToId, visibleToUserId)
                 .Include(t => t.AssignedTo)
                 .Include(t => t.Room)
                 .Include(t => t.Facility)
@@ -54,18 +55,27 @@ namespace Booking.Repositories
             TicketStatus? status,
             TicketType? type,
             TicketPriority? priority,
-            int? assignedToId)
-            => await BuildQuery(hotelId, status, type, priority, assignedToId).CountAsync();
+            int? assignedToId,
+            int? visibleToUserId = null)
+            => await BuildQuery(hotelId, status, type, priority, assignedToId, visibleToUserId).CountAsync();
 
-        public async Task<IEnumerable<HousekeepingTicket>> GetAllByHotelIdAsync(int hotelId)
-            => await _context.HousekeepingTickets
-                .Where(t => t.HotelId == hotelId)
+        public async Task<IEnumerable<HousekeepingTicket>> GetAllByHotelIdAsync(int hotelId,
+            int? visibleToUserId = null)
+        {
+            var q = _context.HousekeepingTickets.Where(t => t.HotelId == hotelId);
+
+            if (visibleToUserId.HasValue)
+                q = q.Where(t => t.CreatedById == visibleToUserId.Value
+                               || t.AssignedToId == visibleToUserId.Value);
+
+            return await q
                 .Include(t => t.AssignedTo)
                 .Include(t => t.Room)
                 .Include(t => t.Facility)
                 .OrderBy(t => t.CreatedAt)
                 .ThenByDescending(t => t.Priority)
                 .ToListAsync();
+        }
 
         public async Task<HousekeepingTicket> UpdateAsync(HousekeepingTicket ticket)
         {
@@ -85,9 +95,14 @@ namespace Booking.Repositories
             TicketStatus? status,
             TicketType? type,
             TicketPriority? priority,
-            int? assignedToId)
+            int? assignedToId,
+            int? visibleToUserId = null)
         {
             var q = _context.HousekeepingTickets.Where(t => t.HotelId == hotelId);
+
+            if (visibleToUserId.HasValue)
+                q = q.Where(t => t.CreatedById == visibleToUserId.Value
+                               || t.AssignedToId == visibleToUserId.Value);
 
             if (status.HasValue)
                 q = q.Where(t => t.Status == status.Value);

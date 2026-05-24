@@ -41,7 +41,12 @@ namespace Booking.Controllers.Admin
             [FromRoute] int hotelId,
             [FromQuery] TicketListRequest request)
         {
-            var result = await _ticketService.GetTicketsByHotelAsync(hotelId, request);
+            var user = await _userManager.GetUserAsync(User);
+            if (user is null)
+                return Unauthorized(Messages.Unauthorized);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var result = await _ticketService.GetTicketsByHotelAsync(hotelId, user.Id, roles, request);
             return Ok(result);
         }
 
@@ -50,7 +55,12 @@ namespace Booking.Controllers.Admin
             [FromRoute] int agencyId,
             [FromRoute] int hotelId)
         {
-            var result = await _ticketService.GetBoardAsync(hotelId);
+            var user = await _userManager.GetUserAsync(User);
+            if (user is null)
+                return Unauthorized(Messages.Unauthorized);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var result = await _ticketService.GetBoardAsync(hotelId, user.Id, roles);
             return Ok(result);
         }
 

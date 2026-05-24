@@ -1,3 +1,4 @@
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Enums;
 using Booking.Exceptions;
@@ -52,14 +53,18 @@ namespace Booking.Services
         }
 
         public async Task<PaginatedResponse<TicketListItemResponse>> GetTicketsByHotelAsync(
-            int hotelId, TicketListRequest request)
+            int hotelId, int userId, IList<string> userRoles, TicketListRequest request)
         {
+            var (visibleToUserId, effectiveAssignedToId) =
+                ResolveVisibility(userId, userRoles, request.AssignedToId);
+
             var totalCount = await _ticketRepository.CountByHotelIdAsync(
-                hotelId, request.Status, request.Type, request.Priority, request.AssignedToId);
+                hotelId, request.Status, request.Type, request.Priority,
+                effectiveAssignedToId, visibleToUserId);
 
             var tickets = await _ticketRepository.GetByHotelIdAsync(
-                hotelId, request.Status, request.Type, request.Priority, request.AssignedToId,
-                request.PageNumber, request.PageSize);
+                hotelId, request.Status, request.Type, request.Priority,
+                effectiveAssignedToId, request.PageNumber, request.PageSize, visibleToUserId);
 
             return new PaginatedResponse<TicketListItemResponse>
             {
@@ -71,20 +76,28 @@ namespace Booking.Services
             };
         }
 
-        public async Task<TicketBoardResponse> GetBoardAsync(int hotelId)
+        public async Task<TicketBoardResponse> GetBoardAsync(int hotelId, int userId, IList<string> userRoles)
         {
-            var all = await _ticketRepository.GetAllByHotelIdAsync(hotelId);
+            var (visibleToUserId, effectiveAssignedToId) =
+                ResolveVisibility(userId, userRoles, null);
+
+            var all = await _ticketRepository.GetAllByHotelIdAsync(hotelId, visibleToUserId);
+
+            // For HousekeepingEmployee (assigned-only), apply the strict filter in-memory
+            IEnumerable<HousekeepingTicket> visible = effectiveAssignedToId.HasValue
+                ? all.Where(t => t.AssignedToId == effectiveAssignedToId.Value)
+                : all;
 
             return new TicketBoardResponse
             {
-                Todo = all.Where(t => t.Status == TicketStatus.Todo)
-                          .Select(t => new TicketListItemResponse(t)).ToList(),
-                InProgress = all.Where(t => t.Status == TicketStatus.InProgress)
+                Todo = visible.Where(t => t.Status == TicketStatus.Todo)
+                              .Select(t => new TicketListItemResponse(t)).ToList(),
+                InProgress = visible.Where(t => t.Status == TicketStatus.InProgress)
+                                    .Select(t => new TicketListItemResponse(t)).ToList(),
+                Review = visible.Where(t => t.Status == TicketStatus.Review)
                                 .Select(t => new TicketListItemResponse(t)).ToList(),
-                Review = all.Where(t => t.Status == TicketStatus.Review)
-                            .Select(t => new TicketListItemResponse(t)).ToList(),
-                Done = all.Where(t => t.Status == TicketStatus.Done)
-                          .Select(t => new TicketListItemResponse(t)).ToList()
+                Done = visible.Where(t => t.Status == TicketStatus.Done)
+                              .Select(t => new TicketListItemResponse(t)).ToList()
             };
         }
 
@@ -180,6 +193,22 @@ namespace Booking.Services
             if (user is null || user.HotelId != hotelId)
                 throw new HousekeepingTicketValidationException(
                     $"User with id '{userId}' is not a staff member of hotel with id '{hotelId}'.");
+        }
+
+        private static (int? visibleToUserId, int? effectiveAssignedToId) ResolveVisibility(
+            int userId, IList<string> userRoles, int? requestedAssignedToId)
+        {
+            if (userRoles.Contains(Roles.AgencyOwner) || userRoles.Contains(Roles.PropertyManager))
+                return (null, requestedAssignedToId);
+
+            if (userRoles.Contains(Roles.HousekeepingManager) || userRoles.Contains(Roles.FrontDeskStaff))
+                return (userId, requestedAssignedToId);
+
+            if (userRoles.Contains(Roles.HousekeepingEmployee))
+                return (null, userId);
+
+            // SuperAdmin and any other elevated roles: no restriction
+            return (null, requestedAssignedToId);
         }
     }
 }
