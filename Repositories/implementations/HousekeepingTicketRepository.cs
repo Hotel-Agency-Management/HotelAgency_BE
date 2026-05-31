@@ -22,6 +22,8 @@ namespace Booking.Repositories
                 .Include(t => t.CreatedBy)
                 .Include(t => t.Room)
                 .Include(t => t.Facility)
+                .Include(t => t.Comments)
+                    .ThenInclude(c => c.Author)
                 .FirstOrDefaultAsync(t => t.Id == ticketId);
 
         public async Task<HousekeepingTicket?> GetByIdAndHotelIdAsync(int ticketId, int hotelId)
@@ -30,6 +32,8 @@ namespace Booking.Repositories
                 .Include(t => t.CreatedBy)
                 .Include(t => t.Room)
                 .Include(t => t.Facility)
+                .Include(t => t.Comments)
+                    .ThenInclude(c => c.Author)
                 .FirstOrDefaultAsync(t => t.Id == ticketId && t.HotelId == hotelId);
 
         public async Task<IEnumerable<HousekeepingTicket>> GetByHotelIdAsync(

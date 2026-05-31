@@ -129,6 +129,7 @@ namespace Booking.DTO
         public DateTime? Deadline { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public List<TicketCommentResponse> Comments { get; set; } = [];
 
         public TicketDetailResponse(HousekeepingTicket t)
         {
@@ -155,6 +156,10 @@ namespace Booking.DTO
             Deadline = t.Deadline;
             CreatedAt = t.CreatedAt;
             UpdatedAt = t.UpdatedAt;
+            Comments = t.Comments
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new TicketCommentResponse(c))
+                .ToList();
         }
     }
 

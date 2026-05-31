@@ -33,6 +33,7 @@ namespace Booking.Data
             public DbSet<PaymentLog> PaymentLogs { get; set; }
             public DbSet<TermsAndConditions> TermsAndConditions { get; set; }
             public DbSet<HousekeepingTicket> HousekeepingTickets { get; set; }
+            public DbSet<TicketComment> TicketComments { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -426,6 +427,32 @@ namespace Booking.Data
                               .HasForeignKey(t => t.FacilityId)
                               .OnDelete(DeleteBehavior.Restrict)
                               .IsRequired(false);
+                  });
+
+                  builder.Entity<TicketComment>(entity =>
+                  {
+                        entity.ToTable("TicketComments");
+
+                        entity.Property(c => c.Content)
+                              .IsRequired()
+                              .HasColumnType("TEXT");
+
+                        entity.Property(c => c.CommentType)
+                              .HasConversion<string>()
+                              .HasMaxLength(20);
+
+                        entity.Property(c => c.DamageCost)
+                              .HasColumnType("decimal(18,2)");
+
+                        entity.HasOne(c => c.Ticket)
+                              .WithMany(t => t.Comments)
+                              .HasForeignKey(c => c.TicketId)
+                              .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasOne(c => c.Author)
+                              .WithMany()
+                              .HasForeignKey(c => c.AuthorId)
+                              .OnDelete(DeleteBehavior.Restrict);
                   });
 
             }
