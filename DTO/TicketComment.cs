@@ -4,6 +4,15 @@ using Booking.Models;
 
 namespace Booking.DTO
 {
+    public class TicketCommentListRequest
+    {
+        [Range(1, int.MaxValue)]
+        public int PageNumber { get; set; } = 1;
+
+        [Range(1, 100)]
+        public int PageSize { get; set; } = 10;
+    }
+
     public class CreateTicketCommentRequest
     {
         [Required]

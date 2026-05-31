@@ -25,9 +25,10 @@ namespace Booking.Controllers
         [EnsureTicketBelongsToHotelAttribute]
         public async Task<IActionResult> GetComments(
             [FromRoute] int hotelId,
-            [FromRoute] int ticketId)
+            [FromRoute] int ticketId,
+            [FromQuery] TicketCommentListRequest request)
         {
-            var result = await _commentService.GetCommentsByTicketAsync(ticketId);
+            var result = await _commentService.GetCommentsByTicketAsync(ticketId, request);
             return Ok(result);
         }
 

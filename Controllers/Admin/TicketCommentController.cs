@@ -1,4 +1,5 @@
 using Booking.Constants;
+using Booking.DTO;
 using Booking.Filters;
 using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -16,9 +17,11 @@ namespace Booking.Controllers.Admin
     {
         [HttpGet]
         [EnsureTicketBelongsToHotelAttribute]
-        public async Task<IActionResult> GetComments([FromRoute] int ticketId)
+        public async Task<IActionResult> GetComments(
+            [FromRoute] int ticketId,
+            [FromQuery] TicketCommentListRequest request)
         {
-            var result = await _commentService.GetCommentsByTicketAsync(ticketId);
+            var result = await _commentService.GetCommentsByTicketAsync(ticketId, request);
             return Ok(result);
         }
 

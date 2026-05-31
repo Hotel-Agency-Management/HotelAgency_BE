@@ -30,10 +30,21 @@ namespace Booking.Services
             return new TicketCommentResponse(saved);
         }
 
-        public async Task<IEnumerable<TicketCommentResponse>> GetCommentsByTicketAsync(int ticketId)
+        public async Task<PaginatedResponse<TicketCommentResponse>> GetCommentsByTicketAsync(
+            int ticketId, TicketCommentListRequest request)
         {
-            var comments = await _commentRepository.GetByTicketIdAsync(ticketId);
-            return comments.Select(c => new TicketCommentResponse(c));
+            var comments = (await _commentRepository.GetByTicketIdAsync(
+                ticketId, request.PageNumber, request.PageSize)).ToList();
+            var totalCount = await _commentRepository.CountByTicketIdAsync(ticketId);
+
+            return new PaginatedResponse<TicketCommentResponse>
+            {
+                Items = comments.Select(c => new TicketCommentResponse(c)).ToList(),
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
         }
 
         public async Task<TicketCommentResponse> UpdateCommentAsync(

@@ -13,12 +13,18 @@ namespace Booking.Repositories
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == commentId);
 
-        public async Task<IEnumerable<TicketComment>> GetByTicketIdAsync(int ticketId)
+        public async Task<IEnumerable<TicketComment>> GetByTicketIdAsync(int ticketId, int pageNumber, int pageSize)
             => await _context.TicketComments
                 .Include(c => c.Author)
                 .Where(c => c.TicketId == ticketId)
                 .OrderBy(c => c.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+        public async Task<int> CountByTicketIdAsync(int ticketId)
+            => await _context.TicketComments
+                .CountAsync(c => c.TicketId == ticketId);
 
         public async Task<TicketComment> AddAsync(TicketComment comment)
         {
