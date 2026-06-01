@@ -5,6 +5,7 @@ using Booking.Interfaces.Repositories;
 using Booking.Models;
 using Booking.Enums;
 using Booking.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Booking.Clients;
 
@@ -20,32 +21,36 @@ namespace Booking.Strategies
         public async Task<ApplicationUser> ExecuteAsync(RegisterRequest request)
         {
             var agencyRequest = (AgencyOwnerRegisterRequest)request;
+            var strategy = _dbContext.Database.CreateExecutionStrategy();
 
-            await using IDbContextTransaction transaction =
-                await _dbContext.Database.BeginTransactionAsync();
-
-            try
+            return await strategy.ExecuteAsync(async () =>
             {
-                var user = BuildUser(agencyRequest);
+                await using IDbContextTransaction transaction =
+                    await _dbContext.Database.BeginTransactionAsync();
 
-                var result = await _authRepository.CreateUserAsync(user, agencyRequest.Password);
-                if (!result.Succeeded)
-                    throw new RegistrationFailedException("Registration failed.");
+                try
+                {
+                    var user = BuildUser(agencyRequest);
 
-                var roleResult = await _authRepository.AddToRoleAsync(user, Roles.AgencyOwner);
-                if (!roleResult.Succeeded)
-                    throw new RegistrationFailedException("User created but assigning role failed.");
+                    var result = await _authRepository.CreateUserAsync(user, agencyRequest.Password);
+                    if (!result.Succeeded)
+                        throw new RegistrationFailedException("Registration failed.");
 
-                await BuildAgencyAsync(user, agencyRequest);
+                    var roleResult = await _authRepository.AddToRoleAsync(user, Roles.AgencyOwner);
+                    if (!roleResult.Succeeded)
+                        throw new RegistrationFailedException("User created but assigning role failed.");
 
-                await transaction.CommitAsync();
-                return user;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                    await BuildAgencyAsync(user, agencyRequest);
+
+                    await transaction.CommitAsync();
+                    return user;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
 
         private static ApplicationUser BuildUser(AgencyOwnerRegisterRequest request) => new()
