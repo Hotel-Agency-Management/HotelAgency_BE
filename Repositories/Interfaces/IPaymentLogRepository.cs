@@ -9,6 +9,9 @@ namespace Booking.Interfaces.Repositories
         int IncomingCount,
         int OutgoingCount);
 
+    public record MonthlyRevenue(int Year, int Month, decimal Revenue);
+    public record HotelRevenue(int HotelId, string HotelName, decimal Revenue);
+
     public interface IPaymentLogRepository
     {
         Task<PaymentLog> CreateAsync(PaymentLog paymentLog);
@@ -26,5 +29,11 @@ namespace Booking.Interfaces.Repositories
 
         // Single record with Reservation included
         Task<PaymentLog?> GetByIdAsync(int paymentLogId);
+
+        // Agency overview stats
+        Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId);
+        Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByAgencyAsync(int agencyId, DateTime from, DateTime to);
+        Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByAgencyAsync(int agencyId, DateTime from, DateTime to);
+        Task<IEnumerable<HotelRevenue>> GetRevenuePerHotelByAgencyAsync(int agencyId);
     }
 }

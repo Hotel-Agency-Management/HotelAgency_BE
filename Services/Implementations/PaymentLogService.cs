@@ -1,3 +1,4 @@
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Enums;
 using Booking.Exceptions;
@@ -73,8 +74,8 @@ namespace Booking.Services
         {
             bool ascending = IsAscending(request.SortOrder);
 
-            var items   = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
-            var total   = await _paymentLogRepository.CountHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo);
+            var items = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
+            var total = await _paymentLogRepository.CountHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo);
             var summary = await _paymentLogRepository.GetHotelSummaryAsync(hotelId);
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
@@ -165,10 +166,112 @@ namespace Booking.Services
             };
         }
 
+        public async Task<decimal> GetAgencyRevenueStatsAsync(int agencyId)
+            => await _paymentLogRepository.GetTotalIncomingByAgencyAsync(agencyId);
+
+        public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyProfitAsync(int agencyId)
+        {
+            var now = DateTime.UtcNow;
+            var from = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+               RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute, RevenueReportConstants.ResetSecond,
+               DateTimeKind.Utc).AddMonths(RevenueReportConstants.MonthsBack);
+
+            var to = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+               RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute, RevenueReportConstants.ResetSecond,
+                DateTimeKind.Utc).AddMonths(RevenueReportConstants.MonthsForward);
+
+            var dbRows = (await _paymentLogRepository.GetMonthlyIncomingByAgencyAsync(agencyId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var result = new List<MonthlyRevenueItem>(RevenueReportConstants.PeriodLengthMonths);
+            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
+            {
+                var month = from.AddMonths(i);
+                dbRows.TryGetValue((month.Year, month.Month), out var profit);
+                result.Add(new MonthlyRevenueItem
+                {
+                    Month = month.ToString(RevenueReportConstants.MonthFormat),
+                    Year = month.Year,
+                    Revenue = profit
+                });
+            }
+            return result;
+        }
+
+        public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyExpensesAsync(int agencyId)
+        {
+            var now = DateTime.UtcNow;
+            var from = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute, RevenueReportConstants.ResetSecond,
+                DateTimeKind.Utc).AddMonths(RevenueReportConstants.MonthsBack);
+
+            var to = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute, RevenueReportConstants.ResetSecond,
+                 DateTimeKind.Utc).AddMonths(RevenueReportConstants.MonthsForward);
+
+            var dbRows = (await _paymentLogRepository.GetMonthlyOutgoingByAgencyAsync(agencyId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var result = new List<MonthlyRevenueItem>(RevenueReportConstants.PeriodLengthMonths);
+            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
+            {
+                var month = from.AddMonths(i);
+                dbRows.TryGetValue((month.Year, month.Month), out var expenses);
+                result.Add(new MonthlyRevenueItem
+                {
+                    Month = month.ToString(RevenueReportConstants.MonthFormat),
+                    Year = month.Year,
+                    Revenue = expenses
+                });
+            }
+            return result;
+        }
+
+        public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
+        {
+            var now = DateTime.UtcNow;
+            var from = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+               RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute, RevenueReportConstants.ResetSecond,
+               DateTimeKind.Utc).AddMonths(RevenueReportConstants.MonthsBack);
+
+            var to = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute, RevenueReportConstants.ResetSecond,
+                 DateTimeKind.Utc).AddMonths(RevenueReportConstants.MonthsForward);
+
+            var dbRows = (await _paymentLogRepository.GetMonthlyIncomingByAgencyAsync(agencyId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var result = new List<MonthlyRevenueItem>(RevenueReportConstants.PeriodLengthMonths);
+            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
+            {
+                var month = from.AddMonths(i);
+                dbRows.TryGetValue((month.Year, month.Month), out var revenue);
+                result.Add(new MonthlyRevenueItem
+                {
+                    Month = month.ToString(RevenueReportConstants.MonthFormat),
+                    Year = month.Year,
+                    Revenue = revenue
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<IReadOnlyList<HotelRevenueItem>> GetAgencyRevenuePerHotelAsync(int agencyId)
+        {
+            var rows = await _paymentLogRepository.GetRevenuePerHotelByAgencyAsync(agencyId);
+            return rows.Select(r => new HotelRevenueItem
+            {
+                HotelId = r.HotelId,
+                HotelName = r.HotelName,
+                Revenue = r.Revenue
+            }).ToList();
+        }
+
         private static DateOnly GetWeekStart(DateTime dt)
         {
             var date = DateOnly.FromDateTime(dt);
-            int daysFromMonday = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+            int daysFromMonday = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + RevenueReportConstants.DaysInWeek) % RevenueReportConstants.DaysInWeek;
             return date.AddDays(-daysFromMonday);
         }
 
@@ -184,7 +287,7 @@ namespace Booking.Services
             if (res is not null)
             {
                 timeline.Add(new() { Event = "Reservation Created", OccurredAt = res.CreatedAt });
-                timeline.Add(new() { Event = "Payment Recorded",    OccurredAt = log.CreatedAt });
+                timeline.Add(new() { Event = "Payment Recorded", OccurredAt = log.CreatedAt });
 
                 if (res.Status is ReservationStatus.CheckedIn or ReservationStatus.CheckedOut)
                     timeline.Add(new() { Event = "Checked In", OccurredAt = res.CheckInDate.ToDateTime(TimeOnly.MinValue) });

@@ -58,6 +58,65 @@ namespace Booking.Repositories
                 .Include(p => p.Reservation)
                 .FirstOrDefaultAsync(p => p.Id == paymentLogId);
 
+        public async Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId)
+            => await _context.PaymentLogs
+                .Join(_context.Hotels,
+                      pl => pl.To,
+                      h => h.Id,
+                      (pl, h) => new { pl.Amount, h.AgencyId })
+                .Where(x => x.AgencyId == agencyId)
+                .SumAsync(x => x.Amount);
+
+        public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByAgencyAsync(
+            int agencyId, DateTime from, DateTime to)
+        {
+            var rows = await _context.PaymentLogs
+                .Join(_context.Hotels,
+                      pl => pl.To,
+                      h => h.Id,
+                      (pl, h) => new { pl.Amount, pl.CreatedAt, h.AgencyId })
+                .Where(x => x.AgencyId == agencyId && x.CreatedAt >= from && x.CreatedAt < to)
+                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+
+            return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
+        }
+
+        public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByAgencyAsync(
+            int agencyId, DateTime from, DateTime to)
+        {
+            var rows = await _context.PaymentLogs
+                .Join(_context.Hotels,
+                      pl => pl.From,
+                      h => h.Id,
+                      (pl, h) => new { pl.Amount, pl.CreatedAt, h.AgencyId })
+                .Where(x => x.AgencyId == agencyId && x.CreatedAt >= from && x.CreatedAt < to)
+                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+
+            return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
+        }
+
+        public async Task<IEnumerable<HotelRevenue>> GetRevenuePerHotelByAgencyAsync(int agencyId)
+        {
+            var rows = await _context.Hotels
+                .Where(h => h.AgencyId == agencyId)
+                .Select(h => new
+                {
+                    h.Id,
+                    h.Name,
+                    Revenue = _context.PaymentLogs
+                        .Where(pl => pl.To == h.Id)
+                        .Sum(pl => (decimal?)pl.Amount) ?? 0m
+                })
+                .OrderByDescending(x => x.Revenue)
+                .ToListAsync();
+
+            return rows.Select(r => new HotelRevenue(r.Id, r.Name, r.Revenue));
+        }
+
         private IQueryable<PaymentLog> BuildBaseQuery(
             PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {

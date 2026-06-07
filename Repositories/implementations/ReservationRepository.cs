@@ -144,5 +144,73 @@ namespace Booking.Repositories
             await _context.SaveChangesAsync();
             return await GetByIdAsync(reservation.Id) ?? reservation;
         }
+
+        public async Task<int> GetTotalCountByAgencyAsync(int agencyId)
+            => await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId)
+                .CountAsync();
+
+        public async Task<int> GetPendingCountByAgencyAsync(int agencyId)
+            => await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId && r.Status == ReservationStatus.Pending)
+                .CountAsync();
+
+        public async Task<decimal> GetAverageValueByAgencyAsync(int agencyId)
+        {
+            var avg = await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId &&
+                            r.Status != ReservationStatus.Pending &&
+                            r.Status != ReservationStatus.Cancelled)
+                .AverageAsync(r => (decimal?)r.TotalAmount);
+            return avg ?? 0m;
+        }
+
+        public async Task<IEnumerable<(ReservationSource Source, int Count)>> GetBookingSourceDistributionByAgencyAsync(
+            int agencyId, DateTime from)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId && r.CreatedAt >= from)
+                .GroupBy(r => r.Source)
+                .Select(g => new { Source = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Source, r.Count));
+        }
+
+        public async Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByAgencyAsync(
+            int agencyId, DateTime from)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.Hotel!.AgencyId == agencyId && r.CreatedAt >= from)
+                .GroupBy(r => r.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Status, r.Count));
+        }
+
+        public async Task<IEnumerable<RoomTypeReservationCount>> GetReservationsByRoomTypeForAgencyAsync(
+            int agencyId, DateTime from)
+        {
+            var allTypes = await _context.RoomTypes
+                .Where(rt => rt.Rooms!.Any(r => r.Hotel!.AgencyId == agencyId))
+                .Select(rt => new { rt.Id, rt.Name })
+                .ToListAsync();
+
+            var counts = (await _context.ReservationRooms
+                .Where(rr => rr.Room!.Hotel!.AgencyId == agencyId && rr.Reservation!.CreatedAt >= from)
+                .GroupBy(rr => rr.Room!.RoomTypeId)
+                .Select(g => new { RoomTypeId = g.Key, Count = g.Count() })
+                .ToListAsync())
+                .ToDictionary(x => x.RoomTypeId, x => x.Count);
+
+            return allTypes
+                .Select(t =>
+                {
+                    counts.TryGetValue(t.Id, out var count);
+                    return new RoomTypeReservationCount(t.Id, t.Name, count);
+                })
+                .OrderByDescending(x => x.Count);
+        }
     }
 }

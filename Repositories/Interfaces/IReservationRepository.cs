@@ -3,6 +3,8 @@ using Booking.Models;
 
 namespace Booking.Interfaces.Repositories
 {
+    public record RoomTypeReservationCount(int RoomTypeId, string RoomTypeName, int Count);
+
     public interface IReservationRepository
     {
         Task<Reservation> CreateAsync(Reservation reservation);
@@ -21,5 +23,13 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<string>> GetUnavailableRoomNumbersAsync(IEnumerable<int> roomIds, DateOnly checkIn, DateOnly checkOut, int? excludeReservationId = null);
         Task<int> CountByYearAsync(int year);
         Task<Reservation> UpdateAsync(Reservation reservation);
+
+        // Agency overview stats
+        Task<int> GetTotalCountByAgencyAsync(int agencyId);
+        Task<int> GetPendingCountByAgencyAsync(int agencyId);
+        Task<decimal> GetAverageValueByAgencyAsync(int agencyId);
+        Task<IEnumerable<(ReservationSource Source, int Count)>> GetBookingSourceDistributionByAgencyAsync(int agencyId, DateTime from);
+        Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByAgencyAsync(int agencyId, DateTime from);
+        Task<IEnumerable<RoomTypeReservationCount>> GetReservationsByRoomTypeForAgencyAsync(int agencyId, DateTime from);
     }
 }

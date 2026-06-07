@@ -1,0 +1,60 @@
+namespace Booking.DTO
+{
+    public class AgencyOverviewResponse
+    {
+        public decimal TotalRevenue { get; set; }
+        public int TotalBookings { get; set; }
+        public int PendingReservations { get; set; }
+        public decimal AverageBookingValue { get; set; }
+    }
+
+    public class AgencyReservationStats
+    {
+        public int TotalBookings { get; set; }
+        public int PendingCount { get; set; }
+        public decimal AverageBookingValue { get; set; }
+    }
+
+    public class MonthlyRevenueItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Revenue { get; set; }
+    }
+
+    public class MonthlyProfitExpensesItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Profit { get; set; }
+        public decimal Expenses { get; set; }
+    }
+
+    public class BookingTypeDistributionItem
+    {
+        public string Type { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public decimal Percentage { get; set; }
+    }
+
+    public class HotelRevenueItem
+    {
+        public int HotelId { get; set; }
+        public string HotelName { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+    }
+
+    public class ReservationStatusDistributionItem
+    {
+        public string Status { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public decimal Percentage { get; set; }
+    }
+
+    public class RoomTypeReservationsItem
+    {
+        public int RoomTypeId { get; set; }
+        public string RoomTypeName { get; set; } = string.Empty;
+        public int ReservationsCount { get; set; }
+    }
+}
