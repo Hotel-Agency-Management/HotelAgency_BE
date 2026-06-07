@@ -27,6 +27,11 @@ namespace Booking.Services
             };
         }
 
+        public async Task<AgencyStatusCountsResponse> GetAgencyStatusCountsAsync()
+        {
+            return await _agencyRepository.GetStatusCountsAsync();
+        }
+
         public async Task<Agency> GetAgencyProfileAsync(int agencyId)
         {
             var agency = await _agencyRepository.GetByIdAsync(agencyId);

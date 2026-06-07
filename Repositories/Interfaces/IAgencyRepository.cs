@@ -7,6 +7,7 @@ namespace Booking.Interfaces.Repositories
         {
                 Task<bool> ExistsByNameAsync(string agencyName);
                 Task<(IReadOnlyList<Agency> Agencies, int TotalCount)> GetAllAsync(AgencyListRequest request);
+                Task<AgencyStatusCountsResponse> GetStatusCountsAsync();
                 Task<Agency?> GetByIdAsync(int agencyId);
                 Task AddAsync(Agency agency);
                 Task UpdateAsync(Agency agency);

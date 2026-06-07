@@ -61,6 +61,24 @@ namespace Booking.Repositories
             return (agencies, totalCount);
         }
 
+        public async Task<AgencyStatusCountsResponse> GetStatusCountsAsync()
+        {
+            var counts = await _context.Agencies
+                .AsNoTracking()
+                .GroupBy(a => a.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return new AgencyStatusCountsResponse
+            {
+                Active = counts.FirstOrDefault(c => c.Status == AgencyStatus.Active)?.Count ?? 0,
+                Rejected = counts.FirstOrDefault(c => c.Status == AgencyStatus.Rejected)?.Count ?? 0,
+                Pending = counts.FirstOrDefault(c => c.Status == AgencyStatus.Pending)?.Count ?? 0,
+                InComplete = counts.FirstOrDefault(c => c.Status == AgencyStatus.InComplete)?.Count ?? 0,
+                Total = counts.Sum(c => c.Count)
+            };
+        }
+
         public async Task<Agency?> GetByIdAsync(int agencyId)
         {
             return await _context.Agencies

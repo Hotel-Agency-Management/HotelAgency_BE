@@ -16,6 +16,15 @@ namespace Booking.DTO
         public bool? EmailVerified { get; set; }
     }
 
+    public class AgencyStatusCountsResponse
+    {
+        public int Active { get; set; }
+        public int Rejected { get; set; }
+        public int Pending { get; set; }
+        public int InComplete { get; set; }
+        public int Total { get; set; }
+    }
+
     public class CreateAgencyRequest
     {
         public string Name { get; set; } = string.Empty;

@@ -21,6 +21,14 @@ namespace Booking.Controllers.Admin
             return Ok(agencies);
         }
 
+        [HttpGet("counts")]
+        public async Task<IActionResult> GetAgencyStatusCounts()
+        {
+            var counts = await _agencyService.GetAgencyStatusCountsAsync();
+
+            return Ok(counts);
+        }
+
         [HttpGet("{agencyId:int}")]
         [EnsureAgencyExistsForAdminAttribute]
         public async Task<IActionResult> GetAgencyProfile([FromRoute] int agencyId)
