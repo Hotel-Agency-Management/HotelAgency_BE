@@ -9,5 +9,6 @@ namespace Booking.Interfaces.Services
         Task<PaginatedResponse<HotelRoomResponse>> GetFilteredRoomsByHotelIdAsync(int hotelId, GetHotelRoomsRequest request);
         Task<RoomResponse> UpdateRoomAsync(int hotelId, int roomId, UpdateRoomRequest request);
         Task DeleteRoomAsync(int hotelId, int roomId);
+        Task<RoomStatusDistributionResponse> GetRoomStatusDistributionAsync(int hotelId);
     }
 }

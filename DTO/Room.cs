@@ -137,4 +137,17 @@ namespace Booking.DTO
             MainPhotoUrl = room.CoverPhotoUrl;
         }
     }
+
+    public class RoomStatusDistributionItem
+    {
+        public string Status { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public decimal Percentage { get; set; }
+    }
+
+    public class RoomStatusDistributionResponse
+    {
+        public int TotalRooms { get; set; }
+        public List<RoomStatusDistributionItem> Items { get; set; } = new();
+    }
 }

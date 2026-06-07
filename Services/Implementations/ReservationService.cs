@@ -558,6 +558,123 @@ namespace Booking.Services
             }).ToList();
         }
 
+        public async Task<PropertyManagerOverviewCardsResponse> GetHotelOverviewCardsAsync(int hotelId)
+        {
+            var cards = await _reservationRepository.GetHotelOverviewCardsAsync(hotelId);
+            return new PropertyManagerOverviewCardsResponse
+            {
+                TotalReservations  = cards.TotalReservations,
+                TodayCheckIns      = cards.TodayCheckIns,
+                TodayCheckOuts     = cards.TodayCheckOuts,
+                PendingReservations = cards.PendingReservations
+            };
+        }
+
+        public async Task<HotelRevenueTrendResponse> GetHotelRevenueTrendAsync(int hotelId, string groupBy)
+        {
+            if (groupBy == "daily")
+            {
+                var from = DateTime.UtcNow.AddDays(-29).Date;
+                var to   = DateTime.UtcNow.AddDays(1).Date;
+
+                var raw = (await _reservationRepository.GetDailyRevenueByHotelAsync(hotelId, from, to))
+                            .ToDictionary(x => new DateOnly(x.Year, x.Month, x.Day), x => x.Revenue);
+
+                var items = Enumerable.Range(0, 30).Select(i =>
+                {
+                    var date = DateOnly.FromDateTime(from).AddDays(i);
+                    raw.TryGetValue(date, out var revenue);
+                    return new RevenueTrendItem { Label = date.ToString("dd MMM"), Revenue = revenue };
+                }).ToList();
+
+                return new HotelRevenueTrendResponse { GroupBy = "daily", Items = items };
+            }
+            else
+            {
+                var from = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-11);
+                var to   = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(1);
+
+                var raw = (await _reservationRepository.GetMonthlyRevenueByHotelAsync(hotelId, from, to))
+                            .ToDictionary(x => (x.Year, x.Month), x => x.Revenue);
+
+                var items = Enumerable.Range(0, 12).Select(i =>
+                {
+                    var date = from.AddMonths(i);
+                    raw.TryGetValue((date.Year, date.Month), out var revenue);
+                    return new RevenueTrendItem { Label = date.ToString("MMM"), Revenue = revenue };
+                }).ToList();
+
+                return new HotelRevenueTrendResponse { GroupBy = "monthly", Items = items };
+            }
+        }
+
+        public async Task<HotelBookingTypeDistributionResponse> GetHotelBookingTypeDistributionAsync(int hotelId)
+        {
+            var raw = (await _reservationRepository.GetBookingTypeDistributionByHotelIdAsync(hotelId))
+                        .ToDictionary(x => x.Source, x => x.Count);
+
+            var allSources = new[]
+            {
+                (ReservationSource.Website, "Online"),
+                (ReservationSource.OTA,     "OTA"),
+                (ReservationSource.Phone,   "Phone"),
+                (ReservationSource.WalkIn,  "Walk-in"),
+            };
+
+            var total = raw.Values.Sum();
+
+            var items = allSources.Select(s =>
+            {
+                raw.TryGetValue(s.Item1, out var count);
+                return new BookingTypeDistributionItem
+                {
+                    Type       = s.Item2,
+                    Count      = count,
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                };
+            }).ToList();
+
+            return new HotelBookingTypeDistributionResponse
+            {
+                TotalReservations = total,
+                Items             = items
+            };
+        }
+
+        public async Task<HotelReservationStatusDistributionResponse> GetHotelReservationStatusDistributionAsync(int hotelId)
+        {
+            var raw = (await _reservationRepository.GetStatusDistributionByHotelIdAsync(hotelId))
+                        .ToDictionary(x => x.Status, x => x.Count);
+
+            var allStatuses = new[]
+            {
+                ReservationStatus.Pending,
+                ReservationStatus.Confirmed,
+                ReservationStatus.CheckedIn,
+                ReservationStatus.CheckedOut,
+                ReservationStatus.Cancelled,
+            };
+
+            var total = raw.Values.Sum();
+
+            var items = allStatuses.Select(s =>
+            {
+                raw.TryGetValue(s, out var count);
+                return new ReservationStatusDistributionItem
+                {
+                    Status     = s.ToString(),
+                    Count      = count,
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                };
+            }).ToList();
+
+            return new HotelReservationStatusDistributionResponse
+            {
+                TotalReservations = total,
+                Items             = items
+            };
+        }
+
         private static bool EnsureCancellable(Reservation reservation)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

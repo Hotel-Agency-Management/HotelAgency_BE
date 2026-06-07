@@ -1,4 +1,5 @@
 using Booking.DTO;
+using Booking.Enums;
 using Booking.Models;
 
 namespace Booking.Interfaces.Repositories
@@ -13,5 +14,6 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<Room>> GetByRoomNumbersAndHotelIdAsync(IEnumerable<string> roomNumbers, int hotelId);
         Task<Room> UpdateAsync(Room room);
         Task DeleteAsync(Room room);
+        Task<Dictionary<RoomStatus, int>> GetStatusCountsByHotelIdAsync(int hotelId);
     }
 }

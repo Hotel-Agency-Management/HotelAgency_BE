@@ -4,6 +4,7 @@ using Booking.Models;
 namespace Booking.Interfaces.Repositories
 {
     public record RoomTypeReservationCount(int RoomTypeId, string RoomTypeName, int Count);
+    public record HotelOverviewCards(int TotalReservations, int TodayCheckIns, int TodayCheckOuts, int PendingReservations);
 
     public interface IReservationRepository
     {
@@ -31,5 +32,10 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<(ReservationSource Source, int Count)>> GetBookingSourceDistributionByAgencyAsync(int agencyId, DateTime from);
         Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByAgencyAsync(int agencyId, DateTime from);
         Task<IEnumerable<RoomTypeReservationCount>> GetReservationsByRoomTypeForAgencyAsync(int agencyId, DateTime from);
+        Task<HotelOverviewCards> GetHotelOverviewCardsAsync(int hotelId);
+        Task<IEnumerable<(ReservationStatus Status, int Count)>> GetStatusDistributionByHotelIdAsync(int hotelId);
+        Task<IEnumerable<(ReservationSource Source, int Count)>> GetBookingTypeDistributionByHotelIdAsync(int hotelId);
+        Task<IEnumerable<(int Year, int Month, decimal Revenue)>> GetMonthlyRevenueByHotelAsync(int hotelId, DateTime from, DateTime to);
+        Task<IEnumerable<(int Year, int Month, int Day, decimal Revenue)>> GetDailyRevenueByHotelAsync(int hotelId, DateTime from, DateTime to);
     }
 }
