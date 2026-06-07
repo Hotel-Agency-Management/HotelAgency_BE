@@ -14,11 +14,11 @@ namespace Booking.Controllers.Admin
         IAgencyService _agencyService) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetAgencies()
+        public async Task<IActionResult> GetAgencies([FromQuery] AgencyListRequest request)
         {
-            var agencies = await _agencyService.GetAllAgenciesAsync();
+            var agencies = await _agencyService.GetAllAgenciesAsync(request);
 
-            return Ok(agencies.Select(agency => new AgencyListItemResponse(agency)));
+            return Ok(agencies);
         }
 
         [HttpGet("{agencyId:int}")]

@@ -2,6 +2,20 @@ using System.ComponentModel.DataAnnotations;
 using Booking.Models;
 namespace Booking.DTO
 {
+    public class AgencyListRequest
+    {
+        [Range(1, int.MaxValue)]
+        public int Page { get; set; } = 1;
+
+        [Range(1, 100)]
+        public int Limit { get; set; } = 20;
+
+        public string? Search { get; set; }
+        public string? Status { get; set; }
+        public string? Country { get; set; }
+        public bool? EmailVerified { get; set; }
+    }
+
     public class CreateAgencyRequest
     {
         public string Name { get; set; } = string.Empty;
@@ -74,11 +88,13 @@ namespace Booking.DTO
         public string City { get; set; } = string.Empty;
         public string? LogoUrl { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string PlanName { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public bool EmailVerified { get; set; }
 
         public AgencyListItemResponse(Agency agency)
         {
-            Id = agency.Id;
             OwnerId = agency.OwnerId;
             Name = agency.AgencyName;
             Phone = agency.Phone;
@@ -86,7 +102,11 @@ namespace Booking.DTO
             City = agency.City;
             LogoUrl = agency.LogoUrl;
             CreatedAt = agency.CreatedAt;
-            UpdatedAt = agency.UpdatedAt ?? agency.CreatedAt;
+            Id = agency.Id;
+            Email = agency.Owner.Email ?? string.Empty;
+            PlanName = agency.Plan.Name;
+            Status = agency.Status.ToString();
+            EmailVerified = agency.Owner.EmailConfirmed;
         }
     }
 

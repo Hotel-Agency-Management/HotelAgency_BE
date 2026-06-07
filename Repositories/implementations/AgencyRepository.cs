@@ -4,6 +4,7 @@ using Booking.Models;
 using Microsoft.EntityFrameworkCore;
 using Booking.Exceptions;
 using Booking.Enums;
+using Booking.DTO;
 
 namespace Booking.Repositories
 {
@@ -15,12 +16,49 @@ namespace Booking.Repositories
                 .AnyAsync(a => a.AgencyName.Trim().ToLower() == agencyName.Trim().ToLower());
         }
 
-        public async Task<List<Agency>> GetAllAsync()
+        public async Task<(IReadOnlyList<Agency> Agencies, int TotalCount)> GetAllAsync(AgencyListRequest request)
         {
-            return await _context.Agencies
+            var query = _context.Agencies
                 .AsNoTracking()
+                .Include(a => a.Owner)
+                .Include(a => a.Plan)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                var search = request.Search.Trim().ToLower();
+                query = query.Where(a =>
+                    a.AgencyName.ToLower().Contains(search) ||
+                    (a.Owner.Email != null && a.Owner.Email.ToLower().Contains(search)) ||
+                    a.City.ToLower().Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Status))
+            {
+                if (Enum.TryParse<AgencyStatus>(request.Status.Trim(), true, out var status))
+                    query = query.Where(a => a.Status == status);
+                else
+                    query = query.Where(a => false);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Country))
+            {
+                var country = request.Country.Trim().ToLower();
+                query = query.Where(a => a.Country.ToLower() == country);
+            }
+
+            if (request.EmailVerified.HasValue)
+                query = query.Where(a => a.Owner.EmailConfirmed == request.EmailVerified.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var agencies = await query
                 .OrderBy(a => a.Id)
+                .Skip((request.Page - 1) * request.Limit)
+                .Take(request.Limit)
                 .ToListAsync();
+
+            return (agencies, totalCount);
         }
 
         public async Task<Agency?> GetByIdAsync(int agencyId)

@@ -13,9 +13,18 @@ namespace Booking.Services
         IAgencyRepository _agencyRepository,
         IBlobStorageService _blobStorageService) : IAgencyService
     {
-        public async Task<List<Agency>> GetAllAgenciesAsync()
+        public async Task<PaginatedResponse<AgencyListItemResponse>> GetAllAgenciesAsync(AgencyListRequest request)
         {
-            return await _agencyRepository.GetAllAsync();
+            var (agencies, totalCount) = await _agencyRepository.GetAllAsync(request);
+
+            return new PaginatedResponse<AgencyListItemResponse>
+            {
+                Items = agencies.Select(agency => new AgencyListItemResponse(agency)).ToList(),
+                PageNumber = request.Page,
+                PageSize = request.Limit,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.Limit)
+            };
         }
 
         public async Task<Agency> GetAgencyProfileAsync(int agencyId)
