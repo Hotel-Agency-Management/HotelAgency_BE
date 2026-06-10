@@ -69,5 +69,10 @@ namespace Booking.Repositories
                 .GroupBy(a => new { a.Year, a.Month })
                 .Select(g => new MonthRevenue(g.Key.Year, g.Key.Month, g.Sum(a => a.Price)))
                 .ToListAsync();
+
+        public async Task<decimal> GetTotalSubscriptionRevenueAsync()
+            => await _context.Agencies
+                .Select(a => a.Plan.Price)
+                .SumAsync();
     }
 }

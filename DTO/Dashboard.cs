@@ -10,4 +10,12 @@ namespace Booking.DTO
     {
         public IReadOnlyList<MonthlyRevenueItem> Revenue { get; set; } = [];
     }
+
+    public class DashboardSummaryResponse
+    {
+        public int TotalAgencies { get; set; }
+        public int PendingApprovals { get; set; }
+        public int ActiveSubscriptions { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
 }

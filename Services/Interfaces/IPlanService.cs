@@ -11,5 +11,6 @@ namespace Booking.Interfaces.Services
         Task<PlanDto> UpdatePlanAsync(int id, UpdatePlanDto dto);
         Task DeletePlanAsync(int id);
         Task<RevenueOverviewResponse> GetRevenueOverviewAsync();
+        Task<decimal> GetTotalSubscriptionRevenueAsync();
     }
 }

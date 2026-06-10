@@ -112,5 +112,8 @@ namespace Booking.Interfaces.Services
 
             return new RevenueOverviewResponse { Revenue = months };
         }
+
+        public async Task<decimal> GetTotalSubscriptionRevenueAsync()
+            => await _planRepository.GetTotalSubscriptionRevenueAsync();
     }
 }

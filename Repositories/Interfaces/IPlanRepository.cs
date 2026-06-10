@@ -14,5 +14,6 @@ namespace Booking.Interfaces.Repositories
         Task<bool> ExistsAsync(int id);
         Task<bool> NameExistsAsync(string name, int? excludeId = null);
         Task<IEnumerable<MonthRevenue>> GetMonthlySubscriptionRevenueAsync(DateTime from, DateTime to);
+        Task<decimal> GetTotalSubscriptionRevenueAsync();
     }
 }
