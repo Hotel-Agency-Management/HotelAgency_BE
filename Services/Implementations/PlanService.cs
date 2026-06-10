@@ -3,6 +3,7 @@ using Booking.Models;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using Booking.Enums;
+using System.Globalization;
 
 namespace Booking.Interfaces.Services
 {
@@ -89,6 +90,27 @@ namespace Booking.Interfaces.Services
                 throw new PlanNotFoundException(id);
 
             await _planRepository.DeleteAsync(id);
+        }
+
+        public async Task<RevenueOverviewResponse> GetRevenueOverviewAsync()
+        {
+            var now = DateTime.UtcNow;
+            var windowStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+            var windowEnd   = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1).AddTicks(-1);
+
+            var raw = (await _planRepository.GetMonthlySubscriptionRevenueAsync(windowStart, windowEnd))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var months = Enumerable.Range(0, 12)
+                .Select(i => windowStart.AddMonths(i))
+                .Select(d => new MonthlyRevenueItem
+                {
+                    Month  = d.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+                    Amount = raw.TryGetValue((d.Year, d.Month), out var amt) ? amt : 0m
+                })
+                .ToList();
+
+            return new RevenueOverviewResponse { Revenue = months };
         }
     }
 }
