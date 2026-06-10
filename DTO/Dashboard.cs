@@ -18,4 +18,16 @@ namespace Booking.DTO
         public int ActiveSubscriptions { get; set; }
         public decimal TotalRevenue { get; set; }
     }
+
+    public class AgencyStatusSlice
+    {
+        public string Status { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
+
+    public class AgencyStatusChartResponse
+    {
+        public int Total { get; set; }
+        public IReadOnlyList<AgencyStatusSlice> Breakdown { get; set; } = [];
+    }
 }
