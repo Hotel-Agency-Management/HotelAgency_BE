@@ -3,6 +3,7 @@ using Booking.Models;
 namespace Booking.Interfaces.Repositories
 {
     public record MonthRevenue(int Year, int Month, decimal Revenue);
+    public record PlanSubscriptionCount(string PlanName, int Count);
 
     public interface IPlanRepository
     {
@@ -15,5 +16,6 @@ namespace Booking.Interfaces.Repositories
         Task<bool> NameExistsAsync(string name, int? excludeId = null);
         Task<IEnumerable<MonthRevenue>> GetMonthlySubscriptionRevenueAsync(DateTime from, DateTime to);
         Task<decimal> GetTotalSubscriptionRevenueAsync();
+        Task<IEnumerable<PlanSubscriptionCount>> GetSubscriptionDistributionAsync();
     }
 }

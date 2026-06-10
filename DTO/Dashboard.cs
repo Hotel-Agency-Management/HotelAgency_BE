@@ -30,4 +30,16 @@ namespace Booking.DTO
         public int Total { get; set; }
         public IReadOnlyList<AgencyStatusSlice> Breakdown { get; set; } = [];
     }
+
+    public class SubscriptionSlice
+    {
+        public string PlanName { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
+
+    public class SubscriptionDistributionResponse
+    {
+        public int Total { get; set; }
+        public IReadOnlyList<SubscriptionSlice> Breakdown { get; set; } = [];
+    }
 }

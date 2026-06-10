@@ -115,5 +115,19 @@ namespace Booking.Interfaces.Services
 
         public async Task<decimal> GetTotalSubscriptionRevenueAsync()
             => await _planRepository.GetTotalSubscriptionRevenueAsync();
+
+        public async Task<SubscriptionDistributionResponse> GetSubscriptionDistributionAsync()
+        {
+            var items = (await _planRepository.GetSubscriptionDistributionAsync()).ToList();
+            return new SubscriptionDistributionResponse
+            {
+                Total     = items.Sum(i => i.Count),
+                Breakdown = items.Select(i => new SubscriptionSlice
+                {
+                    PlanName = i.PlanName,
+                    Count    = i.Count
+                }).ToList()
+            };
+        }
     }
 }

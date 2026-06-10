@@ -21,6 +21,14 @@ namespace Booking.Controllers.Admin
         }
 
         [Authorize(Roles = Roles.SuperAdmin)]
+        [HttpGet("subscription-distribution")]
+        public async Task<IActionResult> GetSubscriptionDistribution()
+        {
+            var result = await _planService.GetSubscriptionDistributionAsync();
+            return Ok(result);
+        }
+
+        [Authorize(Roles = Roles.SuperAdmin)]
         [HttpGet("agency-status")]
         public async Task<IActionResult> GetAgencyStatus()
         {

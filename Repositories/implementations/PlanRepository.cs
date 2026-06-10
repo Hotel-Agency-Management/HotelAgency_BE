@@ -74,5 +74,12 @@ namespace Booking.Repositories
             => await _context.Agencies
                 .Select(a => a.Plan.Price)
                 .SumAsync();
+
+        public async Task<IEnumerable<PlanSubscriptionCount>> GetSubscriptionDistributionAsync()
+            => await _context.Plans
+                .Select(p => new PlanSubscriptionCount(
+                    p.Name,
+                    _context.Agencies.Count(a => a.PlanId == p.Id)))
+                .ToListAsync();
     }
 }
