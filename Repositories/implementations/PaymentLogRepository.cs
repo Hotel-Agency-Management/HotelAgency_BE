@@ -153,6 +153,23 @@ namespace Booking.Repositories
             return rows.Select(r => new PaymentTypeRevenue(r.Type, r.Revenue));
         }
 
+        public async Task<IEnumerable<MonthlyNet>> GetMonthlyNetByHotelAsync(int hotelId)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId || pl.From == hotelId)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Net = g.Sum(x => x.To == hotelId ? x.Amount : 0m)
+                       - g.Sum(x => x.From == hotelId ? x.Amount : 0m)
+                })
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                .ToListAsync();
+            return rows.Select(r => new MonthlyNet(r.Year, r.Month, r.Net));
+        }
+
         public async Task<PaymentLog> UpdateAsync(PaymentLog paymentLog)
         {
             _context.PaymentLogs.Update(paymentLog);

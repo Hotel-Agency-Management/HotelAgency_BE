@@ -112,4 +112,11 @@ namespace Booking.DTO
         public string PaymentType { get; set; } = string.Empty;
         public decimal Revenue { get; set; }
     }
+
+    public class BalanceTrendItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Balance { get; set; }
+    }
 }

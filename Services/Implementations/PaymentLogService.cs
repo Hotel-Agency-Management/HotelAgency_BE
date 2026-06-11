@@ -285,6 +285,40 @@ namespace Booking.Services
                 .ToList();
         }
 
+        public async Task<IReadOnlyList<BalanceTrendItem>> GetHotelBalanceTrendAsync(int hotelId)
+        {
+            var now = DateTime.UtcNow;
+            var windowStart = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute,
+                RevenueReportConstants.ResetSecond, DateTimeKind.Utc)
+                .AddMonths(RevenueReportConstants.MonthsBack);
+
+            var allRows = (await _paymentLogRepository.GetMonthlyNetByHotelAsync(hotelId)).ToList();
+
+            decimal balance = allRows
+                .Where(r => r.Year < windowStart.Year || (r.Year == windowStart.Year && r.Month < windowStart.Month))
+                .Sum(r => r.Net);
+
+            var windowMap = allRows
+                .Where(r => r.Year > windowStart.Year || (r.Year == windowStart.Year && r.Month >= windowStart.Month))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Net);
+
+            var result = new List<BalanceTrendItem>(RevenueReportConstants.PeriodLengthMonths);
+            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
+            {
+                var month = windowStart.AddMonths(i);
+                windowMap.TryGetValue((month.Year, month.Month), out var netChange);
+                balance += netChange;
+                result.Add(new BalanceTrendItem
+                {
+                    Month   = month.ToString(RevenueReportConstants.MonthFormat),
+                    Year    = month.Year,
+                    Balance = balance
+                });
+            }
+            return result;
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;

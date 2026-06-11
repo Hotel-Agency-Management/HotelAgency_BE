@@ -26,5 +26,13 @@ namespace Booking.Controllers
             var result = await _paymentLogService.GetHotelRevenueByTypeAsync(hotelId);
             return Ok(result);
         }
+
+        [EnsureHotelExistsForOwner]
+        [HttpGet("balance-trend")]
+        public async Task<IActionResult> GetBalanceTrend([FromRoute] int hotelId)
+        {
+            var result = await _paymentLogService.GetHotelBalanceTrendAsync(hotelId);
+            return Ok(result);
+        }
     }
 }
