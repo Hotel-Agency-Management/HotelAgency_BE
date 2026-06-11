@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Booking.Constants;
 using Booking.Models;
 namespace Booking.DTO
 {
@@ -14,7 +15,7 @@ namespace Booking.DTO
         public string? Status { get; set; }
         public string? Country { get; set; }
         public bool? EmailVerified { get; set; }
-        public string SortOrder { get; set; } = "Oldest";
+        public string SortOrder { get; set; } = SortOrders.Oldest;
     }
 
     public class AgencyStatusCountsResponse

@@ -1,3 +1,4 @@
+using Booking.Constants;
 using Booking.Data;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
@@ -52,7 +53,7 @@ namespace Booking.Repositories
 
             var totalCount = await query.CountAsync();
 
-            var isDescending = request.SortOrder.Equals("Newest", StringComparison.OrdinalIgnoreCase);
+            var isDescending = request.SortOrder.Equals(SortOrders.Newest, StringComparison.OrdinalIgnoreCase);
             var agencies = await (isDescending
                     ? query.OrderByDescending(a => a.Id)
                     : query.OrderBy(a => a.Id))

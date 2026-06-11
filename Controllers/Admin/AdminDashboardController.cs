@@ -1,5 +1,6 @@
 using Booking.Constants;
 using Booking.DTO;
+using Booking.Enums;
 using Booking.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +20,8 @@ namespace Booking.Controllers.Admin
             var result = await _agencyService.GetAllAgenciesAsync(new AgencyListRequest
             {
                 Page      = 1,
-                Limit     = 10,
-                SortOrder = "Newest"
+                Limit     = DashboardConstants.LatestAgenciesCount,
+                SortOrder = SortOrders.Newest
             });
             return Ok(result);
         }
@@ -60,10 +61,10 @@ namespace Booking.Controllers.Admin
                 Total = counts.Total,
                 Breakdown =
                 [
-                    new AgencyStatusSlice { Status = "Active",     Count = counts.Active },
-                    new AgencyStatusSlice { Status = "Pending",    Count = counts.Pending },
-                    new AgencyStatusSlice { Status = "Rejected",   Count = counts.Rejected },
-                    new AgencyStatusSlice { Status = "InComplete", Count = counts.InComplete },
+                    new AgencyStatusSlice { Status = nameof(AgencyStatus.Active),     Count = counts.Active },
+                    new AgencyStatusSlice { Status = nameof(AgencyStatus.Pending),    Count = counts.Pending },
+                    new AgencyStatusSlice { Status = nameof(AgencyStatus.Rejected),   Count = counts.Rejected },
+                    new AgencyStatusSlice { Status = nameof(AgencyStatus.InComplete), Count = counts.InComplete },
                 ]
             });
         }

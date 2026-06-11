@@ -368,7 +368,7 @@ namespace Booking.Services
         }
 
         private static bool IsAscending(string sortOrder) =>
-            sortOrder.Equals("Oldest", StringComparison.OrdinalIgnoreCase);
+            sortOrder.Equals(SortOrders.Oldest, StringComparison.OrdinalIgnoreCase);
 
 
         private static IReadOnlyCollection<PaymentTimelineItem> BuildTimeline(PaymentLog log)

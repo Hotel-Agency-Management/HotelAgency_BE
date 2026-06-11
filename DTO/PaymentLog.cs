@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Booking.Constants;
 using Booking.Enums;
 
 namespace Booking.DTO
@@ -43,7 +44,7 @@ namespace Booking.DTO
         public PaymentType? Type { get; set; }
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
-        public string SortOrder { get; set; } = "Newest";
+        public string SortOrder { get; set; } = SortOrders.Newest;
     }
 
     public class PaymentLogSummaryResponse
