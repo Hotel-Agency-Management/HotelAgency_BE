@@ -11,6 +11,7 @@ namespace Booking.Interfaces.Repositories
 
     public record MonthlyRevenue(int Year, int Month, decimal Revenue);
     public record HotelRevenue(int HotelId, string HotelName, decimal Revenue);
+    public record PaymentTypeRevenue(PaymentType Type, decimal Revenue);
 
     public interface IPaymentLogRepository
     {
@@ -36,6 +37,7 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<HotelRevenue>> GetRevenuePerHotelByAgencyAsync(int agencyId);
         Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByHotelAsync(int hotelId, DateTime from, DateTime to);
         Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByHotelAsync(int hotelId, DateTime from, DateTime to);
+        Task<IEnumerable<PaymentTypeRevenue>> GetRevenueByTypeByHotelAsync(int hotelId);
         Task<PaymentLog> UpdateAsync(PaymentLog paymentLog);
         Task DeleteAsync(PaymentLog paymentLog);
     }

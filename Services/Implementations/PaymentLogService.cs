@@ -266,6 +266,25 @@ namespace Booking.Services
             return result;
         }
 
+        public async Task<IReadOnlyList<RevenueByTypeItem>> GetHotelRevenueByTypeAsync(int hotelId)
+        {
+            var dbRows = (await _paymentLogRepository.GetRevenueByTypeByHotelAsync(hotelId))
+                .ToDictionary(r => r.Type, r => r.Revenue);
+
+            return Enum.GetValues<PaymentType>()
+                .Where(t => t != PaymentType.Refund)
+                .Select(t =>
+                {
+                    dbRows.TryGetValue(t, out var revenue);
+                    return new RevenueByTypeItem
+                    {
+                        PaymentType = t.ToString(),
+                        Revenue = revenue
+                    };
+                })
+                .ToList();
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;

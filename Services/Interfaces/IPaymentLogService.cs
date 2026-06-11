@@ -13,6 +13,7 @@ namespace Booking.Interfaces.Services
         Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyExpensesAsync(int agencyId);
         Task<IReadOnlyList<HotelRevenueItem>> GetAgencyRevenuePerHotelAsync(int agencyId);
         Task<IReadOnlyList<CashFlowItem>> GetHotelCashFlowAsync(int hotelId);
+        Task<IReadOnlyList<RevenueByTypeItem>> GetHotelRevenueByTypeAsync(int hotelId);
         Task<PaymentLogDetailsResponse> CreateAsync(int hotelId, CreatePaymentLogRequest request);
         Task<PaymentLogDetailsResponse> UpdateAsync(int hotelId, int paymentLogId, UpdatePaymentLogRequest request);
         Task DeleteAsync(int hotelId, int paymentLogId);

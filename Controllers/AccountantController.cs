@@ -18,5 +18,13 @@ namespace Booking.Controllers
             var result = await _paymentLogService.GetHotelCashFlowAsync(hotelId);
             return Ok(result);
         }
+
+        [EnsureHotelExistsForOwner]
+        [HttpGet("revenue-by-type")]
+        public async Task<IActionResult> GetRevenueByType([FromRoute] int hotelId)
+        {
+            var result = await _paymentLogService.GetHotelRevenueByTypeAsync(hotelId);
+            return Ok(result);
+        }
     }
 }

@@ -106,4 +106,10 @@ namespace Booking.DTO
         public decimal Incoming { get; set; }
         public decimal Outgoing { get; set; }
     }
+
+    public class RevenueByTypeItem
+    {
+        public string PaymentType { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+    }
 }
