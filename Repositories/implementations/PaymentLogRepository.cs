@@ -121,6 +121,28 @@ namespace Booking.Repositories
             return rows.Select(r => new HotelRevenue(r.Id, r.Name, r.Revenue));
         }
 
+        public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+            return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
+        }
+
+        public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(pl => pl.From == hotelId && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+            return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
+        }
+
         public async Task<PaymentLog> UpdateAsync(PaymentLog paymentLog)
         {
             _context.PaymentLogs.Update(paymentLog);

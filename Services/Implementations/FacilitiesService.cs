@@ -11,7 +11,6 @@ namespace Booking.Services
         IFacilityRepository _facilityRepository,
         ISystemLogService _logService,
         ILogger<FacilityService> _logger) : IFacilityService
-
     {
         public async Task<FacilityResponse> CreateFacilityAsync(int hotelId, CreateFacilityRequest request)
         {

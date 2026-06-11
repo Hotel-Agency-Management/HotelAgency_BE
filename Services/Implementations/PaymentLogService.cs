@@ -232,6 +232,40 @@ namespace Booking.Services
             return result;
         }
 
+        public async Task<IReadOnlyList<CashFlowItem>> GetHotelCashFlowAsync(int hotelId)
+        {
+            var now = DateTime.UtcNow;
+            var from = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute,
+                RevenueReportConstants.ResetSecond, DateTimeKind.Utc)
+                .AddMonths(RevenueReportConstants.MonthsBack);
+            var to = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute,
+                RevenueReportConstants.ResetSecond, DateTimeKind.Utc)
+                .AddMonths(RevenueReportConstants.MonthsForward);
+
+            var incomingMap = (await _paymentLogRepository.GetMonthlyIncomingByHotelAsync(hotelId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+            var outgoingMap = (await _paymentLogRepository.GetMonthlyOutgoingByHotelAsync(hotelId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var result = new List<CashFlowItem>(RevenueReportConstants.PeriodLengthMonths);
+            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
+            {
+                var month = from.AddMonths(i);
+                incomingMap.TryGetValue((month.Year, month.Month), out var incoming);
+                outgoingMap.TryGetValue((month.Year, month.Month), out var outgoing);
+                result.Add(new CashFlowItem
+                {
+                    Month = month.ToString(RevenueReportConstants.MonthFormat),
+                    Year = month.Year,
+                    Incoming = incoming,
+                    Outgoing = outgoing
+                });
+            }
+            return result;
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;

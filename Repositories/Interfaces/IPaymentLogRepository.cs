@@ -34,6 +34,8 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByAgencyAsync(int agencyId, DateTime from, DateTime to);
         Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByAgencyAsync(int agencyId, DateTime from, DateTime to);
         Task<IEnumerable<HotelRevenue>> GetRevenuePerHotelByAgencyAsync(int agencyId);
+        Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByHotelAsync(int hotelId, DateTime from, DateTime to);
+        Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByHotelAsync(int hotelId, DateTime from, DateTime to);
         Task<PaymentLog> UpdateAsync(PaymentLog paymentLog);
         Task DeleteAsync(PaymentLog paymentLog);
     }

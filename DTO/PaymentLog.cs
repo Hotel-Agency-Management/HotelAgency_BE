@@ -98,4 +98,12 @@ namespace Booking.DTO
         public string Event { get; set; } = string.Empty;
         public DateTime OccurredAt { get; set; }
     }
+
+    public class CashFlowItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Incoming { get; set; }
+        public decimal Outgoing { get; set; }
+    }
 }
