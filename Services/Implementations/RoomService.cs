@@ -63,13 +63,6 @@ namespace Booking.Services
 
             var saved = await _roomRepository.CreateAsync(room);
 
-            await _logService.LogAsync(
-                SystemLogActions.RoomCreated,
-                SystemLogEntityTypes.Room,
-                saved.Id,
-                string.Format(SystemLogMessages.RoomCreated, saved.RoomNumber),
-                hotelId: saved.HotelId);
-
             return new RoomResponse(saved);
         }
 
@@ -149,13 +142,6 @@ namespace Booking.Services
 
             var updated = await _roomRepository.UpdateAsync(room);
 
-            await _logService.LogAsync(
-                SystemLogActions.RoomUpdated,
-                SystemLogEntityTypes.Room,
-                updated.Id,
-                string.Format(SystemLogMessages.RoomUpdated, updated.RoomNumber),
-                hotelId: updated.HotelId);
-
             return new RoomResponse(updated);
         }
 
@@ -167,6 +153,13 @@ namespace Booking.Services
             await _roomRepository.DeleteAsync(room);
             if (room.CoverPhotoUrl is not null)
                 await _blobStorageService.DeleteAsync(room.CoverPhotoUrl);
+
+            await _logService.LogAsync(
+                SystemLogActions.RoomDeleted,
+                SystemLogEntityTypes.Room,
+                roomId,
+                string.Format(SystemLogMessages.RoomDeleted, room.RoomNumber),
+                hotelId: room.HotelId);
         }
 
         public async Task<RoomStatusDistributionResponse> GetRoomStatusDistributionAsync(int hotelId)

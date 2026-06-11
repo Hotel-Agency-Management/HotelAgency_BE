@@ -16,8 +16,7 @@ namespace Booking.Services
         ICustomerAccountService _customerAccountService,
         IBlobStorageService _blobStorageService,
         IEmailJobService _emailJobService,
-        IPaymentLogRepository _paymentLogRepository,
-        ISystemLogService _logService) : IReservationService
+        IPaymentLogRepository _paymentLogRepository) : IReservationService
     {
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
         {
@@ -80,13 +79,6 @@ namespace Booking.Services
                     From = saved.CustomerId ?? 0,
                     To = saved.HotelId
                 });
-
-            await _logService.LogAsync(
-                SystemLogActions.ReservationCreated,
-                SystemLogEntityTypes.Reservation,
-                saved.Id,
-                string.Format(SystemLogMessages.ReservationCreated, saved.ReservationNumber, saved.GuestFullName),
-                hotelId: saved.HotelId);
 
             await SendConfirmationEmailAsync(saved);
             return new ReservationResponse(saved);
@@ -151,13 +143,6 @@ namespace Booking.Services
                     From = saved.CustomerId ?? 0,
                     To = saved.HotelId
                 });
-
-            await _logService.LogAsync(
-                SystemLogActions.ReservationCreated,
-                SystemLogEntityTypes.Reservation,
-                saved.Id,
-                string.Format(SystemLogMessages.ReservationCreated, saved.ReservationNumber, saved.GuestFullName),
-                hotelId: saved.HotelId);
 
             await SendConfirmationEmailAsync(saved);
             return new ReservationResponse(saved);
@@ -232,17 +217,6 @@ namespace Booking.Services
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
-
-            var (statusAction, statusMessage) = request.Status == ReservationStatus.CheckedIn
-                ? (SystemLogActions.ReservationCheckedIn, string.Format(SystemLogMessages.ReservationCheckedIn, updated.ReservationNumber))
-                : (SystemLogActions.ReservationCheckedOut, string.Format(SystemLogMessages.ReservationCheckedOut, updated.ReservationNumber));
-
-            await _logService.LogAsync(
-                statusAction,
-                SystemLogEntityTypes.Reservation,
-                updated.Id,
-                statusMessage,
-                hotelId: updated.HotelId);
 
             return new ReservationResponse(updated);
         }
@@ -431,13 +405,6 @@ namespace Booking.Services
                     To = updated.CustomerId ?? 0
                 });
             }
-
-            await _logService.LogAsync(
-                SystemLogActions.ReservationCancelled,
-                SystemLogEntityTypes.Reservation,
-                updated.Id,
-                string.Format(SystemLogMessages.ReservationCancelled, updated.ReservationNumber),
-                hotelId: updated.HotelId);
 
             var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
             return new CancellationResponse(updated, message);

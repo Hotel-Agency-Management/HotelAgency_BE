@@ -2,30 +2,16 @@ namespace Booking.Constants
 {
     public static class SystemLogActions
     {
-        public const string PlanCreated = "PLAN_CREATED";
-        public const string PlanUpdated = "PLAN_UPDATED";
-
-        public const string AgencyCreated = "AGENCY_CREATED";
-        public const string AgencyUpdated = "AGENCY_UPDATED";
-        public const string AgencyApproved = "AGENCY_APPROVED";
-        public const string AgencyRejected = "AGENCY_REJECTED";
-        public const string AgencyPlanChanged = "AGENCY_PLAN_CHANGED";
-
-        public const string HotelCreated = "HOTEL_CREATED";
-        public const string HotelUpdated = "HOTEL_UPDATED";
-
-        public const string RoomCreated = "ROOM_CREATED";
-        public const string RoomUpdated = "ROOM_UPDATED";
-
-        public const string ReservationCreated = "RESERVATION_CREATED";
-        public const string ReservationCancelled = "RESERVATION_CANCELLED";
-        public const string ReservationCheckedIn = "RESERVATION_CHECKED_IN";
-        public const string ReservationCheckedOut = "RESERVATION_CHECKED_OUT";
-
-        public const string UserRegistered = "USER_REGISTERED";
-        public const string UserLogin = "USER_LOGIN";
-        public const string UserPasswordReset = "USER_PASSWORD_RESET";
-        public const string UserEmailVerified = "USER_EMAIL_VERIFIED";
+        public const string PlanDeleted = "PLAN_DELETED";
+        public const string RoomDeleted = "ROOM_DELETED";
+        public const string RoomTypeDeleted = "ROOM_TYPE_DELETED";
+        public const string RoomPhotoDeleted = "ROOM_PHOTO_DELETED";
+        public const string RoomAmenityDeleted = "ROOM_AMENITY_DELETED";
+        public const string FacilityDeleted = "FACILITY_DELETED";
+        public const string FacilityPhotoDeleted = "FACILITY_PHOTO_DELETED";
+        public const string TicketDeleted = "TICKET_DELETED";
+        public const string TicketCommentDeleted = "TICKET_COMMENT_DELETED";
+        public const string PaymentLogDeleted = "PAYMENT_LOG_DELETED";
     }
 
     public static class SystemLogEntityTypes
@@ -34,7 +20,15 @@ namespace Booking.Constants
         public const string Agency = "Agency";
         public const string Hotel = "Hotel";
         public const string Room = "Room";
+        public const string RoomType = "RoomType";
+        public const string RoomPhoto = "RoomPhoto";
+        public const string RoomAmenity = "RoomAmenity";
         public const string Reservation = "Reservation";
+        public const string Facility = "Facility";
+        public const string FacilityPhoto = "FacilityPhoto";
+        public const string Ticket = "Ticket";
+        public const string TicketComment = "TicketComment";
+        public const string PaymentLog = "PaymentLog";
         public const string User = "User";
     }
 }

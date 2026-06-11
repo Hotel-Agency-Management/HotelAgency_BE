@@ -25,8 +25,7 @@ namespace Booking.Services
         IProfileStrategyFactory _profileFactory,
         IAgencyRepository _agencyRepository,
         IHotelRepository _hotelRepository,
-        ILoginResponseStrategyFactory _loginResponseStrategyFactory,
-        ISystemLogService _logService) : IAuthService
+        ILoginResponseStrategyFactory _loginResponseStrategyFactory) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -35,15 +34,6 @@ namespace Booking.Services
             var (agency, agencyStatus) = await ResolveAgencyContextAsync(user, role);
             var hotel = await ResolveHotelContextAsync(user, role);
             var (token, refreshToken) = await GenerateAndSaveTokensAsync(user, role);
-
-            await _logService.LogAsync(
-                SystemLogActions.UserLogin,
-                SystemLogEntityTypes.User,
-                user.Id,
-                string.Format(SystemLogMessages.UserLogin, user.Email),
-                actorId: user.Id,
-                actorName: $"{user.FirstName} {user.LastName}".Trim(),
-                actorRole: role);
 
             var strategy = _loginResponseStrategyFactory.GetStrategy(role);
             return strategy.BuildResponse(user, role, token, refreshToken.Token, agency, agencyStatus, hotel);
@@ -136,16 +126,6 @@ namespace Booking.Services
             };
 
             await _authRepository.SaveRefreshTokenAsync(refreshToken);
-
-            await _logService.LogAsync(
-                SystemLogActions.UserRegistered,
-                SystemLogEntityTypes.User,
-                user.Id,
-                string.Format(SystemLogMessages.UserRegistered, user.Email, role),
-                actorId: user.Id,
-                actorName: $"{user.FirstName} {user.LastName}".Trim(),
-                actorRole: role,
-                agencyId: user.AgencyId);
 
             await SendVerificationEmailAsync(user);
             return new RegisterResultDto
@@ -260,15 +240,6 @@ namespace Booking.Services
                 throw new InvalidOperationException("Failed to reset password");
 
             await _authRepository.MarkCodeAsUsedAsync(resetCode);
-
-            await _logService.LogAsync(
-                SystemLogActions.UserPasswordReset,
-                SystemLogEntityTypes.User,
-                user.Id,
-                string.Format(SystemLogMessages.UserPasswordReset, user.Email),
-                actorId: user.Id,
-                actorName: $"{user.FirstName} {user.LastName}".Trim(),
-                actorRole: "Unknown");
         }
 
         public async Task<RefreshTokenResponseDto> RefreshTokenAsync(string token)
@@ -336,15 +307,6 @@ namespace Booking.Services
                 throw new InvalidOperationException("Failed to confirm email");
 
             await _authRepository.MarkEmailVerificationTokenAsUsedAsync(verificationToken);
-
-            await _logService.LogAsync(
-                SystemLogActions.UserEmailVerified,
-                SystemLogEntityTypes.User,
-                user.Id,
-                string.Format(SystemLogMessages.UserEmailVerified, user.Email),
-                actorId: user.Id,
-                actorName: $"{user.FirstName} {user.LastName}".Trim(),
-                actorRole: "Unknown");
         }
 
         public async Task ResendVerificationEmailAsync(string email)

@@ -52,12 +52,6 @@ namespace Booking.Interfaces.Services
 
             var created = await _planRepository.CreateAsync(plan);
 
-            await _logService.LogAsync(
-                SystemLogActions.PlanCreated,
-                SystemLogEntityTypes.Plan,
-                created.Id,
-                string.Format(SystemLogMessages.PlanCreated, created.Name));
-
             return new PlanDto(created);
         }
 
@@ -93,21 +87,21 @@ namespace Booking.Interfaces.Services
 
             var updated = await _planRepository.UpdateAsync(plan);
 
-            await _logService.LogAsync(
-                SystemLogActions.PlanUpdated,
-                SystemLogEntityTypes.Plan,
-                updated.Id,
-                string.Format(SystemLogMessages.PlanUpdated, updated.Name));
-
             return new PlanDto(updated);
         }
 
         public async Task DeletePlanAsync(int id)
         {
-            if (!await _planRepository.ExistsAsync(id))
-                throw new PlanNotFoundException(id);
+            var plan = await _planRepository.GetByIdAsync(id)
+                ?? throw new PlanNotFoundException(id);
 
             await _planRepository.DeleteAsync(id);
+
+            await _logService.LogAsync(
+                SystemLogActions.PlanDeleted,
+                SystemLogEntityTypes.Plan,
+                id,
+                string.Format(SystemLogMessages.PlanDeleted, plan.Name));
         }
 
         public async Task<RevenueOverviewResponse> GetRevenueOverviewAsync()

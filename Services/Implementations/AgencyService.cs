@@ -13,8 +13,7 @@ namespace Booking.Services
 {
     public class AgencyService(
         IAgencyRepository _agencyRepository,
-        IBlobStorageService _blobStorageService,
-        ISystemLogService _logService) : IAgencyService
+        IBlobStorageService _blobStorageService) : IAgencyService
     {
         public async Task<PaginatedResponse<AgencyListItemResponse>> GetAllAgenciesAsync(AgencyListRequest request)
         {
@@ -71,13 +70,6 @@ namespace Booking.Services
             agency.UpdatedAt = DateTime.UtcNow;
 
             await _agencyRepository.UpdateAsync(agency);
-
-            await _logService.LogAsync(
-                SystemLogActions.AgencyUpdated,
-                SystemLogEntityTypes.Agency,
-                agency.Id,
-                string.Format(SystemLogMessages.AgencyUpdated, agency.AgencyName),
-                agencyId: agency.Id);
         }
 
         public async Task<string> UpdateAgencyLogoAsync(int agencyId, IFormFile file)

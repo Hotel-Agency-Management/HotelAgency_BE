@@ -11,7 +11,8 @@ namespace Booking.Services
     public class FacilityPhotoService(
         IFacilityPhotoRepository _photoRepository,
         IFacilityRepository _facilityRepository,
-        IBlobStorageService _blobStorageService) : IFacilityPhotoService
+        IBlobStorageService _blobStorageService,
+        ISystemLogService _logService) : IFacilityPhotoService
     {
         public async Task<FacilityPhotoResponse> UploadPhotosAsync(int facilityId, UploadPhotosRequest request)
         {
@@ -56,6 +57,12 @@ namespace Booking.Services
 
             await _blobStorageService.DeleteAsync(photo.PhotoUrl);
             await _photoRepository.DeleteAsync(photo);
+
+            await _logService.LogAsync(
+                SystemLogActions.FacilityPhotoDeleted,
+                SystemLogEntityTypes.FacilityPhoto,
+                photoId,
+                string.Format(SystemLogMessages.FacilityPhotoDeleted, photo.FacilityId));
         }
     }
 }
