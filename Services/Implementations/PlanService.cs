@@ -103,7 +103,7 @@ namespace Booking.Interfaces.Services
 
             var months = Enumerable.Range(0, 12)
                 .Select(i => windowStart.AddMonths(i))
-                .Select(d => new MonthlyRevenueItem
+                .Select(d => new MonthlyRevenueItemForDashBoard
                 {
                     Month  = d.ToString("MMM yyyy", CultureInfo.InvariantCulture),
                     Amount = raw.TryGetValue((d.Year, d.Month), out var amt) ? amt : 0m

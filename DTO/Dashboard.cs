@@ -1,6 +1,6 @@
 namespace Booking.DTO
 {
-    public class MonthlyRevenueItem
+    public class MonthlyRevenueItemForDashBoard
     {
         public string Month { get; set; } = string.Empty;
         public decimal Amount { get; set; }
@@ -8,7 +8,7 @@ namespace Booking.DTO
 
     public class RevenueOverviewResponse
     {
-        public IReadOnlyList<MonthlyRevenueItem> Revenue { get; set; } = [];
+        public IReadOnlyList<MonthlyRevenueItemForDashBoard> Revenue { get; set; } = [];
     }
 
     public class DashboardSummaryResponse
