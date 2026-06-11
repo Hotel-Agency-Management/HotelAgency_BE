@@ -13,7 +13,8 @@ namespace Booking.Services
         IRoomRepository _roomRepository,
         IBlobStorageService _blobStorageService,
         IRoomAmenityRepository _roomAmenityRepository,
-        IRoomTypeRepository _roomTypeRepository) : IRoomService
+        IRoomTypeRepository _roomTypeRepository,
+        ISystemLogService _logService) : IRoomService
     {
         public async Task<RoomResponse> CreateRoomAsync(int hotelId, CreateRoomRequest request)
         {
@@ -61,6 +62,14 @@ namespace Booking.Services
             };
 
             var saved = await _roomRepository.CreateAsync(room);
+
+            await _logService.LogAsync(
+                SystemLogActions.RoomCreated,
+                SystemLogEntityTypes.Room,
+                saved.Id,
+                string.Format(SystemLogMessages.RoomCreated, saved.RoomNumber),
+                hotelId: saved.HotelId);
+
             return new RoomResponse(saved);
         }
 
@@ -84,10 +93,10 @@ namespace Booking.Services
             int hotelId, GetHotelRoomsRequest request)
         {
             if (request.CheckIn.HasValue != request.CheckOut.HasValue)
-                throw new BadRequestException("Both check-in and check-out dates must be provided together.");
+                throw new BadRequestException(Messages.CheckInCheckOutBothRequired);
 
             if (request.CheckIn.HasValue && request.CheckOut <= request.CheckIn)
-                throw new BadRequestException("Check-out date must be after check-in date.");
+                throw new BadRequestException(Messages.InvalidCheckOutDate);
 
             var (rooms, totalCount) = await _roomRepository.GetFilteredByHotelIdAsync(hotelId, request);
 
@@ -139,6 +148,14 @@ namespace Booking.Services
             room.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _roomRepository.UpdateAsync(room);
+
+            await _logService.LogAsync(
+                SystemLogActions.RoomUpdated,
+                SystemLogEntityTypes.Room,
+                updated.Id,
+                string.Format(SystemLogMessages.RoomUpdated, updated.RoomNumber),
+                hotelId: updated.HotelId);
+
             return new RoomResponse(updated);
         }
 

@@ -1,13 +1,17 @@
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Models;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
+using Booking.Interfaces.Services;
 using Booking.Enums;
 using System.Globalization;
 
 namespace Booking.Interfaces.Services
 {
-    public class PlanService(IPlanRepository _planRepository) : IPlanService
+    public class PlanService(
+        IPlanRepository _planRepository,
+        ISystemLogService _logService) : IPlanService
     {
         public async Task<IEnumerable<PlanDto>> GetPlansAsync(bool includeInactive = false)
         {
@@ -47,6 +51,13 @@ namespace Booking.Interfaces.Services
             };
 
             var created = await _planRepository.CreateAsync(plan);
+
+            await _logService.LogAsync(
+                SystemLogActions.PlanCreated,
+                SystemLogEntityTypes.Plan,
+                created.Id,
+                string.Format(SystemLogMessages.PlanCreated, created.Name));
+
             return new PlanDto(created);
         }
 
@@ -81,6 +92,13 @@ namespace Booking.Interfaces.Services
             }
 
             var updated = await _planRepository.UpdateAsync(plan);
+
+            await _logService.LogAsync(
+                SystemLogActions.PlanUpdated,
+                SystemLogEntityTypes.Plan,
+                updated.Id,
+                string.Format(SystemLogMessages.PlanUpdated, updated.Name));
+
             return new PlanDto(updated);
         }
 

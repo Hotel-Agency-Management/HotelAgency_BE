@@ -11,7 +11,8 @@ namespace Booking.Services
     public class HotelService(
         IHotelRepository _hotelRepository,
         IAuthRepository _authRepository,
-        IBlobStorageService _blobStorageService) : IHotelService
+        IBlobStorageService _blobStorageService,
+        ISystemLogService _logService) : IHotelService
     {
         public async Task<HotelResponse> CreateHotelAsync(CreateHotelRequest request)
         {
@@ -47,6 +48,14 @@ namespace Booking.Services
 
             if (!await _authRepository.UpdateUserAsync(manager))
                 throw new TeamMemberUpdateFailedException();
+
+            await _logService.LogAsync(
+                SystemLogActions.HotelCreated,
+                SystemLogEntityTypes.Hotel,
+                saved.Id,
+                string.Format(SystemLogMessages.HotelCreated, saved.Name),
+                agencyId: saved.AgencyId,
+                hotelId: saved.Id);
 
             return new HotelResponse(saved);
         }
@@ -126,6 +135,15 @@ namespace Booking.Services
             hotel.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _hotelRepository.UpdateAsync(hotel);
+
+            await _logService.LogAsync(
+                SystemLogActions.HotelUpdated,
+                SystemLogEntityTypes.Hotel,
+                updated.Id,
+                string.Format(SystemLogMessages.HotelUpdated, updated.Name),
+                agencyId: updated.AgencyId,
+                hotelId: updated.Id);
+
             return new HotelResponse(updated);
         }
 
