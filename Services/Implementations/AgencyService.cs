@@ -10,10 +10,12 @@ namespace Booking.Services
 {
     public class AgencyService(
         IAgencyRepository _agencyRepository,
-        IBlobStorageService _blobStorageService) : IAgencyService
+        IBlobStorageService _blobStorageService,
+        ILogger<AgencyService> _logger) : IAgencyService
     {
         public async Task<PaginatedResponse<AgencyListItemResponse>> GetAllAgenciesAsync(AgencyListRequest request)
         {
+            _logger.LogDebug("Fetching agencies page {Page} limit {Limit}", request.Page, request.Limit);
             var (agencies, totalCount) = await _agencyRepository.GetAllAsync(request);
 
             return new PaginatedResponse<AgencyListItemResponse>
@@ -67,6 +69,7 @@ namespace Booking.Services
             agency.UpdatedAt = DateTime.UtcNow;
 
             await _agencyRepository.UpdateAsync(agency);
+            _logger.LogInformation("Agency {AgencyId} updated successfully", agencyId);
         }
 
         public async Task<string> UpdateAgencyLogoAsync(int agencyId, IFormFile file)
@@ -83,6 +86,7 @@ namespace Booking.Services
             agency.UpdatedAt = DateTime.UtcNow;
             await _agencyRepository.UpdateAsync(agency);
 
+            _logger.LogInformation("Agency {AgencyId} logo updated", agencyId);
             return logoUrl;
         }
 

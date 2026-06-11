@@ -12,7 +12,8 @@ namespace Booking.Services
         IFacilityPhotoRepository _photoRepository,
         IFacilityRepository _facilityRepository,
         IBlobStorageService _blobStorageService,
-        ISystemLogService _logService) : IFacilityPhotoService
+        ISystemLogService _logService,
+        ILogger<FacilityPhotoService> _logger) : IFacilityPhotoService
     {
         public async Task<FacilityPhotoResponse> UploadPhotosAsync(int facilityId, UploadPhotosRequest request)
         {
@@ -30,6 +31,7 @@ namespace Booking.Services
             };
 
             var response = await _photoRepository.CreateAsync(photo);
+            _logger.LogInformation("Photo uploaded for facility {FacilityId}", facilityId);
             return new FacilityPhotoResponse(response);
         }
 
@@ -45,7 +47,7 @@ namespace Booking.Services
         public async Task<FacilityPhotoResponse> GetPhotoByIdAsync(int photoId)
         {
             var photo = await _photoRepository.GetByIdAsync(photoId)
-                ??throw new FacilityPhotoNotFoundException(photoId);
+                ?? throw new FacilityPhotoNotFoundException(photoId);
 
             return new FacilityPhotoResponse(photo);
         }
@@ -63,6 +65,8 @@ namespace Booking.Services
                 SystemLogEntityTypes.FacilityPhoto,
                 photoId,
                 string.Format(SystemLogMessages.FacilityPhotoDeleted, photo.FacilityId));
+            _logger.LogInformation("Photo {PhotoId} deleted for facility {FacilityId}", photoId, photo.FacilityId);
+
         }
     }
 }

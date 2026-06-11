@@ -6,10 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class PaymentLogRepository(ApplicationDbContext _context) : IPaymentLogRepository
+    public class PaymentLogRepository(
+        ApplicationDbContext _context,
+        ILogger<PaymentLogRepository> _logger) : IPaymentLogRepository
     {
         public async Task<PaymentLog> CreateAsync(PaymentLog paymentLog)
         {
+            _logger.LogDebug("Creating payment log for reservation {ReservationId}", paymentLog.ReservationId);
             await _context.PaymentLogs.AddAsync(paymentLog);
             await _context.SaveChangesAsync();
             return paymentLog;

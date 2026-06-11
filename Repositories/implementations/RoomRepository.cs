@@ -8,10 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class RoomRepository(ApplicationDbContext _context) : IRoomRepository
+    public class RoomRepository(
+        ApplicationDbContext _context,
+        ILogger<RoomRepository> _logger) : IRoomRepository
     {
         public async Task<Room> CreateAsync(Room room)
         {
+            _logger.LogDebug("Creating room {RoomNumber} for hotel {HotelId}", room.RoomNumber, room.HotelId);
             await _context.Rooms.AddAsync(room);
             await _context.SaveChangesAsync();
             return await GetByIdAsync(room.Id) ?? room;

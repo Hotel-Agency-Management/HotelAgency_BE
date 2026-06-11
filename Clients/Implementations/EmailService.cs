@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Booking.Clients;
 
-public class EmailService(IOptions<EmailOptions> options) : IEmailService
+public class EmailService(IOptions<EmailOptions> options, ILogger<EmailService> _logger) : IEmailService
 {
     private readonly EmailClient _emailClient = new(options.Value.ConnectionString);
     private readonly string _sender = options.Value.Sender;
@@ -24,10 +24,12 @@ public class EmailService(IOptions<EmailOptions> options) : IEmailService
         );
 
         await _emailClient.SendAsync(WaitUntil.Completed, message);
+        _logger.LogInformation("Email sent to {Recipient} with subject '{Subject}'", to, subject);
     }
 
     public async Task<string> LoadTemplateAsync(string templateName)
     {
+        _logger.LogDebug("Loading email template {TemplateName}", templateName);
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = $"Booking.EmailTemplates.{templateName}";
 

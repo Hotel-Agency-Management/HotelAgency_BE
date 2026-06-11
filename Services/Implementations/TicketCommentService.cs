@@ -10,7 +10,8 @@ namespace Booking.Services
 {
     public class TicketCommentService(
         ITicketCommentRepository _commentRepository,
-        ISystemLogService _logService) : ITicketCommentService
+        ISystemLogService _logService,
+        ILogger<TicketCommentService> _logger) : ITicketCommentService
     {
         public async Task<TicketCommentResponse> AddCommentAsync(
             int ticketId, int authorUserId, CreateTicketCommentRequest request)
@@ -29,6 +30,7 @@ namespace Booking.Services
             };
 
             var saved = await _commentRepository.AddAsync(comment);
+            _logger.LogInformation("Comment added to ticket {TicketId} by user {AuthorUserId}", ticketId, authorUserId);
             return new TicketCommentResponse(saved);
         }
 
@@ -71,6 +73,7 @@ namespace Booking.Services
             comment.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _commentRepository.UpdateAsync(comment);
+            _logger.LogInformation("Comment {CommentId} updated on ticket {TicketId}", commentId, ticketId);
             return new TicketCommentResponse(updated);
         }
 
@@ -89,6 +92,7 @@ namespace Booking.Services
                 SystemLogEntityTypes.TicketComment,
                 commentId,
                 string.Format(SystemLogMessages.TicketCommentDeleted, comment.TicketId));
+            _logger.LogInformation("Comment {CommentId} deleted from ticket {TicketId}", commentId, ticketId);
         }
 
         private static void ValidateDamageCost(CommentType type, decimal? cost)

@@ -9,7 +9,8 @@ namespace Booking.Services
 {
     public class RoomTypeService(
         IRoomTypeRepository _roomTypeRepository,
-        ISystemLogService _logService) : IRoomTypeService
+        ISystemLogService _logService,
+        ILogger<RoomTypeService> _logger) : IRoomTypeService
     {
         public async Task<RoomTypeResponse> CreateRoomTypeAsync(CreateRoomTypeRequest request)
         {
@@ -25,6 +26,7 @@ namespace Booking.Services
             };
 
             var saved = await _roomTypeRepository.CreateAsync(roomType);
+            _logger.LogInformation("Room type {RoomTypeId} created: {Name}", saved.Id, request.Name);
             return new RoomTypeResponse(saved);
         }
 
@@ -53,6 +55,7 @@ namespace Booking.Services
             roomType.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _roomTypeRepository.UpdateAsync(roomType);
+            _logger.LogInformation("Room type {RoomTypeId} updated", roomTypeId);
             return new RoomTypeResponse(updated);
         }
 
@@ -68,6 +71,8 @@ namespace Booking.Services
                 SystemLogEntityTypes.RoomType,
                 roomTypeId,
                 string.Format(SystemLogMessages.RoomTypeDeleted, roomType.Name));
+            _logger.LogInformation("Room type {RoomTypeId} deleted", roomTypeId);
+
         }
     }
 }

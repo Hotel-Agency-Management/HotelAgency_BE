@@ -7,12 +7,14 @@ namespace Booking.Clients
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _containerName;
+        private readonly ILogger<BlobStorageService> _logger;
 
-        public BlobStorageService(IConfiguration config)
+        public BlobStorageService(IConfiguration config, ILogger<BlobStorageService> logger)
         {
             _blobServiceClient = new BlobServiceClient(
                 config["AzureBlobStorage:ConnectionString"]);
             _containerName = config["AzureBlobStorage:ContainerName"]!;
+            _logger = logger;
         }
 
         public async Task<string> UploadAsync(IFormFile file)
@@ -33,6 +35,7 @@ namespace Booking.Clients
                 ContentType = file.ContentType
             });
 
+            _logger.LogInformation("Blob {FileName} uploaded to container {Container}", uniqueFileName, _containerName);
             return uniqueFileName;
         }
 
@@ -42,10 +45,12 @@ namespace Booking.Clients
                 .GetBlobContainerClient(_containerName);
 
             await containerClient.DeleteBlobIfExistsAsync(fileName);
+            _logger.LogInformation("Blob {FileName} deleted from container {Container}", fileName, _containerName);
         }
 
         public string GetBlobUrl(string blobName)
         {
+            _logger.LogDebug("Resolving blob URL for {BlobName}", blobName);
             return _blobServiceClient
                 .GetBlobContainerClient(_containerName)
                 .GetBlobClient(blobName)

@@ -14,7 +14,8 @@ namespace Booking.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An exception occurred: {Message}", ex.Message);
+                _logger.LogError(ex, "Unhandled exception on {Method} {Path}: {Message}",
+                    context.Request.Method, context.Request.Path, ex.Message);
                 await HandleExceptionAsync(context, ex);
             }
         }

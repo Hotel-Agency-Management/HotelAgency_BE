@@ -10,7 +10,8 @@ namespace Booking.Repositories
 {
     public class TeamManagementRepository(
         ApplicationDbContext _context,
-        UserManager<ApplicationUser> _userManager) : ITeamManagementRepository
+        UserManager<ApplicationUser> _userManager,
+        ILogger<TeamManagementRepository> _logger) : ITeamManagementRepository
     {
         public Task<int> CountByAgencyAsync(
             int agencyId,
@@ -29,6 +30,7 @@ namespace Booking.Repositories
             int pageNumber,
             int pageSize)
         {
+            _logger.LogDebug("Fetching team members for agency {AgencyId}", agencyId);
             return AgencyTeamMemberQuery(agencyId, excludedUserId, role, assigned)
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)

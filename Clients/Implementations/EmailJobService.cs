@@ -8,7 +8,8 @@ namespace Booking.Clients;
 public class EmailJobService(
     IBackgroundJobClient _jobs,
     IEmailService _emailService,
-    IAppLinkService _appLinkService) : IEmailJobService
+    IAppLinkService _appLinkService,
+    ILogger<EmailJobService> _logger) : IEmailJobService
 {
     public async Task EnqueueVerificationEmailAsync(ApplicationUser user, string verificationLink)
     {
@@ -34,6 +35,7 @@ public class EmailJobService(
                 { "AGENCY_NAME", "HotelAgency" }
             }
         );
+        _logger.LogInformation("Verification email job enqueued for {Email}", user.Email);
     }
 
     public async Task EnqueueAgencyUnderReviewEmailAsync(ApplicationUser user)
@@ -58,6 +60,7 @@ public class EmailJobService(
             { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() },
             }
         );
+        _logger.LogInformation("Agency under-review email job enqueued for {Email}", user.Email);
     }
 
     public async Task EnqueueTeamMemberVerificationEmailAsync(ApplicationUser user, Agency agency, string verificationLink, string password)
@@ -96,6 +99,7 @@ public class EmailJobService(
 
         _jobs.Enqueue<IEmailService>(svc =>
             svc.SendEmailAsync(user.Email!, $"You have been invited to {agency.AgencyName}", plainText, html));
+        _logger.LogInformation("Team member invitation email job enqueued for {Email} at agency {AgencyId}", user.Email, agency.Id);
     }
 
     public async Task EnqueueReservationConfirmationEmailAsync(
@@ -128,6 +132,7 @@ public class EmailJobService(
                 { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
                 { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() }
             });
+        _logger.LogInformation("Reservation confirmation email job enqueued for {Email}, reservation {ReservationNumber}", recipientEmail, reservation.ReservationNumber);
     }
 
     public async Task EnqueueNewCustomerAccountEmailAsync(
@@ -151,6 +156,7 @@ public class EmailJobService(
                 { "SUPPORT_LINK", _appLinkService.GetSupportLink() },
                 { "PRIVACY_LINK", _appLinkService.GetPrivacyLink() }
             });
+        _logger.LogInformation("New customer account email job enqueued for {Email}", user.Email);
     }
 
     private async Task EnqueueAsync(

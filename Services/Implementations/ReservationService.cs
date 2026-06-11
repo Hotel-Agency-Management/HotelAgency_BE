@@ -16,7 +16,8 @@ namespace Booking.Services
         ICustomerAccountService _customerAccountService,
         IBlobStorageService _blobStorageService,
         IEmailJobService _emailJobService,
-        IPaymentLogRepository _paymentLogRepository) : IReservationService
+        IPaymentLogRepository _paymentLogRepository,
+        ILogger<ReservationService> _logger) : IReservationService
     {
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
         {
@@ -81,6 +82,7 @@ namespace Booking.Services
                 });
 
             await SendConfirmationEmailAsync(saved);
+            _logger.LogInformation("Reservation {ReservationNumber} created for hotel {HotelId} by staff {StaffUserId}", saved.ReservationNumber, hotelId, staffUserId);
             return new ReservationResponse(saved);
         }
 
@@ -145,6 +147,7 @@ namespace Booking.Services
                 });
 
             await SendConfirmationEmailAsync(saved);
+            _logger.LogInformation("Reservation {ReservationNumber} created by customer {CustomerId} for hotel {HotelId}", saved.ReservationNumber, user.Id, hotelId);
             return new ReservationResponse(saved);
         }
 
@@ -207,7 +210,7 @@ namespace Booking.Services
                 ?? throw new ReservationNotFoundException(reservationId);
 
             var isValidTransition =
-                (reservation.Status == ReservationStatus.Confirmed  && request.Status == ReservationStatus.CheckedIn) ||
+                (reservation.Status == ReservationStatus.Confirmed && request.Status == ReservationStatus.CheckedIn) ||
                 (reservation.Status == ReservationStatus.CheckedIn && request.Status == ReservationStatus.CheckedOut);
 
             if (!isValidTransition)
@@ -217,6 +220,7 @@ namespace Booking.Services
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
+            _logger.LogInformation("Reservation {ReservationId} status changed to {Status} for hotel {HotelId}", reservationId, request.Status, hotelId);
 
             return new ReservationResponse(updated);
         }
@@ -478,6 +482,7 @@ namespace Booking.Services
             }
             catch (DbUpdateException)
             {
+                _logger.LogWarning("Reservation number collision for year {Year}, retrying with fresh count", year);
                 var freshCount = await _reservationRepository.CountByYearAsync(year);
                 reservation.ReservationNumber = $"RES-{year}-{(freshCount + 1):D6}";
                 return await _reservationRepository.CreateAsync(reservation);
@@ -487,7 +492,7 @@ namespace Booking.Services
         public async Task<IReadOnlyList<BookingTypeDistributionItem>> GetAgencyBookingTypeDistributionAsync(int agencyId)
         {
             var from = DateTime.UtcNow.AddMonths(-12);
-            var raw  = (await _reservationRepository.GetBookingSourceDistributionByAgencyAsync(agencyId, from))
+            var raw = (await _reservationRepository.GetBookingSourceDistributionByAgencyAsync(agencyId, from))
                         .ToDictionary(x => x.Source, x => x.Count);
 
             var allSources = new[]
@@ -505,8 +510,8 @@ namespace Booking.Services
                 raw.TryGetValue(s.Item1, out var count);
                 return new BookingTypeDistributionItem
                 {
-                    Type       = s.Item2,
-                    Count      = count,
+                    Type = s.Item2,
+                    Count = count,
                     Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
                 };
             }).ToList();
@@ -515,7 +520,7 @@ namespace Booking.Services
         public async Task<IReadOnlyList<ReservationStatusDistributionItem>> GetAgencyStatusDistributionAsync(int agencyId)
         {
             var from = DateTime.UtcNow.AddMonths(-12);
-            var raw  = (await _reservationRepository.GetStatusDistributionByAgencyAsync(agencyId, from))
+            var raw = (await _reservationRepository.GetStatusDistributionByAgencyAsync(agencyId, from))
                         .ToDictionary(x => x.Status, x => x.Count);
 
             var allStatuses = new[]
@@ -534,8 +539,8 @@ namespace Booking.Services
                 raw.TryGetValue(s, out var count);
                 return new ReservationStatusDistributionItem
                 {
-                    Status     = s.ToString(),
-                    Count      = count,
+                    Status = s.ToString(),
+                    Count = count,
                     Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
                 };
             }).ToList();
@@ -543,14 +548,14 @@ namespace Booking.Services
 
         public async Task<AgencyReservationStats> GetAgencyStatsAsync(int agencyId)
         {
-            var total    = await _reservationRepository.GetTotalCountByAgencyAsync(agencyId);
-            var pending  = await _reservationRepository.GetPendingCountByAgencyAsync(agencyId);
+            var total = await _reservationRepository.GetTotalCountByAgencyAsync(agencyId);
+            var pending = await _reservationRepository.GetPendingCountByAgencyAsync(agencyId);
             var avgValue = await _reservationRepository.GetAverageValueByAgencyAsync(agencyId);
 
             return new AgencyReservationStats
             {
-                TotalBookings       = total,
-                PendingCount        = pending,
+                TotalBookings = total,
+                PendingCount = pending,
                 AverageBookingValue = avgValue
             };
         }
@@ -562,8 +567,8 @@ namespace Booking.Services
 
             return rows.Select(r => new RoomTypeReservationsItem
             {
-                RoomTypeId        = r.RoomTypeId,
-                RoomTypeName      = r.RoomTypeName,
+                RoomTypeId = r.RoomTypeId,
+                RoomTypeName = r.RoomTypeName,
                 ReservationsCount = r.Count
             }).ToList();
         }
@@ -573,9 +578,9 @@ namespace Booking.Services
             var cards = await _reservationRepository.GetHotelOverviewCardsAsync(hotelId);
             return new PropertyManagerOverviewCardsResponse
             {
-                TotalReservations  = cards.TotalReservations,
-                TodayCheckIns      = cards.TodayCheckIns,
-                TodayCheckOuts     = cards.TodayCheckOuts,
+                TotalReservations = cards.TotalReservations,
+                TodayCheckIns = cards.TodayCheckIns,
+                TodayCheckOuts = cards.TodayCheckOuts,
                 PendingReservations = cards.PendingReservations
             };
         }
@@ -585,7 +590,7 @@ namespace Booking.Services
             if (groupBy == "daily")
             {
                 var from = DateTime.UtcNow.AddDays(-29).Date;
-                var to   = DateTime.UtcNow.AddDays(1).Date;
+                var to = DateTime.UtcNow.AddDays(1).Date;
 
                 var raw = (await _reservationRepository.GetDailyRevenueByHotelAsync(hotelId, from, to))
                             .ToDictionary(x => new DateOnly(x.Year, x.Month, x.Day), x => x.Revenue);
@@ -602,7 +607,7 @@ namespace Booking.Services
             else
             {
                 var from = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-11);
-                var to   = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(1);
+                var to = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(1);
 
                 var raw = (await _reservationRepository.GetMonthlyRevenueByHotelAsync(hotelId, from, to))
                             .ToDictionary(x => (x.Year, x.Month), x => x.Revenue);
@@ -638,8 +643,8 @@ namespace Booking.Services
                 raw.TryGetValue(s.Item1, out var count);
                 return new BookingTypeDistributionItem
                 {
-                    Type       = s.Item2,
-                    Count      = count,
+                    Type = s.Item2,
+                    Count = count,
                     Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
                 };
             }).ToList();
@@ -647,7 +652,7 @@ namespace Booking.Services
             return new HotelBookingTypeDistributionResponse
             {
                 TotalReservations = total,
-                Items             = items
+                Items = items
             };
         }
 
@@ -672,8 +677,8 @@ namespace Booking.Services
                 raw.TryGetValue(s, out var count);
                 return new ReservationStatusDistributionItem
                 {
-                    Status     = s.ToString(),
-                    Count      = count,
+                    Status = s.ToString(),
+                    Count = count,
                     Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
                 };
             }).ToList();
@@ -681,7 +686,7 @@ namespace Booking.Services
             return new HotelReservationStatusDistributionResponse
             {
                 TotalReservations = total,
-                Items             = items
+                Items = items
             };
         }
 

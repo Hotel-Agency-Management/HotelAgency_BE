@@ -6,10 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class ReservationRepository(ApplicationDbContext _context) : IReservationRepository
+    public class ReservationRepository(
+        ApplicationDbContext _context,
+        ILogger<ReservationRepository> _logger) : IReservationRepository
     {
         public async Task<Reservation> CreateAsync(Reservation reservation)
         {
+            _logger.LogDebug("Creating reservation for hotel {HotelId}", reservation.HotelId);
             await _context.Reservations.AddAsync(reservation);
             await _context.SaveChangesAsync();
             return await GetByIdAsync(reservation.Id) ?? reservation;

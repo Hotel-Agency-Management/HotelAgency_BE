@@ -14,7 +14,8 @@ namespace Booking.Services
         IBlobStorageService _blobStorageService,
         IRoomAmenityRepository _roomAmenityRepository,
         IRoomTypeRepository _roomTypeRepository,
-        ISystemLogService _logService) : IRoomService
+        ISystemLogService _logService,
+        ILogger<RoomService> _logger) : IRoomService
     {
         public async Task<RoomResponse> CreateRoomAsync(int hotelId, CreateRoomRequest request)
         {
@@ -62,7 +63,7 @@ namespace Booking.Services
             };
 
             var saved = await _roomRepository.CreateAsync(room);
-
+            _logger.LogInformation("Room {RoomNumber} created for hotel {HotelId}", request.RoomNumber, hotelId);
             return new RoomResponse(saved);
         }
 
@@ -141,7 +142,7 @@ namespace Booking.Services
             room.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _roomRepository.UpdateAsync(room);
-
+            _logger.LogInformation("Room {RoomId} updated for hotel {HotelId}", roomId, hotelId);
             return new RoomResponse(updated);
         }
 
@@ -160,6 +161,7 @@ namespace Booking.Services
                 roomId,
                 string.Format(SystemLogMessages.RoomDeleted, room.RoomNumber),
                 hotelId: room.HotelId);
+            _logger.LogInformation("Room {RoomId} deleted from hotel {HotelId}", roomId, hotelId);
         }
 
         public async Task<RoomStatusDistributionResponse> GetRoomStatusDistributionAsync(int hotelId)

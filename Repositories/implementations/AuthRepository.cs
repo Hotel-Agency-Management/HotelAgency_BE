@@ -9,7 +9,8 @@ namespace Booking.Repositories
 {
     public class AuthRepository(
         UserManager<ApplicationUser> _userManager,
-        ApplicationDbContext _context) : IAuthRepository
+        ApplicationDbContext _context,
+        ILogger<AuthRepository> _logger) : IAuthRepository
     {
         public async Task<ApplicationUser?> FindByEmailAsync(string email)
         {
@@ -39,6 +40,7 @@ namespace Booking.Repositories
 
         public async Task<bool> UpdateUserAsync(ApplicationUser user)
         {
+            _logger.LogDebug("Updating user {UserId}", user.Id);
             var result = await _userManager.UpdateAsync(user);
             return result.Succeeded;
         }

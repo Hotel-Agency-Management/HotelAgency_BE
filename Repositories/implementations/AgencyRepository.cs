@@ -9,7 +9,9 @@ using Booking.DTO;
 
 namespace Booking.Repositories
 {
-    public class AgencyRepository(ApplicationDbContext _context) : IAgencyRepository
+    public class AgencyRepository(
+        ApplicationDbContext _context,
+        ILogger<AgencyRepository> _logger) : IAgencyRepository
     {
         public async Task<bool> ExistsByNameAsync(string agencyName)
         {
@@ -19,6 +21,7 @@ namespace Booking.Repositories
 
         public async Task<(IReadOnlyList<Agency> Agencies, int TotalCount)> GetAllAsync(AgencyListRequest request)
         {
+            _logger.LogDebug("Querying agencies: search={Search}, status={Status}, page={Page}", request.Search, request.Status, request.Page);
             var query = _context.Agencies
                 .AsNoTracking()
                 .Include(a => a.Owner)
