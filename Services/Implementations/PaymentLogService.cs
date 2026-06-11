@@ -319,6 +319,17 @@ namespace Booking.Services
             return result;
         }
 
+        public async Task<RefundImpactResponse> GetHotelRefundImpactAsync(int hotelId)
+        {
+            var data = await _paymentLogRepository.GetRefundImpactByHotelAsync(hotelId);
+            return new RefundImpactResponse
+            {
+                PaidRevenue      = data.PaidRevenue,
+                RefundAmount     = data.RefundAmount,
+                CancellationLoss = data.CancellationLoss
+            };
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;

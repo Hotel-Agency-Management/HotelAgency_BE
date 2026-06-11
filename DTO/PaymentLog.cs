@@ -119,4 +119,11 @@ namespace Booking.DTO
         public int Year { get; set; }
         public decimal Balance { get; set; }
     }
+
+    public class RefundImpactResponse
+    {
+        public decimal PaidRevenue { get; set; }
+        public decimal RefundAmount { get; set; }
+        public decimal CancellationLoss { get; set; }
+    }
 }

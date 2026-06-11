@@ -34,5 +34,13 @@ namespace Booking.Controllers
             var result = await _paymentLogService.GetHotelBalanceTrendAsync(hotelId);
             return Ok(result);
         }
+
+        [EnsureHotelExistsForOwner]
+        [HttpGet("refund-impact")]
+        public async Task<IActionResult> GetRefundImpact([FromRoute] int hotelId)
+        {
+            var result = await _paymentLogService.GetHotelRefundImpactAsync(hotelId);
+            return Ok(result);
+        }
     }
 }

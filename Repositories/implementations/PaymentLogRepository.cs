@@ -170,6 +170,26 @@ namespace Booking.Repositories
             return rows.Select(r => new MonthlyNet(r.Year, r.Month, r.Net));
         }
 
+        public async Task<RefundImpactData> GetRefundImpactByHotelAsync(int hotelId)
+        {
+            var baseQuery = _context.PaymentLogs
+                .Where(pl => pl.To == hotelId || pl.From == hotelId);
+
+            var paidRevenue = await baseQuery
+                .Where(pl => pl.To == hotelId && pl.Type == PaymentType.Booking)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
+            var refundAmount = await baseQuery
+                .Where(pl => pl.From == hotelId && pl.Type == PaymentType.Refund)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
+            var cancellationLoss = await baseQuery
+                .Where(pl => pl.From == hotelId && pl.Type == PaymentType.Cancellation)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
+            return new RefundImpactData(paidRevenue, refundAmount, cancellationLoss);
+        }
+
         public async Task<PaymentLog> UpdateAsync(PaymentLog paymentLog)
         {
             _context.PaymentLogs.Update(paymentLog);
