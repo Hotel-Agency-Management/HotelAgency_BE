@@ -42,6 +42,7 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<PaymentTypeRevenue>> GetRevenueByTypeByHotelAsync(int hotelId);
         Task<IEnumerable<MonthlyNet>> GetMonthlyNetByHotelAsync(int hotelId);
         Task<RefundImpactData> GetRefundImpactByHotelAsync(int hotelId);
+        Task<decimal> GetMonthlyBookingRevenueByHotelAsync(int hotelId, int year, int month);
         Task<PaymentLog> UpdateAsync(PaymentLog paymentLog);
         Task DeleteAsync(PaymentLog paymentLog);
     }

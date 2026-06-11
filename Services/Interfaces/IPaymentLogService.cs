@@ -16,6 +16,7 @@ namespace Booking.Interfaces.Services
         Task<IReadOnlyList<RevenueByTypeItem>> GetHotelRevenueByTypeAsync(int hotelId);
         Task<IReadOnlyList<BalanceTrendItem>> GetHotelBalanceTrendAsync(int hotelId);
         Task<RefundImpactResponse> GetHotelRefundImpactAsync(int hotelId);
+        Task<RevenueGrowthResponse> GetHotelRevenueGrowthAsync(int hotelId, int month, int year);
         Task<PaymentLogDetailsResponse> CreateAsync(int hotelId, CreatePaymentLogRequest request);
         Task<PaymentLogDetailsResponse> UpdateAsync(int hotelId, int paymentLogId, UpdatePaymentLogRequest request);
         Task DeleteAsync(int hotelId, int paymentLogId);

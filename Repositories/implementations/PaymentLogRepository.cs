@@ -190,6 +190,14 @@ namespace Booking.Repositories
             return new RefundImpactData(paidRevenue, refundAmount, cancellationLoss);
         }
 
+        public async Task<decimal> GetMonthlyBookingRevenueByHotelAsync(int hotelId, int year, int month)
+            => await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId
+                    && pl.Type == PaymentType.Booking
+                    && pl.CreatedAt.Year == year
+                    && pl.CreatedAt.Month == month)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
         public async Task<PaymentLog> UpdateAsync(PaymentLog paymentLog)
         {
             _context.PaymentLogs.Update(paymentLog);

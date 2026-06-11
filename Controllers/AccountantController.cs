@@ -42,5 +42,23 @@ namespace Booking.Controllers
             var result = await _paymentLogService.GetHotelRefundImpactAsync(hotelId);
             return Ok(result);
         }
+
+        [EnsureHotelExistsForOwner]
+        [HttpGet("revenue-growth")]
+        public async Task<IActionResult> GetRevenueGrowth(
+            [FromRoute] int hotelId,
+            [FromQuery] int? month,
+            [FromQuery] int? year)
+        {
+            var now = DateTime.UtcNow;
+            int resolvedMonth = month ?? now.Month;
+            int resolvedYear  = year  ?? now.Year;
+
+            if (resolvedMonth < 1 || resolvedMonth > 12)
+                return BadRequest("month must be between 1 and 12.");
+
+            var result = await _paymentLogService.GetHotelRevenueGrowthAsync(hotelId, resolvedMonth, resolvedYear);
+            return Ok(result);
+        }
     }
 }

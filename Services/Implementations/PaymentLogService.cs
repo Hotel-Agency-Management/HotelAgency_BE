@@ -330,6 +330,29 @@ namespace Booking.Services
             };
         }
 
+        public async Task<RevenueGrowthResponse> GetHotelRevenueGrowthAsync(int hotelId, int month, int year)
+        {
+            var prevDate = new DateTime(year, month, 1).AddMonths(-1);
+
+            var currentRevenue  = await _paymentLogRepository.GetMonthlyBookingRevenueByHotelAsync(hotelId, year, month);
+            var previousRevenue = await _paymentLogRepository.GetMonthlyBookingRevenueByHotelAsync(hotelId, prevDate.Year, prevDate.Month);
+
+            decimal growthPercentage = previousRevenue == 0
+                ? 0m
+                : Math.Round((currentRevenue - previousRevenue) / previousRevenue * 100, 2);
+            decimal gaugeScore = Math.Min(growthPercentage, 100m);
+
+            return new RevenueGrowthResponse
+            {
+                CurrentRevenue   = currentRevenue,
+                PreviousRevenue  = previousRevenue,
+                GrowthPercentage = growthPercentage,
+                GaugeScore       = gaugeScore,
+                Month            = month,
+                Year             = year
+            };
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;

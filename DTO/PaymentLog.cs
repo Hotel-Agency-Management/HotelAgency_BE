@@ -126,4 +126,14 @@ namespace Booking.DTO
         public decimal RefundAmount { get; set; }
         public decimal CancellationLoss { get; set; }
     }
+
+    public class RevenueGrowthResponse
+    {
+        public decimal CurrentRevenue   { get; set; }
+        public decimal PreviousRevenue  { get; set; }
+        public decimal GrowthPercentage { get; set; }
+        public decimal GaugeScore       { get; set; }
+        public int Month { get; set; }
+        public int Year  { get; set; }
+    }
 }
