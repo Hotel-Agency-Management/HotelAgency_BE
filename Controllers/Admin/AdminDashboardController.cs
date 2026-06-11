@@ -13,6 +13,14 @@ namespace Booking.Controllers.Admin
         IAgencyService _agencyService) : ControllerBase
     {
         [Authorize(Roles = Roles.SuperAdmin)]
+        [HttpGet("agency-growth")]
+        public async Task<IActionResult> GetAgencyGrowth()
+        {
+            var result = await _agencyService.GetMonthlyGrowthAsync();
+            return Ok(result);
+        }
+
+        [Authorize(Roles = Roles.SuperAdmin)]
         [HttpGet("revenue")]
         public async Task<IActionResult> GetRevenue()
         {

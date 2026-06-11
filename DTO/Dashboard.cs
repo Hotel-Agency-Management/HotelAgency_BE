@@ -42,4 +42,15 @@ namespace Booking.DTO
         public int Total { get; set; }
         public IReadOnlyList<SubscriptionSlice> Breakdown { get; set; } = [];
     }
+
+    public class AgencyGrowthItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
+
+    public class AgencyGrowthResponse
+    {
+        public IReadOnlyList<AgencyGrowthItem> Growth { get; set; } = [];
+    }
 }

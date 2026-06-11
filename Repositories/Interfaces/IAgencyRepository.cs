@@ -3,6 +3,8 @@ using Booking.Enums;
 using Booking.DTO;
 namespace Booking.Interfaces.Repositories
 {
+        public record MonthlyAgencyCount(int Year, int Month, int Count);
+
         public interface IAgencyRepository
         {
                 Task<bool> ExistsByNameAsync(string agencyName);
@@ -13,5 +15,6 @@ namespace Booking.Interfaces.Repositories
                 Task UpdateAsync(Agency agency);
                 Task DeleteAsync(Agency agency);
                 Task UpdateStatusAsync(int agencyId, AgencyStatus status);
+                Task<IEnumerable<MonthlyAgencyCount>> GetMonthlyGrowthAsync(DateTime from, DateTime to);
         }
 }

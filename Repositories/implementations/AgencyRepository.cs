@@ -111,5 +111,12 @@ namespace Booking.Repositories
             agency.Status = status;
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<MonthlyAgencyCount>> GetMonthlyGrowthAsync(DateTime from, DateTime to)
+            => await _context.Agencies
+                .Where(a => a.CreatedAt >= from && a.CreatedAt <= to)
+                .GroupBy(a => new { a.CreatedAt.Year, a.CreatedAt.Month })
+                .Select(g => new MonthlyAgencyCount(g.Key.Year, g.Key.Month, g.Count()))
+                .ToListAsync();
     }
 }

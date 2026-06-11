@@ -3,6 +3,7 @@ using Booking.DTO;
 using Booking.Enums;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
+using System.Globalization;
 using Booking.Interfaces.Services;
 using Booking.Models;
 using Microsoft.AspNetCore.Http;
@@ -85,6 +86,27 @@ namespace Booking.Services
             await _agencyRepository.UpdateAsync(agency);
 
             return logoUrl;
+        }
+
+        public async Task<AgencyGrowthResponse> GetMonthlyGrowthAsync()
+        {
+            var now = DateTime.UtcNow;
+            var windowStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+            var windowEnd   = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1).AddTicks(-1);
+
+            var raw = (await _agencyRepository.GetMonthlyGrowthAsync(windowStart, windowEnd))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Count);
+
+            var months = Enumerable.Range(0, 12)
+                .Select(i => windowStart.AddMonths(i))
+                .Select(d => new AgencyGrowthItem
+                {
+                    Month = d.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+                    Count = raw.TryGetValue((d.Year, d.Month), out var c) ? c : 0
+                })
+                .ToList();
+
+            return new AgencyGrowthResponse { Growth = months };
         }
     }
 }
