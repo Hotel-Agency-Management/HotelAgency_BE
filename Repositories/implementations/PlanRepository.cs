@@ -61,5 +61,25 @@ namespace Booking.Repositories
             => await _context.Plans.AnyAsync(p =>
                 p.Name.ToLower() == name.ToLower() &&
                 (excludeId == null || p.Id != excludeId));
+
+        public async Task<IEnumerable<MonthRevenue>> GetMonthlySubscriptionRevenueAsync(DateTime from, DateTime to)
+            => await _context.Agencies
+                .Where(a => a.CreatedAt >= from && a.CreatedAt <= to)
+                .Select(a => new { a.CreatedAt.Year, a.CreatedAt.Month, a.Plan.Price })
+                .GroupBy(a => new { a.Year, a.Month })
+                .Select(g => new MonthRevenue(g.Key.Year, g.Key.Month, g.Sum(a => a.Price)))
+                .ToListAsync();
+
+        public async Task<decimal> GetTotalSubscriptionRevenueAsync()
+            => await _context.Agencies
+                .Select(a => a.Plan.Price)
+                .SumAsync();
+
+        public async Task<IEnumerable<PlanSubscriptionCount>> GetSubscriptionDistributionAsync()
+            => await _context.Plans
+                .Select(p => new PlanSubscriptionCount(
+                    p.Name,
+                    _context.Agencies.Count(a => a.PlanId == p.Id)))
+                .ToListAsync();
     }
 }
