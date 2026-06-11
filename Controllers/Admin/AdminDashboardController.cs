@@ -11,8 +11,21 @@ namespace Booking.Controllers.Admin
     [Route("api/admin/dashboard")]
     public class AdminDashboardController(
         IPlanService _planService,
-        IAgencyService _agencyService) : ControllerBase
+        IAgencyService _agencyService,
+        ISystemLogService _systemLogService) : ControllerBase
     {
+        [Authorize(Roles = Roles.SuperAdmin)]
+        [HttpGet("recent-logs")]
+        public async Task<IActionResult> GetRecentLogs()
+        {
+            var result = await _systemLogService.GetLogsAsync(new SystemLogListRequest
+            {
+                PageNumber = 1,
+                PageSize   = DashboardConstants.RecentLogsCount
+            });
+            return Ok(result.Items);
+        }
+
         [Authorize(Roles = Roles.SuperAdmin)]
         [HttpGet("latest-agencies")]
         public async Task<IActionResult> GetLatestAgencies()
