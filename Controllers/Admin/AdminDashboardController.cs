@@ -13,6 +13,19 @@ namespace Booking.Controllers.Admin
         IAgencyService _agencyService) : ControllerBase
     {
         [Authorize(Roles = Roles.SuperAdmin)]
+        [HttpGet("latest-agencies")]
+        public async Task<IActionResult> GetLatestAgencies()
+        {
+            var result = await _agencyService.GetAllAgenciesAsync(new AgencyListRequest
+            {
+                Page      = 1,
+                Limit     = 10,
+                SortOrder = "Newest"
+            });
+            return Ok(result);
+        }
+
+        [Authorize(Roles = Roles.SuperAdmin)]
         [HttpGet("agency-growth")]
         public async Task<IActionResult> GetAgencyGrowth()
         {

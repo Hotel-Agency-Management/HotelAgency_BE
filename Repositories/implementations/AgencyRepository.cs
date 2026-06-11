@@ -52,8 +52,10 @@ namespace Booking.Repositories
 
             var totalCount = await query.CountAsync();
 
-            var agencies = await query
-                .OrderBy(a => a.Id)
+            var isDescending = request.SortOrder.Equals("Newest", StringComparison.OrdinalIgnoreCase);
+            var agencies = await (isDescending
+                    ? query.OrderByDescending(a => a.Id)
+                    : query.OrderBy(a => a.Id))
                 .Skip((request.Page - 1) * request.Limit)
                 .Take(request.Limit)
                 .ToListAsync();

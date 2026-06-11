@@ -14,6 +14,7 @@ namespace Booking.DTO
         public string? Status { get; set; }
         public string? Country { get; set; }
         public bool? EmailVerified { get; set; }
+        public string SortOrder { get; set; } = "Oldest";
     }
 
     public class AgencyStatusCountsResponse
