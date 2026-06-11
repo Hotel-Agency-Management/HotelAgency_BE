@@ -52,6 +52,9 @@ namespace Booking.Repositories
             if (request.To.HasValue)
                 query = query.Where(l => l.CreatedAt <= request.To.Value);
 
+            if (!string.IsNullOrWhiteSpace(request.Search))
+                query = query.Where(l => l.Description.Contains(request.Search));
+
             return query;
         }
     }
