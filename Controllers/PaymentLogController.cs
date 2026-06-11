@@ -48,5 +48,42 @@ namespace Booking.Controllers
             var result = await _paymentLogService.GetDetailsAsync(hotelId, paymentLogId);
             return Ok(result);
         }
+
+        [EnsureHotelExistsForOwner]
+        [HttpPost("payment-logs")]
+        public async Task<IActionResult> Create(
+            [FromRoute] int hotelId,
+            [FromBody] CreatePaymentLogRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _paymentLogService.CreateAsync(hotelId, request);
+            return Created(string.Empty, result);
+        }
+
+        [EnsureHotelExistsForOwner]
+        [HttpPut("payment-logs/{paymentLogId}")]
+        public async Task<IActionResult> Update(
+            [FromRoute] int hotelId,
+            [FromRoute] int paymentLogId,
+            [FromBody] UpdatePaymentLogRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _paymentLogService.UpdateAsync(hotelId, paymentLogId, request);
+            return Ok(result);
+        }
+
+        [EnsureHotelExistsForOwner]
+        [HttpDelete("payment-logs/{paymentLogId}")]
+        public async Task<IActionResult> Delete(
+            [FromRoute] int hotelId,
+            [FromRoute] int paymentLogId)
+        {
+            await _paymentLogService.DeleteAsync(hotelId, paymentLogId);
+            return NoContent();
+        }
     }
 }

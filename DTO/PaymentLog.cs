@@ -3,6 +3,35 @@ using Booking.Enums;
 
 namespace Booking.DTO
 {
+    public class CreatePaymentLogRequest
+    {
+        public int? ReservationId { get; set; }
+
+        [Required, Range(0.01, double.MaxValue)]
+        public decimal Amount { get; set; }
+
+        [Required]
+        public PaymentType Type { get; set; }
+
+        public string? Reason { get; set; }
+
+        [Required]
+        public int From { get; set; }
+
+        [Required]
+        public int To { get; set; }
+    }
+
+    public class UpdatePaymentLogRequest
+    {
+        [Range(0.01, double.MaxValue)]
+        public decimal? Amount { get; set; }
+
+        public PaymentType? Type { get; set; }
+
+        public string? Reason { get; set; }
+    }
+
     public class PaymentLogListRequest
     {
         [Range(1, int.MaxValue)]
@@ -42,6 +71,7 @@ namespace Booking.DTO
         public int PaymentId { get; set; }
         public string? ReservationReference { get; set; }
         public string PaymentType { get; set; } = string.Empty;
+        public string? Reason { get; set; }
         public decimal Amount { get; set; }
         public string FromName { get; set; } = string.Empty;
         public string ToName { get; set; } = string.Empty;
@@ -52,6 +82,7 @@ namespace Booking.DTO
     {
         public int PaymentId { get; set; }
         public string PaymentType { get; set; } = string.Empty;
+        public string? Reason { get; set; }
         public decimal Amount { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? ReservationReference { get; set; }

@@ -12,7 +12,7 @@ namespace Booking.Controllers.AgencyOwner
     [ApiController]
     [Authorize(Roles = Roles.AgencyOwner)]
     [EnsureAgencyExistsForOwner]
-    [Route("api/team-members")]
+[Route("api/team-members")]
     public class TeamManagementController(
         ITeamManagementService _teamMemberService,
         UserManager<ApplicationUser> _userManager) : ControllerBase
