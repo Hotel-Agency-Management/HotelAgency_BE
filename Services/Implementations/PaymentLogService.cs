@@ -353,6 +353,20 @@ namespace Booking.Services
             };
         }
 
+        public async Task<FinancialSummaryResponse> GetHotelFinancialSummaryAsync(int hotelId)
+        {
+            var data = await _paymentLogRepository.GetFinancialSummaryByHotelAsync(hotelId);
+            return new FinancialSummaryResponse
+            {
+                TotalRevenue        = data.TotalRevenue,
+                TotalExpenses       = data.TotalExpenses,
+                NetProfit           = data.TotalRevenue - data.TotalExpenses,
+                OutstandingPayments = data.OutstandingPayments,
+                Refunds             = data.Refunds,
+                CashBalance         = data.TotalRevenue - data.TotalExpenses - data.Refunds
+            };
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;

@@ -136,4 +136,14 @@ namespace Booking.DTO
         public int Month { get; set; }
         public int Year  { get; set; }
     }
+
+    public class FinancialSummaryResponse
+    {
+        public decimal TotalRevenue        { get; set; }
+        public decimal TotalExpenses       { get; set; }
+        public decimal NetProfit           { get; set; }
+        public decimal OutstandingPayments { get; set; }
+        public decimal Refunds             { get; set; }
+        public decimal CashBalance         { get; set; }
+    }
 }

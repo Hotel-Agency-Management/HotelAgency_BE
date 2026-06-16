@@ -198,6 +198,26 @@ namespace Booking.Repositories
                     && pl.CreatedAt.Month == month)
                 .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
 
+        public async Task<FinancialSummaryData> GetFinancialSummaryByHotelAsync(int hotelId)
+        {
+            var paymentRows = await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId || pl.From == hotelId)
+                .GroupBy(pl => new { IsIncoming = pl.To == hotelId, IsRefund = pl.Type == PaymentType.Refund })
+                .Select(g => new { g.Key.IsIncoming, g.Key.IsRefund, Total = g.Sum(x => x.Amount) })
+                .ToListAsync();
+
+            decimal totalRevenue  = paymentRows.Where(r =>  r.IsIncoming).Sum(r => r.Total);
+            decimal refunds       = paymentRows.Where(r => !r.IsIncoming &&  r.IsRefund).Sum(r => r.Total);
+            decimal totalExpenses = paymentRows.Where(r => !r.IsIncoming && !r.IsRefund).Sum(r => r.Total);
+
+            decimal outstanding = await _context.Reservations
+                .Where(r => r.HotelId == hotelId &&
+                       (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed))
+                .SumAsync(r => (decimal?)r.TotalAmount) ?? 0m;
+
+            return new FinancialSummaryData(totalRevenue, totalExpenses, refunds, outstanding);
+        }
+
         public async Task<PaymentLog> UpdateAsync(PaymentLog paymentLog)
         {
             _context.PaymentLogs.Update(paymentLog);
