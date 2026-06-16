@@ -42,6 +42,17 @@ namespace Booking.DTO
         public string Role { get; set; } = string.Empty;
     }
 
+    public class UpdateTeamMemberRequest
+    {
+        [Required]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        public string LastName { get; set; } = string.Empty;
+
+        public int? HotelId { get; set; }
+    }
+
     public class TeamMemberResponse
     {
         public int Id { get; set; }

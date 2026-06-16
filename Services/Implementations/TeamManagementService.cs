@@ -13,6 +13,7 @@ namespace Booking.Services
         ITeamManagementRepository _teamMemberRepository,
         IAgencyRepository _agencyRepository,
         IAuthRepository _authRepository,
+        IHotelRepository _hotelRepository,
         IEmailJobService _emailJobService,
         IOptions<AuthSettings> authSettings,
         IEmailVerificationService _emailVerificationService) : ITeamManagementService
@@ -151,6 +152,39 @@ namespace Booking.Services
             teamMember.UpdatedAt = DateTime.UtcNow;
             await _authRepository.UpdateUserAsync(teamMember);
 
+            return new TeamMemberResponse(teamMember, role);
+        }
+
+        public async Task<TeamMemberResponse> UpdateAgencyTeamMemberAsync(
+            int agencyId,
+            int teamMemberId,
+            UpdateTeamMemberRequest request)
+        {
+            var teamMember = await _teamMemberRepository.GetByIdAndAgencyAsync(teamMemberId, agencyId)
+                ?? throw new TeamMemberNotFoundException(teamMemberId);
+
+            Hotel? hotel = null;
+            if (request.HotelId is not null)
+            {
+                hotel = await _hotelRepository.GetByIdAndAgencyIdAsync(request.HotelId.Value, agencyId)
+                    ?? throw new HotelNotFoundException(request.HotelId.Value);
+            }
+
+            teamMember.FirstName = request.FirstName.Trim();
+            teamMember.LastName = request.LastName.Trim();
+            teamMember.HotelId = request.HotelId;
+            teamMember.UpdatedAt = DateTime.UtcNow;
+
+            var updated = await _authRepository.UpdateUserAsync(teamMember);
+            if (!updated)
+                throw new TeamMemberUpdateFailedException();
+
+            var agency = await _agencyRepository.GetByIdAsync(agencyId)
+                ?? throw new AgencyNotFoundException(agencyId);
+
+            await _emailJobService.EnqueueTeamMemberProfileUpdatedEmailAsync(teamMember, agency, hotel);
+
+            var role = await _teamMemberRepository.GetRoleAsync(teamMember);
             return new TeamMemberResponse(teamMember, role);
         }
     }

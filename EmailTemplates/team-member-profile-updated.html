@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Profile Has Been Updated</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2933;">
+
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+    Your profile at {{AGENCY_NAME}} has been updated by your agency owner.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:34px 14px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,0.08);">
+
+          <!-- HEADER -->
+          <tr>
+            <td style="background:{{PRIMARY_COLOR}};padding:34px 42px;text-align:center;border-bottom:5px solid {{SECONDARY_COLOR}};">
+              <div style="font-family:Georgia,'Times New Roman',serif;font-size:30px;line-height:36px;font-weight:700;color:#ffffff;letter-spacing:0.3px;">
+                {{AGENCY_NAME}}
+              </div>
+              <div style="margin-top:8px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:rgba(255,255,255,0.78);">
+                Management Platform
+              </div>
+            </td>
+          </tr>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding:42px 50px 34px;">
+
+              <div style="width:44px;height:3px;background:{{SECONDARY_COLOR}};border-radius:2px;margin-bottom:26px;"></div>
+
+              <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:34px;color:{{PRIMARY_COLOR}};font-weight:700;">
+                Profile Updated, {{USER_NAME}}
+              </h1>
+
+              <p style="margin:0 0 26px;font-size:16px;line-height:26px;color:#4b5563;">
+                Your profile at <strong style="color:{{PRIMARY_COLOR}};">{{AGENCY_NAME}}</strong> has been updated
+                by your agency owner. Here is a summary of your current details:
+              </p>
+
+              <!-- Details box -->
+              <div style="background:{{TERTIARY_COLOR}};border:1px solid rgba(15,23,42,0.08);border-top:4px solid {{SECONDARY_COLOR}};border-radius:10px;padding:22px 24px 24px;margin-bottom:28px;">
+
+                <div style="margin-bottom:4px;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:{{PRIMARY_COLOR}};">
+                  Updated Details
+                </div>
+                <div style="margin-bottom:18px;font-size:13px;line-height:20px;color:#64748b;">
+                  The following information is now active on your account.
+                </div>
+
+                <!-- Full Name -->
+                <div style="background:#ffffff;border:1px solid rgba(15,23,42,0.08);border-radius:8px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(15,23,42,0.04);">
+                  <div style="font-size:11px;line-height:16px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#64748b;margin-bottom:7px;">
+                    Full Name
+                  </div>
+                  <div style="font-size:16px;line-height:24px;font-weight:700;color:#111827;">
+                    {{USER_NAME}}
+                  </div>
+                </div>
+
+                <!-- Hotel Assignment -->
+                <div style="background:#ffffff;border:1px solid rgba(15,23,42,0.08);border-radius:8px;padding:16px 18px;box-shadow:0 1px 3px rgba(15,23,42,0.04);">
+                  <div style="font-size:11px;line-height:16px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#64748b;margin-bottom:7px;">
+                    Hotel Assignment
+                  </div>
+                  <div style="font-size:16px;line-height:24px;font-weight:700;color:{{PRIMARY_COLOR}};">
+                    {{HOTEL_NAME}}
+                  </div>
+                </div>
+
+              </div>
+
+              <p style="margin:0;font-size:13px;line-height:22px;color:#6b7280;">
+                If you did not expect this change or have any questions, please contact your agency owner or reach us at
+                <a href="mailto:{{SUPPORT_EMAIL}}" style="color:{{PRIMARY_COLOR}};text-decoration:underline;">{{SUPPORT_EMAIL}}</a>.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:{{PRIMARY_COLOR}};padding:24px 42px;text-align:center;">
+              <div style="margin-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:22px;font-weight:700;color:{{SECONDARY_COLOR}};">
+                {{AGENCY_NAME}}
+              </div>
+              <div style="font-size:12px;line-height:20px;color:rgba(255,255,255,0.72);">
+                &copy; {{CURRENT_YEAR}} HotelAgency &nbsp;&middot;&nbsp; All rights reserved<br />
+                This is an automated message. Please do not reply directly to this email.
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

@@ -44,6 +44,23 @@ namespace Booking.Controllers.Admin
                 result);
         }
 
+        [HttpPut("{teamMemberId:int}")]
+        public async Task<IActionResult> UpdateTeamMember(
+            [FromRoute] int agencyId,
+            [FromRoute] int teamMemberId,
+            [FromBody] UpdateTeamMemberRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _teamMemberService.UpdateAgencyTeamMemberAsync(
+                agencyId,
+                teamMemberId,
+                request);
+
+            return Ok(result);
+        }
+
         [HttpPut("{teamMemberId:int}/role")]
         public async Task<IActionResult> AssignRole(
             [FromRoute] int agencyId,
