@@ -146,4 +146,17 @@ namespace Booking.DTO
         public decimal Refunds             { get; set; }
         public decimal CashBalance         { get; set; }
     }
+
+    public class RevenueExpensesItem
+    {
+        public string  Month    { get; set; } = string.Empty;
+        public int     Year     { get; set; }
+        public decimal Revenue  { get; set; }
+        public decimal Expenses { get; set; }
+    }
+
+    public class RevenueExpensesResponse
+    {
+        public IReadOnlyList<RevenueExpensesItem> Data { get; set; } = [];
+    }
 }

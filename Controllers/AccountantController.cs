@@ -68,5 +68,13 @@ namespace Booking.Controllers
             var result = await _paymentLogService.GetHotelFinancialSummaryAsync(hotelId);
             return Ok(result);
         }
+
+        [EnsureHotelExistsForOwner]
+        [HttpGet("revenue-expenses")]
+        public async Task<IActionResult> GetRevenueExpenses([FromRoute] int hotelId)
+        {
+            var result = await _paymentLogService.GetHotelRevenueExpensesAsync(hotelId);
+            return Ok(result);
+        }
     }
 }

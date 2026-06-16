@@ -367,6 +367,40 @@ namespace Booking.Services
             };
         }
 
+        public async Task<RevenueExpensesResponse> GetHotelRevenueExpensesAsync(int hotelId)
+        {
+            var now = DateTime.UtcNow;
+            var from = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute,
+                RevenueReportConstants.ResetSecond, DateTimeKind.Utc)
+                .AddMonths(RevenueReportConstants.MonthsBack);
+            var to = new DateTime(now.Year, now.Month, RevenueReportConstants.FirstDayOfMonth,
+                RevenueReportConstants.ResetHour, RevenueReportConstants.ResetMinute,
+                RevenueReportConstants.ResetSecond, DateTimeKind.Utc)
+                .AddMonths(RevenueReportConstants.MonthsForward);
+
+            var revenueMap = (await _paymentLogRepository.GetMonthlyIncomingByHotelAsync(hotelId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+            var expensesMap = (await _paymentLogRepository.GetMonthlyOutgoingByHotelAsync(hotelId, from, to))
+                .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
+
+            var items = new List<RevenueExpensesItem>(RevenueReportConstants.PeriodLengthMonths);
+            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
+            {
+                var month = from.AddMonths(i);
+                revenueMap.TryGetValue((month.Year, month.Month), out var revenue);
+                expensesMap.TryGetValue((month.Year, month.Month), out var expenses);
+                items.Add(new RevenueExpensesItem
+                {
+                    Month    = month.ToString(RevenueReportConstants.MonthFormat),
+                    Year     = month.Year,
+                    Revenue  = revenue,
+                    Expenses = expenses
+                });
+            }
+            return new RevenueExpensesResponse { Data = items };
+        }
+
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyRevenueTrendAsync(int agencyId)
         {
             var now = DateTime.UtcNow;
