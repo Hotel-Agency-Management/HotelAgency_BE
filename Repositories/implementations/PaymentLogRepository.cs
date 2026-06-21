@@ -121,6 +121,103 @@ namespace Booking.Repositories
             return rows.Select(r => new HotelRevenue(r.Id, r.Name, r.Revenue));
         }
 
+        public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+            return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
+        }
+
+        public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyOutgoingByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(pl => pl.From == hotelId && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+            return rows.Select(r => new MonthlyRevenue(r.Year, r.Month, r.Revenue));
+        }
+
+        public async Task<IEnumerable<PaymentTypeRevenue>> GetRevenueByTypeByHotelAsync(int hotelId)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId && pl.Type != PaymentType.Refund)
+                .GroupBy(pl => pl.Type)
+                .Select(g => new { Type = g.Key, Revenue = g.Sum(x => x.Amount) })
+                .ToListAsync();
+            return rows.Select(r => new PaymentTypeRevenue(r.Type, r.Revenue));
+        }
+
+        public async Task<IEnumerable<MonthlyNet>> GetMonthlyNetByHotelAsync(int hotelId)
+        {
+            var rows = await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId || pl.From == hotelId)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    Net = g.Sum(x => x.To == hotelId ? x.Amount : 0m)
+                       - g.Sum(x => x.From == hotelId ? x.Amount : 0m)
+                })
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                .ToListAsync();
+            return rows.Select(r => new MonthlyNet(r.Year, r.Month, r.Net));
+        }
+
+        public async Task<RefundImpactData> GetRefundImpactByHotelAsync(int hotelId)
+        {
+            var baseQuery = _context.PaymentLogs
+                .Where(pl => pl.To == hotelId || pl.From == hotelId);
+
+            var paidRevenue = await baseQuery
+                .Where(pl => pl.To == hotelId && pl.Type == PaymentType.Booking)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
+            var refundAmount = await baseQuery
+                .Where(pl => pl.From == hotelId && pl.Type == PaymentType.Refund)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
+            var cancellationLoss = await baseQuery
+                .Where(pl => pl.From == hotelId && pl.Type == PaymentType.Cancellation)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
+            return new RefundImpactData(paidRevenue, refundAmount, cancellationLoss);
+        }
+
+        public async Task<decimal> GetMonthlyBookingRevenueByHotelAsync(int hotelId, int year, int month)
+            => await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId
+                    && pl.Type == PaymentType.Booking
+                    && pl.CreatedAt.Year == year
+                    && pl.CreatedAt.Month == month)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
+
+        public async Task<FinancialSummaryData> GetFinancialSummaryByHotelAsync(int hotelId)
+        {
+            var paymentRows = await _context.PaymentLogs
+                .Where(pl => pl.To == hotelId || pl.From == hotelId)
+                .GroupBy(pl => new { IsIncoming = pl.To == hotelId, IsRefund = pl.Type == PaymentType.Refund })
+                .Select(g => new { g.Key.IsIncoming, g.Key.IsRefund, Total = g.Sum(x => x.Amount) })
+                .ToListAsync();
+
+            decimal totalRevenue  = paymentRows.Where(r =>  r.IsIncoming).Sum(r => r.Total);
+            decimal refunds       = paymentRows.Where(r => !r.IsIncoming &&  r.IsRefund).Sum(r => r.Total);
+            decimal totalExpenses = paymentRows.Where(r => !r.IsIncoming && !r.IsRefund).Sum(r => r.Total);
+
+            decimal outstanding = await _context.Reservations
+                .Where(r => r.HotelId == hotelId &&
+                       (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.Confirmed))
+                .SumAsync(r => (decimal?)r.TotalAmount) ?? 0m;
+
+            return new FinancialSummaryData(totalRevenue, totalExpenses, refunds, outstanding);
+        }
+
         public async Task<PaymentLog> UpdateAsync(PaymentLog paymentLog)
         {
             _context.PaymentLogs.Update(paymentLog);

@@ -98,4 +98,65 @@ namespace Booking.DTO
         public string Event { get; set; } = string.Empty;
         public DateTime OccurredAt { get; set; }
     }
+
+    public class CashFlowItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Incoming { get; set; }
+        public decimal Outgoing { get; set; }
+    }
+
+    public class RevenueByTypeItem
+    {
+        public string PaymentType { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+    }
+
+    public class BalanceTrendItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public decimal Balance { get; set; }
+    }
+
+    public class RefundImpactResponse
+    {
+        public decimal PaidRevenue { get; set; }
+        public decimal RefundAmount { get; set; }
+        public decimal CancellationLoss { get; set; }
+    }
+
+    public class RevenueGrowthResponse
+    {
+        public decimal CurrentRevenue   { get; set; }
+        public decimal PreviousRevenue  { get; set; }
+        public decimal GrowthPercentage { get; set; }
+        public decimal GaugeScore       { get; set; }
+        public int Month { get; set; }
+        public int Year  { get; set; }
+    }
+
+    public class FinancialSummaryResponse
+    {
+        public decimal TotalRevenue        { get; set; }
+        public decimal TotalExpenses       { get; set; }
+        public decimal NetProfit           { get; set; }
+        public decimal OutstandingPayments { get; set; }
+        public decimal Refunds             { get; set; }
+        public decimal CashBalance         { get; set; }
+    }
+
+    public class RevenueExpensesItem
+    {
+        public string  Month    { get; set; } = string.Empty;
+        public int     Year     { get; set; }
+        public decimal Revenue  { get; set; }
+        public decimal Expenses { get; set; }
+    }
+
+    public class RevenueExpensesResponse
+    {
+        public IReadOnlyList<RevenueExpensesItem> Data { get; set; } = [];
+    }
 }
