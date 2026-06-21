@@ -336,6 +336,18 @@ namespace Booking.Data
                               .WithMany(r => r.PaymentLogs)
                               .HasForeignKey(p => p.ReservationId)
                               .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasOne(p => p.Hotel)
+                              .WithMany()
+                              .HasForeignKey(p => p.HotelId)
+                              .OnDelete(DeleteBehavior.SetNull)
+                              .IsRequired(false);
+
+                        entity.HasOne(p => p.Agency)
+                              .WithMany()
+                              .HasForeignKey(p => p.AgencyId)
+                              .OnDelete(DeleteBehavior.SetNull)
+                              .IsRequired(false);
                   });
 
                   builder.Entity<ReservationRoom>(entity =>

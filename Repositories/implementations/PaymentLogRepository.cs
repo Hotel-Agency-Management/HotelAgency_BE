@@ -64,23 +64,16 @@ namespace Booking.Repositories
 
         public async Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId)
             => await _context.PaymentLogs
-                .Join(_context.Hotels,
-                      pl => pl.To,
-                      h => h.Id,
-                      (pl, h) => new { pl.Amount, h.AgencyId })
-                .Where(x => x.AgencyId == agencyId)
-                .SumAsync(x => x.Amount);
+                .Where(pl => pl.AgencyId == agencyId && pl.To == pl.HotelId)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
 
         public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByAgencyAsync(
             int agencyId, DateTime from, DateTime to)
         {
             var rows = await _context.PaymentLogs
-                .Join(_context.Hotels,
-                      pl => pl.To,
-                      h => h.Id,
-                      (pl, h) => new { pl.Amount, pl.CreatedAt, h.AgencyId })
-                .Where(x => x.AgencyId == agencyId && x.CreatedAt >= from && x.CreatedAt < to)
-                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Where(pl => pl.AgencyId == agencyId && pl.To == pl.HotelId
+                          && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
                 .ToListAsync();
 
@@ -91,12 +84,9 @@ namespace Booking.Repositories
             int agencyId, DateTime from, DateTime to)
         {
             var rows = await _context.PaymentLogs
-                .Join(_context.Hotels,
-                      pl => pl.From,
-                      h => h.Id,
-                      (pl, h) => new { pl.Amount, pl.CreatedAt, h.AgencyId })
-                .Where(x => x.AgencyId == agencyId && x.CreatedAt >= from && x.CreatedAt < to)
-                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Where(pl => pl.AgencyId == agencyId && pl.From == pl.HotelId
+                          && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
                 .ToListAsync();
 

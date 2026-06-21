@@ -16,8 +16,13 @@ namespace Booking.Models
         [Required] public int From { get; set; }
         [Required] public int To { get; set; }
 
+        public int? HotelId { get; set; }
+        public int? AgencyId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(ReservationId))] public Reservation? Reservation { get; set; }
+        [ForeignKey(nameof(HotelId))] public Hotel? Hotel { get; set; }
+        [ForeignKey(nameof(AgencyId))] public Agency? Agency { get; set; }
     }
 }

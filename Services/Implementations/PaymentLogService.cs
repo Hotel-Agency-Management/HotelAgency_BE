@@ -444,6 +444,7 @@ namespace Booking.Services
 
         public async Task<PaymentLogDetailsResponse> CreateAsync(int hotelId, CreatePaymentLogRequest request)
         {
+            var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var log = await _paymentLogRepository.CreateAsync(new PaymentLog
             {
                 ReservationId = request.ReservationId,
@@ -451,7 +452,9 @@ namespace Booking.Services
                 Type = request.Type,
                 Reason = ResolveReason(request.Type, request.Reason),
                 From = request.From,
-                To = request.To
+                To = request.To,
+                HotelId = hotelId,
+                AgencyId = hotel?.AgencyId
             });
 
             var saved = await _paymentLogRepository.GetByIdAsync(log.Id);
