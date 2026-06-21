@@ -30,17 +30,17 @@ namespace Booking.Repositories
             => await BuildBaseQuery(type, dateFrom, dateTo, ascending: false).CountAsync();
 
         public async Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(
-            int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo,
+            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo,
             bool ascending, int pageNumber, int pageSize)
-            => await BuildHotelQuery(hotelId, incoming, type, dateFrom, dateTo, ascending)
+            => await BuildHotelQuery(hotelId, type, dateFrom, dateTo, ascending)
                 .Include(p => p.Reservation)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
         public async Task<int> CountHotelLogsAsync(
-            int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo)
-            => await BuildHotelQuery(hotelId, incoming, type, dateFrom, dateTo, ascending: false).CountAsync();
+            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo)
+            => await BuildHotelQuery(hotelId, type, dateFrom, dateTo, ascending: false).CountAsync();
 
         public async Task<HotelPaymentSummary> GetHotelSummaryAsync(int hotelId)
         {
@@ -240,14 +240,9 @@ namespace Booking.Repositories
         }
 
         private IQueryable<PaymentLog> BuildHotelQuery(
-            int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
+            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {
-            var query = incoming switch
-            {
-                true => _context.PaymentLogs.Where(p => p.HotelId == hotelId && p.To == null),
-                false => _context.PaymentLogs.Where(p => p.HotelId == hotelId && p.From == null),
-                null => _context.PaymentLogs.Where(p => p.HotelId == hotelId)
-            };
+            var query = _context.PaymentLogs.Where(p => p.HotelId == hotelId);
 
             if (type.HasValue)
                 query = query.Where(p => p.Type == type.Value);

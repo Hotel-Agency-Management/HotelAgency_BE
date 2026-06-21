@@ -81,12 +81,12 @@ namespace Booking.Services
         }
 
         public async Task<PaymentLogSummaryResponse> GetHotelLogsAsync(
-            int hotelId, bool? incoming, PaymentLogListRequest request)
+            int hotelId, PaymentLogListRequest request)
         {
             bool ascending = IsAscending(request.SortOrder);
 
-            var items = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
-            var total = await _paymentLogRepository.CountHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo);
+            var items = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
+            var total = await _paymentLogRepository.CountHotelLogsAsync(hotelId, request.Type, request.DateFrom, request.DateTo);
             var summary = await _paymentLogRepository.GetHotelSummaryAsync(hotelId);
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
@@ -116,6 +116,7 @@ namespace Booking.Services
                     PaymentId = p.Id,
                     ReservationReference = p.Reservation?.ReservationNumber,
                     PaymentType = p.Type.ToString(),
+                    TransactionType = isIncoming ? "Incoming" : "Outgoing",
                     Reason = p.Reason,
                     Amount = p.Amount,
                     FromName = isIncoming ? userName : hotelName,
