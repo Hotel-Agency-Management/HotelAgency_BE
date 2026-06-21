@@ -20,5 +20,10 @@ namespace Booking.Interfaces.Services
             int agencyId,
             int teamMemberId,
             AssignTeamMemberRoleRequest request);
+
+        Task<TeamMemberResponse> UpdateAgencyTeamMemberAsync(
+            int agencyId,
+            int teamMemberId,
+            UpdateTeamMemberRequest request);
     }
 }

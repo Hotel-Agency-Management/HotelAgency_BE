@@ -8,4 +8,5 @@ public interface IEmailJobService
     Task EnqueueTeamMemberVerificationEmailAsync(ApplicationUser user, Agency agency, string verificationLink, string password);
     Task EnqueueReservationConfirmationEmailAsync(string recipientEmail, string guestName, Reservation reservation, string contractUrl, string invoiceUrl);
     Task EnqueueNewCustomerAccountEmailAsync(ApplicationUser user, string verificationLink, string defaultPassword);
+    Task EnqueueTeamMemberProfileUpdatedEmailAsync(ApplicationUser user, Agency agency, Hotel? hotel);
 }

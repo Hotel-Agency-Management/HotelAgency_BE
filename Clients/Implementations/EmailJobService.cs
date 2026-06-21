@@ -159,6 +159,35 @@ public class EmailJobService(
         _logger.LogInformation("New customer account email job enqueued for {Email}", user.Email);
     }
 
+    public async Task EnqueueTeamMemberProfileUpdatedEmailAsync(ApplicationUser user, Agency agency, Hotel? hotel)
+    {
+        var userName = $"{user.FirstName} {user.LastName}".Trim();
+        if (string.IsNullOrWhiteSpace(userName))
+            userName = "User";
+
+        var hotelName = hotel is not null ? hotel.Name : "Not assigned";
+
+        var plainText =
+            $"Hi {userName}, your profile at {agency.AgencyName} has been updated. " +
+            $"Full name: {userName}. Hotel assignment: {hotelName}.";
+
+        var template = await _emailService.LoadTemplateAsync(EmailTemplateFiles.TeamMemberProfileUpdated);
+        var html = RenderTemplate(template, new Dictionary<string, string>
+        {
+            { "AGENCY_NAME", agency.AgencyName },
+            { "USER_NAME", userName },
+            { "HOTEL_NAME", hotelName },
+            { "PRIMARY_COLOR", GetThemeColor(agency.PrimaryColor, "#173f3a") },
+            { "SECONDARY_COLOR", GetThemeColor(agency.SecondaryColor, "#d8b879") },
+            { "TERTIARY_COLOR", GetThemeColor(agency.TertiaryColor, "#f8f5ef") },
+            { "SUPPORT_EMAIL", "support@hotelagency.com" },
+            { "CURRENT_YEAR", DateTime.UtcNow.Year.ToString() }
+        });
+
+        _jobs.Enqueue<IEmailService>(svc =>
+            svc.SendEmailAsync(user.Email!, EmailSubjects.TeamMemberProfileUpdated, plainText, html));
+    }
+
     private async Task EnqueueAsync(
         string templateFile,
         string to,

@@ -46,6 +46,24 @@ namespace Booking.Controllers.AgencyOwner
             return CreatedAtAction(nameof(GetTeamMembers), result);
         }
 
+        [HttpPut("{teamMemberId:int}")]
+        public async Task<IActionResult> UpdateTeamMember(
+            [FromRoute] int teamMemberId,
+            [FromBody] UpdateTeamMemberRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var agencyOwner = await _userManager.GetUserAsync(User);
+
+            var result = await _teamMemberService.UpdateAgencyTeamMemberAsync(
+                agencyOwner!.AgencyId!.Value,
+                teamMemberId,
+                request);
+
+            return Ok(result);
+        }
+
         [HttpPut("{teamMemberId:int}/role")]
         public async Task<IActionResult> AssignRole(
             [FromRoute] int teamMemberId,

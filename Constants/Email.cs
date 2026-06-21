@@ -7,6 +7,7 @@ namespace Booking.Constants
         public const string HotelInvitation = "hotel-invitation-email.html";
         public const string ReservationConfirmation = "reservation-confirmation.html";
         public const string NewCustomerAccount = "new-account-credentials.html";
+        public const string TeamMemberProfileUpdated = "team-member-profile-updated.html";
     }
 
 
@@ -17,6 +18,7 @@ namespace Booking.Constants
         public const string HotelInvitation = "You have been invited to HotelAgency";
         public const string ReservationConfirmation = "Your Reservation is Confirmed";
         public const string NewCustomerAccount = "Your Account Has Been Created";
+        public const string TeamMemberProfileUpdated = "Your profile has been updated";
     }
 
     public static class EmailTemplates
