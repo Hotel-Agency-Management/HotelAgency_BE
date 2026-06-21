@@ -27,28 +27,36 @@ namespace Booking.Services
                 request.Type, request.DateFrom, request.DateTo);
 
 
-            var allIds = items.SelectMany(p => new[] { p.From, p.To }).Distinct().ToList();
-            var nameMap = new Dictionary<int, string>();
-            var hotelIdSet = new HashSet<int>();
+            var userIds = items
+                .SelectMany(p => new int?[] { p.From, p.To })
+                .Where(id => id.HasValue).Select(id => id!.Value)
+                .Distinct().ToList();
 
-            foreach (var id in allIds)
+            var hotelIds = items
+                .Where(p => p.HotelId.HasValue).Select(p => p.HotelId!.Value)
+                .Distinct().ToList();
+
+            var userNameMap = new Dictionary<int, string>();
+            foreach (var id in userIds)
             {
                 var user = await _userManager.FindByIdAsync(id.ToString());
                 if (user is not null)
-                {
-                    nameMap[id] = $"{user.FirstName} {user.LastName}";
-                    continue;
-                }
-                var hotel = await _hotelRepository.GetByIdAsync(id);
-                if (hotel is not null)
-                {
-                    nameMap[id] = hotel.Name;
-                    hotelIdSet.Add(id);
-                }
+                    userNameMap[id] = $"{user.FirstName} {user.LastName}";
             }
 
-            string ResolveName(int id) =>
-                nameMap.TryGetValue(id, out var name) ? name : id.ToString();
+            var hotelNameMap = new Dictionary<int, string>();
+            foreach (var id in hotelIds)
+            {
+                var hotel = await _hotelRepository.GetByIdAsync(id);
+                if (hotel is not null)
+                    hotelNameMap[id] = hotel.Name;
+            }
+
+            string ResolveUserName(int? id) =>
+                id.HasValue && userNameMap.TryGetValue(id.Value, out var n) ? n : id?.ToString() ?? string.Empty;
+
+            string ResolveHotelName(int? hotelId) =>
+                hotelId.HasValue && hotelNameMap.TryGetValue(hotelId.Value, out var n) ? n : "Hotel";
 
             var mapped = items.Select(p => new PaymentLogItemResponse
             {
@@ -57,8 +65,8 @@ namespace Booking.Services
                 PaymentType = p.Type.ToString(),
                 Reason = p.Reason,
                 Amount = p.Amount,
-                FromName = ResolveName(p.From),
-                ToName = ResolveName(p.To),
+                FromName = p.From.HasValue ? ResolveUserName(p.From) : ResolveHotelName(p.HotelId),
+                ToName = p.To.HasValue ? ResolveUserName(p.To) : ResolveHotelName(p.HotelId),
                 CreatedAt = p.CreatedAt,
             }).ToList();
 
@@ -85,7 +93,8 @@ namespace Booking.Services
             var hotelName = hotel?.Name ?? hotelId.ToString();
 
             var userIds = items
-                .Select(p => p.To == hotelId ? p.From : p.To)
+                .SelectMany(p => new int?[] { p.From, p.To })
+                .Where(id => id.HasValue).Select(id => id!.Value)
                 .Distinct()
                 .ToList();
 
@@ -98,9 +107,9 @@ namespace Booking.Services
 
             var mapped = items.Select(p =>
             {
-                bool isIncoming = p.To == hotelId;
-                int userId = isIncoming ? p.From : p.To;
-                string userName = userMap.TryGetValue(userId, out var n) ? n : userId.ToString();
+                bool isIncoming = p.To == null;
+                int? userId = isIncoming ? p.From : p.To;
+                string userName = userId.HasValue && userMap.TryGetValue(userId.Value, out var n) ? n : hotelName;
 
                 return new PaymentLogItemResponse
                 {
@@ -145,16 +154,16 @@ namespace Booking.Services
             var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
                 ?? throw new PaymentLogNotFoundException(paymentLogId);
 
-            if (log.To != hotelId && log.From != hotelId)
+            if (log.HotelId != hotelId)
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var hotelName = hotel?.Name ?? hotelId.ToString();
 
-            bool isIncoming = log.To == hotelId;
-            int userId = isIncoming ? log.From : log.To;
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : userId.ToString();
+            bool isIncoming = log.To == null;
+            int? userId = isIncoming ? log.From : log.To;
+            var user = userId.HasValue ? await _userManager.FindByIdAsync(userId.Value.ToString()) : null;
+            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : hotelName;
 
             return new PaymentLogDetailsResponse
             {
@@ -467,7 +476,7 @@ namespace Booking.Services
             var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
                 ?? throw new PaymentLogNotFoundException(paymentLogId);
 
-            if (log.To != hotelId && log.From != hotelId)
+            if (log.HotelId != hotelId)
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             if (request.Amount.HasValue) log.Amount = request.Amount.Value;
@@ -491,7 +500,7 @@ namespace Booking.Services
             var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
                 ?? throw new PaymentLogNotFoundException(paymentLogId);
 
-            if (log.To != hotelId && log.From != hotelId)
+            if (log.HotelId != hotelId)
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             await _paymentLogRepository.DeleteAsync(log);
@@ -510,10 +519,10 @@ namespace Booking.Services
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var hotelName = hotel?.Name ?? hotelId.ToString();
 
-            bool isIncoming = log.To == hotelId;
-            int userId = isIncoming ? log.From : log.To;
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : userId.ToString();
+            bool isIncoming = log.To == null;
+            int? userId = isIncoming ? log.From : log.To;
+            var user = userId.HasValue ? await _userManager.FindByIdAsync(userId.Value.ToString()) : null;
+            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : hotelName;
 
             return new PaymentLogDetailsResponse
             {

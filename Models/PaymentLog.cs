@@ -13,8 +13,8 @@ namespace Booking.Models
         [Required] public PaymentType Type { get; set; }
         public string? Reason { get; set; }
 
-        [Required] public int From { get; set; }
-        [Required] public int To { get; set; }
+        public int? From { get; set; }
+        public int? To { get; set; }
 
         public int? HotelId { get; set; }
         public int? AgencyId { get; set; }

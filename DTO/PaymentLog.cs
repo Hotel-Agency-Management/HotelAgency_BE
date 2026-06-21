@@ -16,11 +16,9 @@ namespace Booking.DTO
 
         public string? Reason { get; set; }
 
-        [Required]
-        public int From { get; set; }
+        public int? From { get; set; }
 
-        [Required]
-        public int To { get; set; }
+        public int? To { get; set; }
     }
 
     public class UpdatePaymentLogRequest

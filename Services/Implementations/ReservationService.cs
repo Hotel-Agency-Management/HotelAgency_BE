@@ -69,8 +69,8 @@ namespace Booking.Services
                 Amount = saved.TotalAmount,
                 Type = PaymentType.Booking,
                 Reason = PaymentReason.Booking,
-                From = saved.CustomerId ?? 0,
-                To = saved.HotelId,
+                From = saved.CustomerId,
+                To = null,
                 HotelId = saved.HotelId,
                 AgencyId = agencyId
             });
@@ -82,8 +82,8 @@ namespace Booking.Services
                     Amount = saved.InsuranceAmount,
                     Type = PaymentType.ReservationInsurance,
                     Reason = PaymentReason.ReservationInsurance,
-                    From = saved.CustomerId ?? 0,
-                    To = saved.HotelId,
+                    From = saved.CustomerId,
+                    To = null,
                     HotelId = saved.HotelId,
                     AgencyId = agencyId
                 });
@@ -140,8 +140,8 @@ namespace Booking.Services
                 Amount = saved.TotalAmount,
                 Type = PaymentType.Booking,
                 Reason = PaymentReason.Booking,
-                From = saved.CustomerId ?? 0,
-                To = saved.HotelId,
+                From = saved.CustomerId,
+                To = null,
                 HotelId = saved.HotelId,
                 AgencyId = agencyId
             });
@@ -153,8 +153,8 @@ namespace Booking.Services
                     Amount = saved.InsuranceAmount,
                     Type = PaymentType.ReservationInsurance,
                     Reason = PaymentReason.ReservationInsurance,
-                    From = saved.CustomerId ?? 0,
-                    To = saved.HotelId,
+                    From = saved.CustomerId,
+                    To = null,
                     HotelId = saved.HotelId,
                     AgencyId = agencyId
                 });
@@ -343,8 +343,8 @@ namespace Booking.Services
                     Amount = extraCharge,
                     Type = PaymentType.Extend,
                     Reason = PaymentReason.Extend,
-                    From = updated.CustomerId ?? 0,
-                    To = updated.HotelId,
+                    From = updated.CustomerId,
+                    To = null,
                     HotelId = updated.HotelId,
                     AgencyId = extendAgencyId
                 });
@@ -402,8 +402,8 @@ namespace Booking.Services
                     Amount = fee,
                     Type = PaymentType.Cancellation,
                     Reason = PaymentReason.Cancellation,
-                    From = updated.CustomerId ?? 0,
-                    To = updated.HotelId,
+                    From = updated.CustomerId,
+                    To = null,
                     HotelId = updated.HotelId,
                     AgencyId = cancelAgencyId
                 });
@@ -413,8 +413,8 @@ namespace Booking.Services
                     Amount = originalTotal - fee,
                     Type = PaymentType.Refund,
                     Reason = PaymentReason.Refund,
-                    From = updated.HotelId,
-                    To = updated.CustomerId ?? 0,
+                    From = null,
+                    To = updated.CustomerId,
                     HotelId = updated.HotelId,
                     AgencyId = cancelAgencyId
                 });
@@ -427,8 +427,8 @@ namespace Booking.Services
                     Amount = originalTotal,
                     Type = PaymentType.Refund,
                     Reason = PaymentReason.Refund,
-                    From = updated.HotelId,
-                    To = updated.CustomerId ?? 0,
+                    From = null,
+                    To = updated.CustomerId,
                     HotelId = updated.HotelId,
                     AgencyId = cancelAgencyId
                 });
