@@ -217,6 +217,7 @@ namespace Booking.Services
             reservation.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
+
             return new ReservationResponse(updated);
         }
 

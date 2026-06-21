@@ -58,6 +58,7 @@ public static class Messages
     //reservation
     public const string ContractFileMustBePdf = "Contract file must be a PDF.";
     public const string InvoiceFileMustBePdf = "Invoice file must be a PDF.";
+    public const string CheckInCheckOutBothRequired = "Both check-in and check-out dates must be provided together.";
     public const string InvalidCheckOutDate = "Check-out date must be after check-in date.";
     public const string ReservationAlreadyCancelled = "Reservation is already cancelled.";
     public const string ReservationNotUpdatable = "Reservation cannot be updated in its current status.";

@@ -88,7 +88,9 @@ builder.Services
         };
     });
 
-// Repositories 
+builder.Services.AddHttpContextAccessor();
+
+// Repositories
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
 builder.Services.AddScoped<IAgencyDocumentRepository, AgencyDocumentRepository>();
@@ -106,6 +108,7 @@ builder.Services.AddScoped<IPaymentLogRepository, PaymentLogRepository>();
 builder.Services.AddScoped<ITermsAndConditionsRepository, TermsAndConditionsRepository>();
 builder.Services.AddScoped<IHousekeepingTicketRepository, HousekeepingTicketRepository>();
 builder.Services.AddScoped<ITicketCommentRepository, TicketCommentRepository>();
+builder.Services.AddScoped<ISystemLogRepository, SystemLogRepository>();
 
 
 
@@ -129,6 +132,7 @@ builder.Services.AddScoped<IPaymentLogService, PaymentLogService>();
 builder.Services.AddScoped<ITermsAndConditionsService, TermsAndConditionsService>();
 builder.Services.AddScoped<IHousekeepingTicketService, HousekeepingTicketService>();
 builder.Services.AddScoped<ITicketCommentService, TicketCommentService>();
+builder.Services.AddScoped<ISystemLogService, SystemLogService>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 builder.Services.AddSingleton<IAppLinkService, AppLinkService>();
 

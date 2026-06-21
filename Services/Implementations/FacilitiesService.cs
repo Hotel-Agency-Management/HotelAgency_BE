@@ -9,13 +9,13 @@ namespace Booking.Services
 {
     public class FacilityService(
         IFacilityRepository _facilityRepository,
-        IHotelRepository _hotelRepository) : IFacilityService
+        ISystemLogService _logService) : IFacilityService
     {
         public async Task<FacilityResponse> CreateFacilityAsync(int hotelId, CreateFacilityRequest request)
         {
 
             //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                //?? throw new HotelNotFoundException(hotelId);
+            //?? throw new HotelNotFoundException(hotelId);
 
             if (await _facilityRepository.ExistsByNameAndHotelIdAsync(request.Name, hotelId))
                 throw new FacilityAlreadyExistsException();
@@ -49,7 +49,7 @@ namespace Booking.Services
         public async Task<IEnumerable<FacilityResponse>> GetFacilitiesByHotelIdAsync(int hotelId)
         {
             //var hotel = await _hotelRepository.GetByIdAsync(hotelId)
-                //?? throw new HotelNotFoundException(hotelId);
+            //?? throw new HotelNotFoundException(hotelId);
 
             var facilities = await _facilityRepository.GetAllByHotelIdAsync(hotelId);
             return facilities.Select(f => new FacilityResponse(f));
@@ -76,11 +76,17 @@ namespace Booking.Services
 
         public async Task DeleteFacilityAsync(int facilityId)
         {
-
             var facility = await _facilityRepository.GetByIdAsync(facilityId)
                 ?? throw new FacilityNotFoundException(facilityId);
 
             await _facilityRepository.DeleteAsync(facility);
+
+            await _logService.LogAsync(
+                SystemLogActions.FacilityDeleted,
+                SystemLogEntityTypes.Facility,
+                facilityId,
+                string.Format(SystemLogMessages.FacilityDeleted, facility.Name),
+                hotelId: facility.HotelId);
         }
     }
 }

@@ -1,13 +1,17 @@
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Models;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
+using Booking.Interfaces.Services;
 using Booking.Enums;
 using System.Globalization;
 
 namespace Booking.Interfaces.Services
 {
-    public class PlanService(IPlanRepository _planRepository) : IPlanService
+    public class PlanService(
+        IPlanRepository _planRepository,
+        ISystemLogService _logService) : IPlanService
     {
         public async Task<IEnumerable<PlanDto>> GetPlansAsync(bool includeInactive = false)
         {
@@ -47,6 +51,7 @@ namespace Booking.Interfaces.Services
             };
 
             var created = await _planRepository.CreateAsync(plan);
+
             return new PlanDto(created);
         }
 
@@ -81,15 +86,22 @@ namespace Booking.Interfaces.Services
             }
 
             var updated = await _planRepository.UpdateAsync(plan);
+
             return new PlanDto(updated);
         }
 
         public async Task DeletePlanAsync(int id)
         {
-            if (!await _planRepository.ExistsAsync(id))
-                throw new PlanNotFoundException(id);
+            var plan = await _planRepository.GetByIdAsync(id)
+                ?? throw new PlanNotFoundException(id);
 
             await _planRepository.DeleteAsync(id);
+
+            await _logService.LogAsync(
+                SystemLogActions.PlanDeleted,
+                SystemLogEntityTypes.Plan,
+                id,
+                string.Format(SystemLogMessages.PlanDeleted, plan.Name));
         }
 
         public async Task<RevenueOverviewResponse> GetRevenueOverviewAsync()

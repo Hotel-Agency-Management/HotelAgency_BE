@@ -8,7 +8,8 @@ using Booking.Models;
 namespace Booking.Services
 {
     public class RoomTypeService(
-        IRoomTypeRepository _roomTypeRepository) : IRoomTypeService
+        IRoomTypeRepository _roomTypeRepository,
+        ISystemLogService _logService) : IRoomTypeService
     {
         public async Task<RoomTypeResponse> CreateRoomTypeAsync(CreateRoomTypeRequest request)
         {
@@ -61,6 +62,12 @@ namespace Booking.Services
                 ?? throw new RoomTypeNotFoundException(roomTypeId);
 
             await _roomTypeRepository.DeleteAsync(roomType);
+
+            await _logService.LogAsync(
+                SystemLogActions.RoomTypeDeleted,
+                SystemLogEntityTypes.RoomType,
+                roomTypeId,
+                string.Format(SystemLogMessages.RoomTypeDeleted, roomType.Name));
         }
     }
 }

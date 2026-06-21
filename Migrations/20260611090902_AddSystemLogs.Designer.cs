@@ -4,6 +4,7 @@ using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611090902_AddSystemLogs")]
+    partial class AddSystemLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -553,10 +556,7 @@ namespace Booking.Migrations
                     b.Property<int>("From")
                         .HasColumnType("int");
 
-                    b.Property<string>("Reason")
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("ReservationId")
+                    b.Property<int>("ReservationId")
                         .HasColumnType("int");
 
                     b.Property<int>("To")
@@ -1406,7 +1406,8 @@ namespace Booking.Migrations
                     b.HasOne("Booking.Models.Reservation", "Reservation")
                         .WithMany("PaymentLogs")
                         .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Reservation");
                 });

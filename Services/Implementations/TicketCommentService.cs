@@ -1,3 +1,4 @@
+using Booking.Constants;
 using Booking.DTO;
 using Booking.Enums;
 using Booking.Exceptions;
@@ -8,7 +9,8 @@ using Booking.Models;
 namespace Booking.Services
 {
     public class TicketCommentService(
-        ITicketCommentRepository _commentRepository) : ITicketCommentService
+        ITicketCommentRepository _commentRepository,
+        ISystemLogService _logService) : ITicketCommentService
     {
         public async Task<TicketCommentResponse> AddCommentAsync(
             int ticketId, int authorUserId, CreateTicketCommentRequest request)
@@ -81,6 +83,12 @@ namespace Booking.Services
                 throw new TicketCommentForbiddenException();
 
             await _commentRepository.DeleteAsync(comment);
+
+            await _logService.LogAsync(
+                SystemLogActions.TicketCommentDeleted,
+                SystemLogEntityTypes.TicketComment,
+                commentId,
+                string.Format(SystemLogMessages.TicketCommentDeleted, comment.TicketId));
         }
 
         private static void ValidateDamageCost(CommentType type, decimal? cost)

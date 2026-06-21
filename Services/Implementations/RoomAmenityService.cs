@@ -8,7 +8,8 @@ using Booking.Models;
 namespace Booking.Services
 {
     public class RoomAmenityService(
-        IRoomAmenityRepository _amenityRepository) : IRoomAmenityService
+        IRoomAmenityRepository _amenityRepository,
+        ISystemLogService _logService) : IRoomAmenityService
     {
         public async Task<RoomAmenityResponse> CreateAmenityAsync(CreateRoomAmenityRequest request)
         {
@@ -44,6 +45,12 @@ namespace Booking.Services
                 ?? throw new RoomAmenityNotFoundException(amenityId);
 
             await _amenityRepository.DeleteAsync(amenity);
+
+            await _logService.LogAsync(
+                SystemLogActions.RoomAmenityDeleted,
+                SystemLogEntityTypes.RoomAmenity,
+                amenityId,
+                string.Format(SystemLogMessages.RoomAmenityDeleted, amenity.Name));
         }
     }
 }

@@ -126,6 +126,7 @@ namespace Booking.Services
             hotel.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _hotelRepository.UpdateAsync(hotel);
+
             return new HotelResponse(updated);
         }
 

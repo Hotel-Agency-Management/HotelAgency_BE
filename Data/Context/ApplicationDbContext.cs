@@ -34,6 +34,7 @@ namespace Booking.Data
             public DbSet<TermsAndConditions> TermsAndConditions { get; set; }
             public DbSet<HousekeepingTicket> HousekeepingTickets { get; set; }
             public DbSet<TicketComment> TicketComments { get; set; }
+            public DbSet<SystemLog> SystemLogs { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -453,6 +454,41 @@ namespace Booking.Data
                               .WithMany()
                               .HasForeignKey(c => c.AuthorId)
                               .OnDelete(DeleteBehavior.Restrict);
+                  });
+
+                  builder.Entity<SystemLog>(entity =>
+                  {
+                        entity.ToTable("system_logs");
+
+                        entity.Property(l => l.ActorName)
+                              .IsRequired()
+                              .HasMaxLength(200);
+
+                        entity.Property(l => l.ActorRole)
+                              .IsRequired()
+                              .HasMaxLength(50);
+
+                        entity.Property(l => l.Action)
+                              .IsRequired()
+                              .HasMaxLength(100);
+
+                        entity.Property(l => l.EntityType)
+                              .IsRequired()
+                              .HasMaxLength(100);
+
+                        entity.Property(l => l.Description)
+                              .IsRequired()
+                              .HasColumnType("TEXT");
+
+                        entity.HasOne(l => l.Actor)
+                              .WithMany()
+                              .HasForeignKey(l => l.ActorId)
+                              .OnDelete(DeleteBehavior.SetNull)
+                              .IsRequired(false);
+
+                        entity.HasIndex(l => l.CreatedAt);
+                        entity.HasIndex(l => l.Action);
+                        entity.HasIndex(l => l.EntityType);
                   });
 
             }

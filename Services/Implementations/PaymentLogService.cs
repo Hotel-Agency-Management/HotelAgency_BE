@@ -12,7 +12,8 @@ namespace Booking.Services
     public class PaymentLogService(
         IPaymentLogRepository _paymentLogRepository,
         UserManager<ApplicationUser> _userManager,
-        IHotelRepository _hotelRepository) : IPaymentLogService
+        IHotelRepository _hotelRepository,
+        ISystemLogService _logService) : IPaymentLogService
     {
         public async Task<PaginatedResponse<PaymentLogItemResponse>> GetAllAsync(PaymentLogListRequest request)
         {
@@ -319,6 +320,13 @@ namespace Booking.Services
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             await _paymentLogRepository.DeleteAsync(log);
+
+            await _logService.LogAsync(
+                SystemLogActions.PaymentLogDeleted,
+                SystemLogEntityTypes.PaymentLog,
+                paymentLogId,
+                string.Format(SystemLogMessages.PaymentLogDeleted, log.Id),
+                hotelId: hotelId);
         }
 
         private async Task<PaymentLogDetailsResponse> MapToDetailsAsync(int hotelId, PaymentLog log)

@@ -13,7 +13,8 @@ namespace Booking.Services
         IHousekeepingTicketRepository _ticketRepository,
         IRoomRepository _roomRepository,
         IFacilityRepository _facilityRepository,
-        UserManager<ApplicationUser> _userManager) : IHousekeepingTicketService
+        UserManager<ApplicationUser> _userManager,
+        ISystemLogService _logService) : IHousekeepingTicketService
     {
         public async Task<TicketDetailResponse> CreateTicketAsync(
             int hotelId, int createdByUserId, CreateTicketRequest request)
@@ -152,6 +153,13 @@ namespace Booking.Services
                 ?? throw new HousekeepingTicketNotFoundException(ticketId);
 
             await _ticketRepository.DeleteAsync(ticket);
+
+            await _logService.LogAsync(
+                SystemLogActions.TicketDeleted,
+                SystemLogEntityTypes.Ticket,
+                ticketId,
+                string.Format(SystemLogMessages.TicketDeleted, ticket.Title),
+                hotelId: ticket.HotelId);
         }
 
         private async Task ValidateLocationAsync(
