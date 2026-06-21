@@ -1,13 +1,10 @@
 using Booking.Clients;
-using Booking.Constants;
 using Booking.DTO;
-using Booking.Enums;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using System.Globalization;
 using Booking.Interfaces.Services;
 using Booking.Models;
-using Microsoft.AspNetCore.Http;
 
 namespace Booking.Services
 {
@@ -93,7 +90,7 @@ namespace Booking.Services
         {
             var now = DateTime.UtcNow;
             var windowStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
-            var windowEnd   = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1).AddTicks(-1);
+            var windowEnd = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1).AddTicks(-1);
 
             var raw = (await _agencyRepository.GetMonthlyGrowthAsync(windowStart, windowEnd))
                 .ToDictionary(r => (r.Year, r.Month), r => r.Count);
