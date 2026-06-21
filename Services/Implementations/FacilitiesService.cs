@@ -9,7 +9,9 @@ namespace Booking.Services
 {
     public class FacilityService(
         IFacilityRepository _facilityRepository,
-        ISystemLogService _logService) : IFacilityService
+        ISystemLogService _logService,
+        ILogger<FacilityService> _logger) : IFacilityService
+
     {
         public async Task<FacilityResponse> CreateFacilityAsync(int hotelId, CreateFacilityRequest request)
         {
@@ -34,6 +36,7 @@ namespace Booking.Services
             };
 
             var saved = await _facilityRepository.CreateAsync(facility);
+            _logger.LogInformation("Facility {FacilityId} created for hotel {HotelId}", saved.Id, hotelId);
             return new FacilityResponse(saved);
         }
 
@@ -71,6 +74,7 @@ namespace Booking.Services
             facility.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _facilityRepository.UpdateAsync(facility);
+            _logger.LogInformation("Facility {FacilityId} updated successfully", facilityId);
             return new FacilityResponse(updated);
         }
 
@@ -87,6 +91,7 @@ namespace Booking.Services
                 facilityId,
                 string.Format(SystemLogMessages.FacilityDeleted, facility.Name),
                 hotelId: facility.HotelId);
+            _logger.LogInformation("Facility {FacilityId} deleted", facilityId);
         }
     }
 }

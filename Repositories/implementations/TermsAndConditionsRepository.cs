@@ -6,10 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class TermsAndConditionsRepository(ApplicationDbContext _context) : ITermsAndConditionsRepository
+    public class TermsAndConditionsRepository(
+        ApplicationDbContext _context,
+        ILogger<TermsAndConditionsRepository> _logger) : ITermsAndConditionsRepository
     {
         public async Task<TermsAndConditions> CreateAsync(TermsAndConditions terms)
         {
+            _logger.LogDebug("Creating terms for hotel {HotelId}", terms.HotelId);
             await _context.TermsAndConditions.AddAsync(terms);
             await _context.SaveChangesAsync();
             return terms;

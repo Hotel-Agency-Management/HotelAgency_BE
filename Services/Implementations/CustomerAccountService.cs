@@ -14,7 +14,8 @@ namespace Booking.Services
         IAuthRepository _authRepository,
         IOptions<AuthSettings> authSettings,
         IEmailVerificationService _emailVerificationService,
-        IEmailJobService _emailJobService) : ICustomerAccountService
+        IEmailJobService _emailJobService,
+        ILogger<CustomerAccountService> _logger) : ICustomerAccountService
     {
         private readonly AuthSettings _authSettings = authSettings.Value;
 
@@ -30,7 +31,10 @@ namespace Booking.Services
 
             var existing = await _authRepository.FindByEmailAsync(guestEmail);
             if (existing is not null)
+            {
+                _logger.LogDebug("Existing customer found for {Email}", guestEmail);
                 return existing.Id;
+            }
 
             var nameParts = guestFullName.Trim().Split(' ', 2);
             var firstName = nameParts[0];
@@ -57,6 +61,7 @@ namespace Booking.Services
             var verifyLink = await _emailVerificationService.GenerateVerificationLinkAsync(user);
             await _emailJobService.EnqueueNewCustomerAccountEmailAsync(user, verifyLink, _authSettings.DefaultPassword);
 
+            _logger.LogInformation("Customer account created for {Email}", guestEmail);
             return user.Id;
         }
     }

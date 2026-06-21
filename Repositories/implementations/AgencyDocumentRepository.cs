@@ -5,10 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class AgencyDocumentRepository(ApplicationDbContext _context) : IAgencyDocumentRepository
+    public class AgencyDocumentRepository(
+        ApplicationDbContext _context,
+        ILogger<AgencyDocumentRepository> _logger) : IAgencyDocumentRepository
     {
         public async Task<AgencyDocument?> GetByIdAsync(int id)
         {
+            _logger.LogDebug("Fetching agency document {DocumentId}", id);
             return await _context.AgencyDocuments
                 .Include(d => d.Agency)
                 .FirstOrDefaultAsync(d => d.Id == id);
@@ -16,6 +19,7 @@ namespace Booking.Repositories
 
         public async Task<IEnumerable<AgencyDocument>> GetByAgencyIdAsync(int agencyId)
         {
+            _logger.LogDebug("Fetching documents for agency {AgencyId}", agencyId);
             return await _context.AgencyDocuments
                 .Where(d => d.AgencyId == agencyId)
                 .ToListAsync();

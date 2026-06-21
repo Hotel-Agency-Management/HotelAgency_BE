@@ -5,10 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class FacilityPhotoRepository(ApplicationDbContext _context) : IFacilityPhotoRepository
+    public class FacilityPhotoRepository(
+        ApplicationDbContext _context,
+        ILogger<FacilityPhotoRepository> _logger) : IFacilityPhotoRepository
     {
         public async Task<FacilityPhoto> CreateAsync(FacilityPhoto photo)
         {
+            _logger.LogDebug("Creating photo for facility {FacilityId}", photo.FacilityId);
             await _context.FacilityPhotos.AddAsync(photo);
             await _context.SaveChangesAsync();
             return photo;

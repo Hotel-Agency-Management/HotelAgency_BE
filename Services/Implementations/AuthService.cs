@@ -25,7 +25,8 @@ namespace Booking.Services
         IProfileStrategyFactory _profileFactory,
         IAgencyRepository _agencyRepository,
         IHotelRepository _hotelRepository,
-        ILoginResponseStrategyFactory _loginResponseStrategyFactory) : IAuthService
+        ILoginResponseStrategyFactory _loginResponseStrategyFactory,
+        ILogger<AuthService> _logger) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
@@ -35,6 +36,7 @@ namespace Booking.Services
             var hotel = await ResolveHotelContextAsync(user, role);
             var (token, refreshToken) = await GenerateAndSaveTokensAsync(user, role);
 
+            _logger.LogInformation("User {Email} logged in successfully with role {Role}", loginDto.Email, role);
             var strategy = _loginResponseStrategyFactory.GetStrategy(role);
             return strategy.BuildResponse(user, role, token, refreshToken.Token, agency, agencyStatus, hotel);
         }
@@ -128,6 +130,7 @@ namespace Booking.Services
             await _authRepository.SaveRefreshTokenAsync(refreshToken);
 
             await SendVerificationEmailAsync(user);
+            _logger.LogInformation("User {Email} registered successfully with role {Role}", request.Email, role);
             return new RegisterResultDto
             {
                 User = user,
@@ -160,6 +163,7 @@ namespace Booking.Services
             if (!await _authRepository.UpdateUserAsync(user))
                 throw new InvalidOperationException("Failed to update profile.");
 
+            _logger.LogInformation("Profile updated for user {UserId}", user.Id);
             return user;
         }
 
@@ -215,6 +219,7 @@ namespace Booking.Services
                 htmlBody
             );
 
+            _logger.LogInformation("Password reset code sent for {Email}", email);
             return true;
         }
 
@@ -240,6 +245,7 @@ namespace Booking.Services
                 throw new InvalidOperationException("Failed to reset password");
 
             await _authRepository.MarkCodeAsUsedAsync(resetCode);
+            _logger.LogInformation("Password reset completed for {Email}", email);
         }
 
         public async Task<RefreshTokenResponseDto> RefreshTokenAsync(string token)
@@ -266,6 +272,7 @@ namespace Booking.Services
 
             await _authRepository.SaveRefreshTokenAsync(newRefreshToken);
 
+            _logger.LogInformation("Token refreshed for user {UserId}", refreshToken.UserId);
             return new RefreshTokenResponseDto
             {
                 AccessToken = newAccessToken,
@@ -276,6 +283,7 @@ namespace Booking.Services
         public async Task LogoutAsync(int userId)
         {
             await _authRepository.DeleteUserRefreshTokensAsync(userId);
+            _logger.LogInformation("User {UserId} logged out", userId);
         }
 
         public async Task SendVerificationEmailAsync(ApplicationUser user)
@@ -307,6 +315,7 @@ namespace Booking.Services
                 throw new InvalidOperationException("Failed to confirm email");
 
             await _authRepository.MarkEmailVerificationTokenAsUsedAsync(verificationToken);
+            _logger.LogInformation("Email verified for user {UserId}", userId);
         }
 
         public async Task ResendVerificationEmailAsync(string email)

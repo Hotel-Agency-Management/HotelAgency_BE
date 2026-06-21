@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Booking.Repositories
 {
-    public class TicketCommentRepository(ApplicationDbContext _context)
+    public class TicketCommentRepository(
+        ApplicationDbContext _context,
+        ILogger<TicketCommentRepository> _logger)
         : ITicketCommentRepository
     {
         public async Task<TicketComment?> GetByIdAsync(int commentId)
@@ -28,6 +30,7 @@ namespace Booking.Repositories
 
         public async Task<TicketComment> AddAsync(TicketComment comment)
         {
+            _logger.LogDebug("Adding comment to ticket {TicketId}", comment.TicketId);
             await _context.TicketComments.AddAsync(comment);
             await _context.SaveChangesAsync();
             return await GetByIdAsync(comment.Id) ?? comment;

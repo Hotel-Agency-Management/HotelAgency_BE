@@ -7,7 +7,9 @@ using Booking.Models;
 
 namespace Booking.Services
 {
-    public class TermsAndConditionsService(ITermsAndConditionsRepository _termsRepository) : ITermsAndConditionsService
+    public class TermsAndConditionsService(
+        ITermsAndConditionsRepository _termsRepository,
+        ILogger<TermsAndConditionsService> _logger) : ITermsAndConditionsService
     {
         public async Task<TermsResponse> CreateTermsAsync(int hotelId, CreateTermsRequest dto)
         {
@@ -23,6 +25,7 @@ namespace Booking.Services
             };
 
             var created = await _termsRepository.CreateAsync(terms);
+            _logger.LogInformation("Terms {TermsId} created for hotel {HotelId}", created.Id, hotelId);
             return new TermsResponse(created);
         }
 
@@ -52,6 +55,7 @@ namespace Booking.Services
             if (dto.Status.HasValue) terms.Status = dto.Status.Value;
 
             var updated = await _termsRepository.UpdateAsync(terms);
+            _logger.LogInformation("Terms {TermsId} updated", id);
             return new TermsResponse(updated);
         }
     }

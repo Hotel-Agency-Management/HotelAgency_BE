@@ -13,10 +13,12 @@ namespace Booking.Services
     public class JwtService : IJwtService
     {
         private readonly JwtSettings _jwtSettings;
+        private readonly ILogger<JwtService> _logger;
 
-        public JwtService(IOptions<JwtSettings> jwtSettings)
+        public JwtService(IOptions<JwtSettings> jwtSettings, ILogger<JwtService> logger)
         {
             _jwtSettings = jwtSettings.Value;
+            _logger = logger;
         }
 
         public string GenerateToken(ApplicationUser user, string role)
@@ -60,7 +62,9 @@ namespace Booking.Services
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            _logger.LogDebug("JWT token generated for user {UserId} with role {Role}", user.Id, role);
+            return tokenString;
         }
     }
 }

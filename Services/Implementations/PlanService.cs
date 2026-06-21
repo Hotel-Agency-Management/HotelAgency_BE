@@ -11,7 +11,9 @@ namespace Booking.Interfaces.Services
 {
     public class PlanService(
         IPlanRepository _planRepository,
-        ISystemLogService _logService) : IPlanService
+        ISystemLogService _logService,
+        ILogger<PlanService> _logger) : IPlanService
+
     {
         public async Task<IEnumerable<PlanDto>> GetPlansAsync(bool includeInactive = false)
         {
@@ -51,6 +53,7 @@ namespace Booking.Interfaces.Services
             };
 
             var created = await _planRepository.CreateAsync(plan);
+            _logger.LogInformation("Plan {PlanId} created: {Name}", created.Id, dto.Name);
 
             return new PlanDto(created);
         }
@@ -86,6 +89,7 @@ namespace Booking.Interfaces.Services
             }
 
             var updated = await _planRepository.UpdateAsync(plan);
+            _logger.LogInformation("Plan {PlanId} updated", id);
 
             return new PlanDto(updated);
         }
@@ -102,13 +106,14 @@ namespace Booking.Interfaces.Services
                 SystemLogEntityTypes.Plan,
                 id,
                 string.Format(SystemLogMessages.PlanDeleted, plan.Name));
+            _logger.LogInformation("Plan {PlanId} deleted", id);
         }
 
         public async Task<RevenueOverviewResponse> GetRevenueOverviewAsync()
         {
             var now = DateTime.UtcNow;
             var windowStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
-            var windowEnd   = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1).AddTicks(-1);
+            var windowEnd = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1).AddTicks(-1);
 
             var raw = (await _planRepository.GetMonthlySubscriptionRevenueAsync(windowStart, windowEnd))
                 .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
@@ -117,7 +122,7 @@ namespace Booking.Interfaces.Services
                 .Select(i => windowStart.AddMonths(i))
                 .Select(d => new MonthlyRevenueItemForDashBoard
                 {
-                    Month  = d.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+                    Month = d.ToString("MMM yyyy", CultureInfo.InvariantCulture),
                     Amount = raw.TryGetValue((d.Year, d.Month), out var amt) ? amt : 0m
                 })
                 .ToList();
@@ -133,11 +138,11 @@ namespace Booking.Interfaces.Services
             var items = (await _planRepository.GetSubscriptionDistributionAsync()).ToList();
             return new SubscriptionDistributionResponse
             {
-                Total     = items.Sum(i => i.Count),
+                Total = items.Sum(i => i.Count),
                 Breakdown = items.Select(i => new SubscriptionSlice
                 {
                     PlanName = i.PlanName,
-                    Count    = i.Count
+                    Count = i.Count
                 }).ToList()
             };
         }

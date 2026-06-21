@@ -14,13 +14,15 @@ namespace Booking.Services
         IRoomRepository _roomRepository,
         IFacilityRepository _facilityRepository,
         UserManager<ApplicationUser> _userManager,
-        ISystemLogService _logService) : IHousekeepingTicketService
+        ISystemLogService _logService,
+        ILogger<HousekeepingTicketService> _logger) : IHousekeepingTicketService
+
     {
         public async Task<TicketDetailResponse> CreateTicketAsync(
             int hotelId, int createdByUserId, CreateTicketRequest request)
         {
             await ValidateLocationAsync(hotelId, request.LocationType, request.RoomId, request.FacilityId);
-            
+
             await ValidateAssigneeAsync(hotelId, request.AssignedToId);
 
             var ticket = new HousekeepingTicket
@@ -42,6 +44,7 @@ namespace Booking.Services
             };
 
             var saved = await _ticketRepository.CreateAsync(ticket);
+            _logger.LogInformation("Ticket {TicketId} created for hotel {HotelId} by user {UserId}", saved.Id, hotelId, createdByUserId);
             return new TicketDetailResponse(saved);
         }
 
@@ -131,6 +134,7 @@ namespace Booking.Services
             ticket.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _ticketRepository.UpdateAsync(ticket);
+            _logger.LogInformation("Ticket {TicketId} updated for hotel {HotelId}", ticketId, hotelId);
             return new TicketDetailResponse(updated);
         }
 
@@ -144,6 +148,7 @@ namespace Booking.Services
             ticket.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _ticketRepository.UpdateAsync(ticket);
+            _logger.LogInformation("Ticket {TicketId} status changed to {Status} for hotel {HotelId}", ticketId, request.Status, hotelId);
             return new TicketDetailResponse(updated);
         }
 
@@ -160,6 +165,7 @@ namespace Booking.Services
                 ticketId,
                 string.Format(SystemLogMessages.TicketDeleted, ticket.Title),
                 hotelId: ticket.HotelId);
+            _logger.LogInformation("Ticket {TicketId} deleted for hotel {HotelId}", ticketId, hotelId);
         }
 
         private async Task ValidateLocationAsync(

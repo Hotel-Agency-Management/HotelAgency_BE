@@ -9,7 +9,9 @@ namespace Booking.Services
 {
     public class RoomAmenityService(
         IRoomAmenityRepository _amenityRepository,
-        ISystemLogService _logService) : IRoomAmenityService
+        ISystemLogService _logService,
+        ILogger<RoomAmenityService> _logger) : IRoomAmenityService
+
     {
         public async Task<RoomAmenityResponse> CreateAmenityAsync(CreateRoomAmenityRequest request)
         {
@@ -22,6 +24,7 @@ namespace Booking.Services
             };
 
             var saved = await _amenityRepository.CreateAsync(amenity);
+            _logger.LogInformation("Room amenity {AmenityId} created: {Name}", saved.Id, request.Name);
             return new RoomAmenityResponse(saved);
         }
 
@@ -51,6 +54,7 @@ namespace Booking.Services
                 SystemLogEntityTypes.RoomAmenity,
                 amenityId,
                 string.Format(SystemLogMessages.RoomAmenityDeleted, amenity.Name));
+            _logger.LogInformation("Room amenity {AmenityId} deleted", amenityId);
         }
     }
 }

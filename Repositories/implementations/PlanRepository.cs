@@ -6,10 +6,13 @@ using Booking.Enums;
 
 namespace Booking.Repositories
 {
-    public class PlanRepository(ApplicationDbContext _context) : IPlanRepository
+    public class PlanRepository(
+        ApplicationDbContext _context,
+        ILogger<PlanRepository> _logger) : IPlanRepository
     {
         public async Task<IEnumerable<Plan>> GetPlansAsync(bool includeInactive = false)
         {
+            _logger.LogDebug("Fetching plans, includeInactive={IncludeInactive}", includeInactive);
             var query = _context.Plans
                 .Include(p => p.PlanFeatures)
                     .ThenInclude(f => f.FeatureLimits)

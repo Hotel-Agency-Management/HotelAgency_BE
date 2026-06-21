@@ -13,7 +13,11 @@ namespace Booking.Services
         IPaymentLogRepository _paymentLogRepository,
         UserManager<ApplicationUser> _userManager,
         IHotelRepository _hotelRepository,
+<<<<<<< HEAD
         ISystemLogService _logService) : IPaymentLogService
+=======
+        ILogger<PaymentLogService> _logger) : IPaymentLogService
+>>>>>>> 5c1dcaa (create a loger system)
     {
         public async Task<PaginatedResponse<PaymentLogItemResponse>> GetAllAsync(PaymentLogListRequest request)
         {
@@ -285,6 +289,7 @@ namespace Booking.Services
             });
 
             var saved = await _paymentLogRepository.GetByIdAsync(log.Id);
+            _logger.LogInformation("Payment log created for hotel {HotelId}, amount {Amount}, type {Type}", hotelId, request.Amount, request.Type);
             return await MapToDetailsAsync(hotelId, saved!);
         }
 
@@ -308,6 +313,7 @@ namespace Booking.Services
             }
 
             await _paymentLogRepository.UpdateAsync(log);
+            _logger.LogInformation("Payment log {PaymentLogId} updated for hotel {HotelId}", paymentLogId, hotelId);
             return await MapToDetailsAsync(hotelId, log);
         }
 
@@ -320,6 +326,7 @@ namespace Booking.Services
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             await _paymentLogRepository.DeleteAsync(log);
+<<<<<<< HEAD
 
             await _logService.LogAsync(
                 SystemLogActions.PaymentLogDeleted,
@@ -327,6 +334,9 @@ namespace Booking.Services
                 paymentLogId,
                 string.Format(SystemLogMessages.PaymentLogDeleted, log.Id),
                 hotelId: hotelId);
+=======
+            _logger.LogInformation("Payment log {PaymentLogId} deleted for hotel {HotelId}", paymentLogId, hotelId);
+>>>>>>> 5c1dcaa (create a loger system)
         }
 
         private async Task<PaymentLogDetailsResponse> MapToDetailsAsync(int hotelId, PaymentLog log)

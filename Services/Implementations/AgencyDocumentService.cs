@@ -11,7 +11,8 @@ namespace Booking.Services
     public class AgencyDocumentService(
         IAgencyDocumentRepository _documentRepository,
         IBlobStorageService _blobStorageService,
-        IAgencyRepository _agencyRepository) : IAgencyDocumentService
+        IAgencyRepository _agencyRepository,
+        ILogger<AgencyDocumentService> _logger) : IAgencyDocumentService
     {
         public async Task<AgencyDocumentResponseDto> UploadDocumentAsync(int agencyId, UploadDocumentDto dto)
         {
@@ -33,6 +34,7 @@ namespace Booking.Services
                 await _agencyRepository.UpdateStatusAsync(agencyId, AgencyStatus.Pending);
             }
 
+            _logger.LogInformation("Document {DocumentType} uploaded for agency {AgencyId}", dto.DocumentType, agencyId);
             return new AgencyDocumentResponseDto(saved);
         }
 
@@ -58,11 +60,13 @@ namespace Booking.Services
 
             var updated = await _documentRepository.UpdateAsync(existing);
 
+            _logger.LogInformation("Document {DocumentId} updated successfully", documentId);
             return new AgencyDocumentResponseDto(updated);
         }
 
         public async Task<IEnumerable<AgencyDocumentResponseDto>> GetDocumentsByAgencyAsync(int agencyId)
         {
+            _logger.LogDebug("Fetching documents for agency {AgencyId}", agencyId);
             var documents = await _documentRepository.GetByAgencyIdAsync(agencyId);
             return documents.Select(d => new AgencyDocumentResponseDto(d));
         }

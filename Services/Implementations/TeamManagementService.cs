@@ -15,7 +15,8 @@ namespace Booking.Services
         IAuthRepository _authRepository,
         IEmailJobService _emailJobService,
         IOptions<AuthSettings> authSettings,
-        IEmailVerificationService _emailVerificationService) : ITeamManagementService
+        IEmailVerificationService _emailVerificationService,
+        ILogger<TeamManagementService> _logger) : ITeamManagementService
     {
         private readonly AuthSettings _authSettings = authSettings.Value;
 
@@ -131,6 +132,7 @@ namespace Booking.Services
             var link = await _emailVerificationService.GenerateVerificationLinkAsync(user);
             await _emailJobService.EnqueueTeamMemberVerificationEmailAsync(user, agency, link, _authSettings.DefaultPassword);
 
+            _logger.LogInformation("Team member created for agency {AgencyId}: {Email} with role {Role}", agencyId, email, role);
             return new TeamMemberResponse(user, role);
         }
 
@@ -151,6 +153,7 @@ namespace Booking.Services
             teamMember.UpdatedAt = DateTime.UtcNow;
             await _authRepository.UpdateUserAsync(teamMember);
 
+            _logger.LogInformation("Role {Role} assigned to team member {TeamMemberId} in agency {AgencyId}", role, teamMemberId, agencyId);
             return new TeamMemberResponse(teamMember, role);
         }
     }
