@@ -1,13 +1,16 @@
 using Booking.DTO;
 using Booking.Exceptions;
+using Booking.Hubs;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Booking.Services
 {
     public class NotificationService(
         INotificationRepository _notificationRepository,
+        IHubContext<NotificationHub> _hubContext,
         ILogger<NotificationService> _logger) : INotificationService
     {
         public async Task<NotificationResponse> CreateAsync(CreateNotificationRequest request)
@@ -25,7 +28,11 @@ namespace Booking.Services
             var saved = await _notificationRepository.CreateAsync(notification);
             _logger.LogInformation("Notification {NotificationId} created for user {UserId}", saved.Id, saved.UserId);
 
-            return new NotificationResponse(saved);
+            var response = new NotificationResponse(saved);
+            await _hubContext.Clients.Group(saved.UserId.ToString())
+                .SendAsync("ReceiveNotification", response);
+
+            return response;
         }
 
         public async Task<PaginatedResponse<NotificationResponse>> GetUserNotificationsAsync(
