@@ -1,0 +1,71 @@
+using Booking.DTO;
+using Booking.Exceptions;
+using Booking.Interfaces.Repositories;
+using Booking.Interfaces.Services;
+using Booking.Models;
+
+namespace Booking.Services
+{
+    public class NotificationService(
+        INotificationRepository _notificationRepository,
+        ILogger<NotificationService> _logger) : INotificationService
+    {
+        public async Task<NotificationResponse> CreateAsync(CreateNotificationRequest request)
+        {
+            var notification = new Notification
+            {
+                UserId = request.UserId,
+                Title = request.Title,
+                Message = request.Message,
+                Type = request.Type,
+                Metadata = request.Metadata,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var saved = await _notificationRepository.CreateAsync(notification);
+            _logger.LogInformation("Notification {NotificationId} created for user {UserId}", saved.Id, saved.UserId);
+
+            return new NotificationResponse(saved);
+        }
+
+        public async Task<PaginatedResponse<NotificationResponse>> GetUserNotificationsAsync(
+            int userId, NotificationListRequest request)
+        {
+            var (items, totalCount) = await _notificationRepository.GetByUserIdAsync(
+                userId, request.IsRead, request.Type, request.PageNumber, request.PageSize);
+
+            return new PaginatedResponse<NotificationResponse>
+            {
+                Items = items.Select(n => new NotificationResponse(n)).ToList(),
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+            };
+        }
+
+        public async Task<int> GetUnreadCountAsync(int userId)
+            => await _notificationRepository.CountUnreadByUserIdAsync(userId);
+
+        public async Task MarkAsReadAsync(int userId, int notificationId)
+        {
+            var notification = await _notificationRepository.GetByIdAndUserIdAsync(notificationId, userId)
+                ?? throw new NotificationNotFoundException(notificationId);
+
+            if (notification.IsRead)
+                return;
+
+            notification.IsRead = true;
+            notification.ReadAt = DateTime.UtcNow;
+
+            await _notificationRepository.UpdateAsync(notification);
+            _logger.LogInformation("Notification {NotificationId} marked as read by user {UserId}", notificationId, userId);
+        }
+
+        public async Task MarkAllAsReadAsync(int userId)
+        {
+            await _notificationRepository.MarkAllAsReadByUserIdAsync(userId);
+            _logger.LogInformation("All notifications marked as read for user {UserId}", userId);
+        }
+    }
+}

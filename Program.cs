@@ -109,6 +109,7 @@ builder.Services.AddScoped<ITermsAndConditionsRepository, TermsAndConditionsRepo
 builder.Services.AddScoped<IHousekeepingTicketRepository, HousekeepingTicketRepository>();
 builder.Services.AddScoped<ITicketCommentRepository, TicketCommentRepository>();
 builder.Services.AddScoped<ISystemLogRepository, SystemLogRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 
 
@@ -133,6 +134,7 @@ builder.Services.AddScoped<ITermsAndConditionsService, TermsAndConditionsService
 builder.Services.AddScoped<IHousekeepingTicketService, HousekeepingTicketService>();
 builder.Services.AddScoped<ITicketCommentService, TicketCommentService>();
 builder.Services.AddScoped<ISystemLogService, SystemLogService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 builder.Services.AddSingleton<IAppLinkService, AppLinkService>();
 
