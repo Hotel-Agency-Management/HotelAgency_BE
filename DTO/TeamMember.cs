@@ -45,10 +45,10 @@ namespace Booking.DTO
     public class UpdateTeamMemberRequest
     {
         [Required]
-        public string FirstName { get; set; } = string.Empty;
+        public string? FirstName { get; set; } = string.Empty;
 
         [Required]
-        public string LastName { get; set; } = string.Empty;
+        public string? LastName { get; set; } = string.Empty;
 
         public int? HotelId { get; set; }
     }
@@ -62,6 +62,7 @@ namespace Booking.DTO
         public string? PhoneNumber { get; set; }
         public string Role { get; set; } = string.Empty;
         public bool CanBeHotelManager { get; set; }
+        public int? hotelId { get; set; }
 
         public TeamMemberResponse(ApplicationUser user, string role)
         {
@@ -72,6 +73,7 @@ namespace Booking.DTO
             PhoneNumber = user.PhoneNumber;
             Role = role;
             CanBeHotelManager = role == Constants.Roles.PropertyManager;
+            hotelId = user.HotelId;
         }
     }
 
