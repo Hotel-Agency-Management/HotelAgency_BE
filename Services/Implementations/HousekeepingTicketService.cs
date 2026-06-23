@@ -15,6 +15,7 @@ namespace Booking.Services
         IFacilityRepository _facilityRepository,
         UserManager<ApplicationUser> _userManager,
         ISystemLogService _logService,
+        INotificationService _notificationService,
         ILogger<HousekeepingTicketService> _logger) : IHousekeepingTicketService
 
     {
@@ -45,6 +46,16 @@ namespace Booking.Services
 
             var saved = await _ticketRepository.CreateAsync(ticket);
             _logger.LogInformation("Ticket {TicketId} created for hotel {HotelId} by user {UserId}", saved.Id, hotelId, createdByUserId);
+
+            await _notificationService.CreateAsync(new CreateNotificationRequest
+            {
+                UserId = request.AssignedToId,
+                Title = "New Ticket Assigned",
+                Message = $"You have been assigned to ticket '{saved.Title}'.",
+                Type = NotificationType.Ticket,
+                Metadata = $"{{\"ticketId\":{saved.Id}}}"
+            });
+
             return new TicketDetailResponse(saved);
         }
 
@@ -135,6 +146,17 @@ namespace Booking.Services
 
             var updated = await _ticketRepository.UpdateAsync(ticket);
             _logger.LogInformation("Ticket {TicketId} updated for hotel {HotelId}", ticketId, hotelId);
+
+            if (request.AssignedToId.HasValue)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = request.AssignedToId.Value,
+                    Title = "Ticket Assigned",
+                    Message = $"You have been assigned to ticket '{updated.Title}'.",
+                    Type = NotificationType.Ticket,
+                    Metadata = $"{{\"ticketId\":{updated.Id}}}"
+                });
+
             return new TicketDetailResponse(updated);
         }
 
@@ -149,6 +171,16 @@ namespace Booking.Services
 
             var updated = await _ticketRepository.UpdateAsync(ticket);
             _logger.LogInformation("Ticket {TicketId} status changed to {Status} for hotel {HotelId}", ticketId, request.Status, hotelId);
+
+            await _notificationService.CreateAsync(new CreateNotificationRequest
+            {
+                UserId = updated.AssignedToId,
+                Title = "Ticket Status Updated",
+                Message = $"Ticket '{updated.Title}' status has been changed to {updated.Status}.",
+                Type = NotificationType.Ticket,
+                Metadata = $"{{\"ticketId\":{updated.Id}}}"
+            });
+
             return new TicketDetailResponse(updated);
         }
 
