@@ -16,5 +16,6 @@ namespace Booking.Interfaces.Services
             string? actorRole = null);
 
         Task<PaginatedResponse<SystemLogResponse>> GetLogsAsync(SystemLogListRequest request);
+        Task<PaginatedResponse<SystemLogResponse>> GetAgencyLogsAsync(int agencyId, SystemLogListRequest request);
     }
 }

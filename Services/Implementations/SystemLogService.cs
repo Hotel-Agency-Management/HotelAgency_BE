@@ -9,6 +9,7 @@ namespace Booking.Services
 {
     public class SystemLogService(
         ISystemLogRepository _logRepository,
+        IHotelRepository _hotelRepository,
         IHttpContextAccessor _httpContextAccessor) : ISystemLogService
     {
         public async Task LogAsync(
@@ -30,6 +31,12 @@ namespace Booking.Services
                     actorId ??= resolvedId;
                     actorName ??= resolvedName;
                     actorRole ??= resolvedRole;
+                }
+
+                if (agencyId is null && hotelId.HasValue)
+                {
+                    var hotel = await _hotelRepository.GetByIdAsync(hotelId.Value);
+                    agencyId = hotel?.AgencyId;
                 }
 
                 await _logRepository.AddAsync(new SystemLog
@@ -55,14 +62,25 @@ namespace Booking.Services
         public async Task<PaginatedResponse<SystemLogResponse>> GetLogsAsync(SystemLogListRequest request)
         {
             var (items, totalCount) = await _logRepository.GetLogsAsync(request);
+            return BuildPaginatedResponse(items, request.PageNumber, request.PageSize, totalCount);
+        }
 
+        public async Task<PaginatedResponse<SystemLogResponse>> GetAgencyLogsAsync(int agencyId, SystemLogListRequest request)
+        {
+            var (items, totalCount) = await _logRepository.GetLogsByAgencyAsync(agencyId, request);
+            return BuildPaginatedResponse(items, request.PageNumber, request.PageSize, totalCount);
+        }
+
+        private static PaginatedResponse<SystemLogResponse> BuildPaginatedResponse(
+            IReadOnlyList<SystemLog> items, int pageNumber, int pageSize, int totalCount)
+        {
             return new PaginatedResponse<SystemLogResponse>
             {
                 Items = items.Select(l => new SystemLogResponse(l)).ToList(),
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
                 TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
         }
 

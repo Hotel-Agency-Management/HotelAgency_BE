@@ -57,6 +57,8 @@ namespace Booking.Services
             var photo = await _photoRepository.GetByIdAsync(photoId)
                 ?? throw new FacilityPhotoNotFoundException(photoId);
 
+            var facility = await _facilityRepository.GetByIdAsync(photo.FacilityId);
+
             await _blobStorageService.DeleteAsync(photo.PhotoUrl);
             await _photoRepository.DeleteAsync(photo);
 
@@ -64,7 +66,8 @@ namespace Booking.Services
                 SystemLogActions.FacilityPhotoDeleted,
                 SystemLogEntityTypes.FacilityPhoto,
                 photoId,
-                string.Format(SystemLogMessages.FacilityPhotoDeleted, photo.FacilityId));
+                string.Format(SystemLogMessages.FacilityPhotoDeleted, photo.FacilityId),
+                hotelId: facility?.HotelId);
             _logger.LogInformation("Photo {PhotoId} deleted for facility {FacilityId}", photoId, photo.FacilityId);
 
         }

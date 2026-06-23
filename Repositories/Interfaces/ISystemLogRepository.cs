@@ -7,5 +7,6 @@ namespace Booking.Interfaces.Repositories
     {
         Task AddAsync(SystemLog log);
         Task<(IReadOnlyList<SystemLog> Items, int TotalCount)> GetLogsAsync(SystemLogListRequest request);
+        Task<(IReadOnlyList<SystemLog> Items, int TotalCount)> GetLogsByAgencyAsync(int agencyId, SystemLogListRequest request);
     }
 }
