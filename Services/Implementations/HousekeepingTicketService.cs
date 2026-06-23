@@ -181,6 +181,16 @@ namespace Booking.Services
                 Metadata = $"{{\"ticketId\":{updated.Id}}}"
             });
 
+            if (updated.CreatedById != updated.AssignedToId)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = updated.CreatedById,
+                    Title = "Ticket Status Updated",
+                    Message = $"Ticket '{updated.Title}' status has been changed to {updated.Status}.",
+                    Type = NotificationType.Ticket,
+                    Metadata = $"{{\"ticketId\":{updated.Id}}}"
+                });
+
             return new TicketDetailResponse(updated);
         }
 
