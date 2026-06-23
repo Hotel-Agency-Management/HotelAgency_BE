@@ -1,17 +1,20 @@
+using Booking.Clients;
 using Booking.Constants;
 using Booking.DTO;
+using Booking.Enums;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Models;
-using Booking.Clients;
 
 namespace Booking.Services
 {
     public class HotelService(
         IHotelRepository _hotelRepository,
         IAuthRepository _authRepository,
+        IAgencyRepository _agencyRepository,
         IBlobStorageService _blobStorageService,
+        INotificationService _notificationService,
         ILogger<HotelService> _logger) : IHotelService
     {
         public async Task<HotelResponse> CreateHotelAsync(CreateHotelRequest request)
@@ -50,6 +53,13 @@ namespace Booking.Services
                 throw new TeamMemberUpdateFailedException();
 
             _logger.LogInformation("Hotel {HotelId} created for agency {AgencyId}", saved.Id, request.AgencyId);
+
+            var agency = await _agencyRepository.GetByIdAsync(saved.AgencyId);
+            await _notificationService.NotifySuperAdminsAsync(
+                "New Hotel Created",
+                $"A new hotel '{saved.Name}' has been created under agency '{agency?.AgencyName ?? "Unknown"}'.",
+                NotificationType.NewHotelCreated);
+
             return new HotelResponse(saved);
         }
 

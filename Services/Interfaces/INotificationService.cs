@@ -1,4 +1,5 @@
 using Booking.DTO;
+using Booking.Enums;
 
 namespace Booking.Interfaces.Services
 {
@@ -9,5 +10,6 @@ namespace Booking.Interfaces.Services
         Task<int> GetUnreadCountAsync(int userId);
         Task MarkAsReadAsync(int userId, int notificationId);
         Task MarkAllAsReadAsync(int userId);
+        Task NotifySuperAdminsAsync(string title, string message, NotificationType type, string? metadata = null);
     }
 }

@@ -6,6 +6,9 @@ namespace Booking.Enums
         Reservation,
         Ticket,
         Payment,
-        System
+        System,
+        NewAgencyRegistered,
+        AgencyActivated,
+        NewHotelCreated
     }
 }

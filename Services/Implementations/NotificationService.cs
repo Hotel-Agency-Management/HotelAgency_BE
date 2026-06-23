@@ -1,9 +1,12 @@
+using Booking.Constants;
 using Booking.DTO;
+using Booking.Enums;
 using Booking.Exceptions;
 using Booking.Hubs;
 using Booking.Interfaces.Repositories;
 using Booking.Interfaces.Services;
 using Booking.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Booking.Services
@@ -11,6 +14,7 @@ namespace Booking.Services
     public class NotificationService(
         INotificationRepository _notificationRepository,
         IHubContext<NotificationHub> _hubContext,
+        UserManager<ApplicationUser> _userManager,
         ILogger<NotificationService> _logger) : INotificationService
     {
         public async Task<NotificationResponse> CreateAsync(CreateNotificationRequest request)
@@ -73,6 +77,22 @@ namespace Booking.Services
         {
             await _notificationRepository.MarkAllAsReadByUserIdAsync(userId);
             _logger.LogInformation("All notifications marked as read for user {UserId}", userId);
+        }
+
+        public async Task NotifySuperAdminsAsync(string title, string message, NotificationType type, string? metadata = null)
+        {
+            var superAdmins = await _userManager.GetUsersInRoleAsync(Roles.SuperAdmin);
+            foreach (var admin in superAdmins)
+            {
+                await CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = admin.Id,
+                    Title = title,
+                    Message = message,
+                    Type = type,
+                    Metadata = metadata
+                });
+            }
         }
     }
 }

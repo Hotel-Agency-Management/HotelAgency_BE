@@ -1,9 +1,10 @@
 using Booking.Constants;
 using Booking.DTO;
+using Booking.Enums;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
+using Booking.Interfaces.Services;
 using Booking.Models;
-using Booking.Enums;
 using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -15,7 +16,8 @@ namespace Booking.Strategies
         IAuthRepository _authRepository,
         IAgencyRepository _agencyRepository,
         ApplicationDbContext _dbContext,
-        IEmailJobService _emailJobService
+        IEmailJobService _emailJobService,
+        INotificationService _notificationService
     ) : IRegistrationStrategy
     {
         public async Task<ApplicationUser> ExecuteAsync(RegisterRequest request)
@@ -23,27 +25,27 @@ namespace Booking.Strategies
             var agencyRequest = (AgencyOwnerRegisterRequest)request;
             var strategy = _dbContext.Database.CreateExecutionStrategy();
 
-            return await strategy.ExecuteAsync(async () =>
+            var user = await strategy.ExecuteAsync(async () =>
             {
                 await using IDbContextTransaction transaction =
                     await _dbContext.Database.BeginTransactionAsync();
 
                 try
                 {
-                    var user = BuildUser(agencyRequest);
+                    var u = BuildUser(agencyRequest);
 
-                    var result = await _authRepository.CreateUserAsync(user, agencyRequest.Password);
+                    var result = await _authRepository.CreateUserAsync(u, agencyRequest.Password);
                     if (!result.Succeeded)
                         throw new RegistrationFailedException("Registration failed.");
 
-                    var roleResult = await _authRepository.AddToRoleAsync(user, Roles.AgencyOwner);
+                    var roleResult = await _authRepository.AddToRoleAsync(u, Roles.AgencyOwner);
                     if (!roleResult.Succeeded)
                         throw new RegistrationFailedException("User created but assigning role failed.");
 
-                    await BuildAgencyAsync(user, agencyRequest);
+                    await BuildAgencyAsync(u, agencyRequest);
 
                     await transaction.CommitAsync();
-                    return user;
+                    return u;
                 }
                 catch
                 {
@@ -51,6 +53,13 @@ namespace Booking.Strategies
                     throw;
                 }
             });
+
+            await _notificationService.NotifySuperAdminsAsync(
+                "New Agency Registered",
+                $"A new agency '{agencyRequest.AgencyName.Trim()}' has been registered.",
+                NotificationType.NewAgencyRegistered);
+
+            return user;
         }
 
         private static ApplicationUser BuildUser(AgencyOwnerRegisterRequest request) => new()
