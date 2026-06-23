@@ -36,27 +36,14 @@ namespace Booking.Services
                 .Where(p => p.HotelId.HasValue).Select(p => p.HotelId!.Value)
                 .Distinct().ToList();
 
-            var userNameMap = new Dictionary<int, string>();
-            foreach (var id in userIds)
-            {
-                var user = await _userManager.FindByIdAsync(id.ToString());
-                if (user is not null)
-                    userNameMap[id] = $"{user.FirstName} {user.LastName}";
-            }
-
-            var hotelNameMap = new Dictionary<int, string>();
-            foreach (var id in hotelIds)
-            {
-                var hotel = await _hotelRepository.GetByIdAsync(id);
-                if (hotel is not null)
-                    hotelNameMap[id] = hotel.Name;
-            }
+            var userNameMap = await BuildUserNameMapAsync(userIds);
+            var hotelNameMap = await BuildHotelNameMapAsync(hotelIds);
 
             string ResolveUserName(int? id) =>
                 id.HasValue && userNameMap.TryGetValue(id.Value, out var n) ? n : id?.ToString() ?? string.Empty;
 
             string ResolveHotelName(int? hotelId) =>
-                hotelId.HasValue && hotelNameMap.TryGetValue(hotelId.Value, out var n) ? n : "Hotel";
+                hotelId.HasValue && hotelNameMap.TryGetValue(hotelId.Value, out var n) ? n : PaymentLogConstants.FallbackHotelName;
 
             var mapped = items.Select(p => new PaymentLogItemResponse
             {
@@ -98,12 +85,7 @@ namespace Booking.Services
                 .Distinct()
                 .ToList();
 
-            var userMap = new Dictionary<int, string>();
-            foreach (var uid in userIds)
-            {
-                var user = await _userManager.FindByIdAsync(uid.ToString());
-                userMap[uid] = user is not null ? $"{user.FirstName} {user.LastName}" : uid.ToString();
-            }
+            var userMap = await BuildUserNameMapAsync(userIds);
 
             var mapped = items.Select(p =>
             {
@@ -116,7 +98,7 @@ namespace Booking.Services
                     PaymentId = p.Id,
                     ReservationReference = p.Reservation?.ReservationNumber,
                     PaymentType = p.Type.ToString(),
-                    TransactionType = isIncoming ? "Incoming" : "Outgoing",
+                    TransactionType = isIncoming ? TransactionTypes.Incoming : TransactionTypes.Outgoing,
                     Reason = p.Reason,
                     Amount = p.Amount,
                     FromName = isIncoming ? userName : hotelName,
@@ -540,6 +522,30 @@ namespace Booking.Services
             };
         }
 
+        private async Task<Dictionary<int, string>> BuildUserNameMapAsync(List<int> ids)
+        {
+            var map = new Dictionary<int, string>();
+            foreach (var id in ids)
+            {
+                var user = await _userManager.FindByIdAsync(id.ToString());
+                if (user is not null)
+                    map[id] = $"{user.FirstName} {user.LastName}";
+            }
+            return map;
+        }
+
+        private async Task<Dictionary<int, string>> BuildHotelNameMapAsync(List<int> ids)
+        {
+            var map = new Dictionary<int, string>();
+            foreach (var id in ids)
+            {
+                var hotel = await _hotelRepository.GetByIdAsync(id);
+                if (hotel is not null)
+                    map[id] = hotel.Name;
+            }
+            return map;
+        }
+
         private static string ResolveReason(PaymentType type, string? overrideReason) =>
             overrideReason ?? type switch
             {
@@ -572,21 +578,21 @@ namespace Booking.Services
 
             if (res is not null)
             {
-                timeline.Add(new() { Event = "Reservation Created", OccurredAt = res.CreatedAt });
-                timeline.Add(new() { Event = "Payment Recorded", OccurredAt = log.CreatedAt });
+                timeline.Add(new() { Event = PaymentTimelineEvents.ReservationCreated, OccurredAt = res.CreatedAt });
+                timeline.Add(new() { Event = PaymentTimelineEvents.PaymentRecorded, OccurredAt = log.CreatedAt });
 
                 if (res.Status is ReservationStatus.CheckedIn or ReservationStatus.CheckedOut)
-                    timeline.Add(new() { Event = "Checked In", OccurredAt = res.CheckInDate.ToDateTime(TimeOnly.MinValue) });
+                    timeline.Add(new() { Event = PaymentTimelineEvents.CheckedIn, OccurredAt = res.CheckInDate.ToDateTime(TimeOnly.MinValue) });
 
                 if (res.Status == ReservationStatus.CheckedOut)
-                    timeline.Add(new() { Event = "Checked Out", OccurredAt = res.CheckOutDate.ToDateTime(TimeOnly.MinValue) });
+                    timeline.Add(new() { Event = PaymentTimelineEvents.CheckedOut, OccurredAt = res.CheckOutDate.ToDateTime(TimeOnly.MinValue) });
 
                 if (res.Status == ReservationStatus.Cancelled && res.CancelledAt.HasValue)
-                    timeline.Add(new() { Event = "Cancelled", OccurredAt = res.CancelledAt.Value });
+                    timeline.Add(new() { Event = PaymentTimelineEvents.Cancelled, OccurredAt = res.CancelledAt.Value });
             }
             else
             {
-                timeline.Add(new() { Event = "Payment Recorded", OccurredAt = log.CreatedAt });
+                timeline.Add(new() { Event = PaymentTimelineEvents.PaymentRecorded, OccurredAt = log.CreatedAt });
             }
 
             return [.. timeline.OrderBy(t => t.OccurredAt)];
