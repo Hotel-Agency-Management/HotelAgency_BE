@@ -77,7 +77,7 @@ namespace Booking.Services
             return new TicketCommentResponse(updated);
         }
 
-        public async Task DeleteCommentAsync(int ticketId, int commentId, int requestingUserId, bool isAdmin = false)
+        public async Task DeleteCommentAsync(int ticketId, int commentId, int requestingUserId, bool isAdmin = false, int? hotelId = null)
         {
             var comment = await _commentRepository.GetByIdAsync(commentId)
                 ?? throw new TicketCommentNotFoundException(commentId);
@@ -91,7 +91,8 @@ namespace Booking.Services
                 SystemLogActions.TicketCommentDeleted,
                 SystemLogEntityTypes.TicketComment,
                 commentId,
-                string.Format(SystemLogMessages.TicketCommentDeleted, comment.TicketId));
+                string.Format(SystemLogMessages.TicketCommentDeleted, comment.TicketId),
+                hotelId: hotelId);
             _logger.LogInformation("Comment {CommentId} deleted from ticket {TicketId}", commentId, ticketId);
         }
 

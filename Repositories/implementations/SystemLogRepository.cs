@@ -27,10 +27,38 @@ namespace Booking.Repositories
             return (items, totalCount);
         }
 
+        public async Task<(IReadOnlyList<SystemLog> Items, int TotalCount)> GetLogsByAgencyAsync(int agencyId, SystemLogListRequest request)
+        {
+            var query = _context.SystemLogs.AsQueryable()
+                .Where(l => l.AgencyId == agencyId);
+
+            query = ApplyCommonFilters(query, request);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(l => l.CreatedAt)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         private IQueryable<SystemLog> BuildQuery(SystemLogListRequest request)
         {
             var query = _context.SystemLogs.AsQueryable();
 
+            if (request.AgencyId.HasValue)
+                query = query.Where(l => l.AgencyId == request.AgencyId.Value);
+
+            if (request.HotelId.HasValue)
+                query = query.Where(l => l.HotelId == request.HotelId.Value);
+
+            return ApplyCommonFilters(query, request);
+        }
+
+        private static IQueryable<SystemLog> ApplyCommonFilters(IQueryable<SystemLog> query, SystemLogListRequest request)
+        {
             if (!string.IsNullOrWhiteSpace(request.Action))
                 query = query.Where(l => l.Action == request.Action);
 
@@ -39,12 +67,6 @@ namespace Booking.Repositories
 
             if (request.ActorId.HasValue)
                 query = query.Where(l => l.ActorId == request.ActorId.Value);
-
-            if (request.AgencyId.HasValue)
-                query = query.Where(l => l.AgencyId == request.AgencyId.Value);
-
-            if (request.HotelId.HasValue)
-                query = query.Where(l => l.HotelId == request.HotelId.Value);
 
             if (request.From.HasValue)
                 query = query.Where(l => l.CreatedAt >= request.From.Value);

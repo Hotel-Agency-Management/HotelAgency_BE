@@ -48,13 +48,16 @@ namespace Booking.Services
             var photo = await _roomPhotoRepository.GetByIdAndRoomIdAsync(photoId, roomId)
                 ?? throw new RoomPhotoNotFoundException(photoId);
 
+            var room = await _roomRepository.GetByIdAsync(roomId);
+
             await _blobStorageService.DeleteAsync(photo.PhotoUrl);
             await _roomPhotoRepository.DeleteAsync(photo);
             await _logService.LogAsync(
                 SystemLogActions.RoomPhotoDeleted,
                 SystemLogEntityTypes.RoomPhoto,
                 photoId,
-                string.Format(SystemLogMessages.RoomPhotoDeleted, photo.Id));
+                string.Format(SystemLogMessages.RoomPhotoDeleted, photo.Id),
+                hotelId: room?.HotelId);
             _logger.LogInformation("Photo {PhotoId} deleted for room {RoomId}", photoId, roomId);
         }
     }

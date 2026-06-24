@@ -16,16 +16,13 @@ namespace Booking.Controllers
         public async Task<IActionResult> GetAgencyLogs([FromQuery] SystemLogListRequest request)
         {
             var agencyId = FilterHelpers.GetRequiredAgencyId(HttpContext);
-            request.AgencyId = agencyId;
-
-            var logs = await _systemLogService.GetLogsAsync(request);
+            var logs = await _systemLogService.GetAgencyLogsAsync(agencyId, request);
             return Ok(logs);
         }
 
         [HttpGet("api/hotels/{hotelId:int}/logs")]
         [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}")]
-        [EnsureAgencyExistsForOwner]
-        [EnsureHotelExistsForOwner]
+        [EnsureHotelAccessForOwnerOrManager]
         public async Task<IActionResult> GetHotelLogs(
             [FromRoute] int hotelId,
             [FromQuery] SystemLogListRequest request)

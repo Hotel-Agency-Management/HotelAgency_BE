@@ -82,7 +82,7 @@ namespace Booking.Controllers
             if (user is null)
                 return Unauthorized(Messages.Unauthorized);
 
-            await _commentService.DeleteCommentAsync(ticketId, commentId, user.Id);
+            await _commentService.DeleteCommentAsync(ticketId, commentId, user.Id, hotelId: hotelId);
             return NoContent();
         }
     }
