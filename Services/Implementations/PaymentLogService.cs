@@ -39,23 +39,7 @@ namespace Booking.Services
             var userNameMap = await BuildUserNameMapAsync(userIds);
             var hotelNameMap = await BuildHotelNameMapAsync(hotelIds);
 
-            string ResolveUserName(int? id) =>
-                id.HasValue && userNameMap.TryGetValue(id.Value, out var n) ? n : id?.ToString() ?? string.Empty;
-
-            string ResolveHotelName(int? hotelId) =>
-                hotelId.HasValue && hotelNameMap.TryGetValue(hotelId.Value, out var n) ? n : PaymentLogConstants.FallbackHotelName;
-
-            var mapped = items.Select(p => new PaymentLogItemResponse
-            {
-                PaymentId = p.Id,
-                ReservationReference = p.Reservation?.ReservationNumber,
-                PaymentType = p.Type.ToString(),
-                Reason = p.Reason,
-                Amount = p.Amount,
-                FromName = p.From.HasValue ? ResolveUserName(p.From) : ResolveHotelName(p.HotelId),
-                ToName = p.To.HasValue ? ResolveUserName(p.To) : ResolveHotelName(p.HotelId),
-                CreatedAt = p.CreatedAt,
-            }).ToList();
+            var mapped = MapAllItems(items, userNameMap, hotelNameMap);
 
             return new PaginatedResponse<PaymentLogItemResponse>
             {
@@ -509,6 +493,30 @@ namespace Booking.Services
                 ToName = isIncoming ? hotelName : userName,
                 Timeline = BuildTimeline(log)
             };
+        }
+
+        private static List<PaymentLogItemResponse> MapAllItems(
+            List<PaymentLog> items,
+            Dictionary<int, string> userNameMap,
+            Dictionary<int, string> hotelNameMap)
+        {
+            string resolveUser(int? id) =>
+                id.HasValue && userNameMap.TryGetValue(id.Value, out var n) ? n : id?.ToString() ?? string.Empty;
+
+            string resolveHotel(int? hotelId) =>
+                hotelId.HasValue && hotelNameMap.TryGetValue(hotelId.Value, out var n) ? n : PaymentLogConstants.FallbackHotelName;
+
+            return items.Select(p => new PaymentLogItemResponse
+            {
+                PaymentId = p.Id,
+                ReservationReference = p.Reservation?.ReservationNumber,
+                PaymentType = p.Type.ToString(),
+                Reason = p.Reason,
+                Amount = p.Amount,
+                FromName = p.From.HasValue ? resolveUser(p.From) : resolveHotel(p.HotelId),
+                ToName = p.To.HasValue ? resolveUser(p.To) : resolveHotel(p.HotelId),
+                CreatedAt = p.CreatedAt,
+            }).ToList();
         }
 
         private async Task<Dictionary<int, string>> BuildUserNameMapAsync(List<int> ids)
