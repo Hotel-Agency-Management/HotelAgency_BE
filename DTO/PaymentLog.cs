@@ -16,11 +16,9 @@ namespace Booking.DTO
 
         public string? Reason { get; set; }
 
-        [Required]
-        public int From { get; set; }
+        public int? From { get; set; }
 
-        [Required]
-        public int To { get; set; }
+        public int? To { get; set; }
     }
 
     public class UpdatePaymentLogRequest
@@ -72,6 +70,7 @@ namespace Booking.DTO
         public int PaymentId { get; set; }
         public string? ReservationReference { get; set; }
         public string PaymentType { get; set; } = string.Empty;
+        public string TransactionType { get; set; } = string.Empty;
         public string? Reason { get; set; }
         public decimal Amount { get; set; }
         public string FromName { get; set; } = string.Empty;

@@ -12,16 +12,6 @@ namespace Booking.Controllers.Admin
     [Route("api/admin")]
     public class PaymentLogController(IPaymentLogService _paymentLogService) : ControllerBase
     {
-        [HttpGet("payment-logs")]
-        public async Task<IActionResult> GetAll([FromQuery] PaymentLogListRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _paymentLogService.GetAllAsync(request);
-            return Ok(result);
-        }
-
         [EnsureAgencyExistsForAdmin]
         [EnsureHotelExistsForAdmin]
         [HttpGet("agencies/{agencyId}/hotels/{hotelId}/payment-logs")]
@@ -32,37 +22,10 @@ namespace Booking.Controllers.Admin
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, null, request);
+            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, request);
             return Ok(result);
         }
 
-        [EnsureAgencyExistsForAdmin]
-        [EnsureHotelExistsForAdmin]
-        [HttpGet("agencies/{agencyId}/hotels/{hotelId}/payment-logs/incoming")]
-        public async Task<IActionResult> GetIncoming(
-            [FromRoute] int hotelId,
-            [FromQuery] PaymentLogListRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, true, request);
-            return Ok(result);
-        }
-
-        [EnsureAgencyExistsForAdmin]
-        [EnsureHotelExistsForAdmin]
-        [HttpGet("agencies/{agencyId}/hotels/{hotelId}/payment-logs/outgoing")]
-        public async Task<IActionResult> GetOutgoing(
-            [FromRoute] int hotelId,
-            [FromQuery] PaymentLogListRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, false, request);
-            return Ok(result);
-        }
 
         [EnsureAgencyExistsForAdmin]
         [EnsureHotelExistsForAdmin]

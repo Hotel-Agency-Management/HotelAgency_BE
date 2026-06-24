@@ -14,28 +14,15 @@ namespace Booking.Controllers
     {
 
         [EnsureHotelExistsForOwner]
-        [HttpGet("payment-logs/incoming")]
-        public async Task<IActionResult> GetIncoming(
+        [HttpGet("payment-logs")]
+        public async Task<IActionResult> GetAll(
             [FromRoute] int hotelId,
             [FromQuery] PaymentLogListRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, true, request);
-            return Ok(result);
-        }
-
-        [EnsureHotelExistsForOwner]
-        [HttpGet("payment-logs/outgoing")]
-        public async Task<IActionResult> GetOutgoing(
-            [FromRoute] int hotelId,
-            [FromQuery] PaymentLogListRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, false, request);
+            var result = await _paymentLogService.GetHotelLogsAsync(hotelId, request);
             return Ok(result);
         }
 

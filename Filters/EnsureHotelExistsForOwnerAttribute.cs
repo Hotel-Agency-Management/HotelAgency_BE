@@ -30,13 +30,18 @@ namespace Booking.Filters
                 return;
             }
 
+            if (await _userManager.IsInRoleAsync(agencyOwner, Roles.Customer))
+            {
+                await next();
+                return;
+            }
+
             if (agencyOwner.AgencyId is null)
             {
                 context.Result = new BadRequestObjectResult(Messages.AgencyIdMissing);
                 return;
             }
 
-            
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             if (hotel is null)
             {

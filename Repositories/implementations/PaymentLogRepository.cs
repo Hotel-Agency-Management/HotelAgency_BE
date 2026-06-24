@@ -30,23 +30,23 @@ namespace Booking.Repositories
             => await BuildBaseQuery(type, dateFrom, dateTo, ascending: false).CountAsync();
 
         public async Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(
-            int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo,
+            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo,
             bool ascending, int pageNumber, int pageSize)
-            => await BuildHotelQuery(hotelId, incoming, type, dateFrom, dateTo, ascending)
+            => await BuildHotelQuery(hotelId, type, dateFrom, dateTo, ascending)
                 .Include(p => p.Reservation)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
         public async Task<int> CountHotelLogsAsync(
-            int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo)
-            => await BuildHotelQuery(hotelId, incoming, type, dateFrom, dateTo, ascending: false).CountAsync();
+            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo)
+            => await BuildHotelQuery(hotelId, type, dateFrom, dateTo, ascending: false).CountAsync();
 
         public async Task<HotelPaymentSummary> GetHotelSummaryAsync(int hotelId)
         {
             var rows = await _context.PaymentLogs
-                .Where(p => p.To == hotelId || p.From == hotelId)
-                .Select(p => new { IsIncoming = p.To == hotelId, p.Amount })
+                .Where(p => p.HotelId == hotelId)
+                .Select(p => new { IsIncoming = p.To == null, p.Amount })
                 .GroupBy(x => x.IsIncoming)
                 .Select(g => new { IsIncoming = g.Key, Count = g.Count(), Total = g.Sum(x => x.Amount) })
                 .ToListAsync();
@@ -64,23 +64,16 @@ namespace Booking.Repositories
 
         public async Task<decimal> GetTotalIncomingByAgencyAsync(int agencyId)
             => await _context.PaymentLogs
-                .Join(_context.Hotels,
-                      pl => pl.To,
-                      h => h.Id,
-                      (pl, h) => new { pl.Amount, h.AgencyId })
-                .Where(x => x.AgencyId == agencyId)
-                .SumAsync(x => x.Amount);
+                .Where(pl => pl.AgencyId == agencyId && pl.To == null)
+                .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
 
         public async Task<IEnumerable<MonthlyRevenue>> GetMonthlyIncomingByAgencyAsync(
             int agencyId, DateTime from, DateTime to)
         {
             var rows = await _context.PaymentLogs
-                .Join(_context.Hotels,
-                      pl => pl.To,
-                      h => h.Id,
-                      (pl, h) => new { pl.Amount, pl.CreatedAt, h.AgencyId })
-                .Where(x => x.AgencyId == agencyId && x.CreatedAt >= from && x.CreatedAt < to)
-                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Where(pl => pl.AgencyId == agencyId && pl.To == null
+                          && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
                 .ToListAsync();
 
@@ -91,12 +84,9 @@ namespace Booking.Repositories
             int agencyId, DateTime from, DateTime to)
         {
             var rows = await _context.PaymentLogs
-                .Join(_context.Hotels,
-                      pl => pl.From,
-                      h => h.Id,
-                      (pl, h) => new { pl.Amount, pl.CreatedAt, h.AgencyId })
-                .Where(x => x.AgencyId == agencyId && x.CreatedAt >= from && x.CreatedAt < to)
-                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Where(pl => pl.AgencyId == agencyId && pl.From == null
+                          && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
                 .ToListAsync();
 
@@ -112,7 +102,7 @@ namespace Booking.Repositories
                     h.Id,
                     h.Name,
                     Revenue = _context.PaymentLogs
-                        .Where(pl => pl.To == h.Id)
+                        .Where(pl => pl.HotelId == h.Id && pl.To == null)
                         .Sum(pl => (decimal?)pl.Amount) ?? 0m
                 })
                 .OrderByDescending(x => x.Revenue)
@@ -125,7 +115,7 @@ namespace Booking.Repositories
             int hotelId, DateTime from, DateTime to)
         {
             var rows = await _context.PaymentLogs
-                .Where(pl => pl.To == hotelId && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .Where(pl => pl.HotelId == hotelId && pl.To == null && pl.CreatedAt >= from && pl.CreatedAt < to)
                 .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
                 .ToListAsync();
@@ -136,7 +126,7 @@ namespace Booking.Repositories
             int hotelId, DateTime from, DateTime to)
         {
             var rows = await _context.PaymentLogs
-                .Where(pl => pl.From == hotelId && pl.CreatedAt >= from && pl.CreatedAt < to)
+                .Where(pl => pl.HotelId == hotelId && pl.From == null && pl.CreatedAt >= from && pl.CreatedAt < to)
                 .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Revenue = g.Sum(x => x.Amount) })
                 .ToListAsync();
@@ -146,7 +136,7 @@ namespace Booking.Repositories
         public async Task<IEnumerable<PaymentTypeRevenue>> GetRevenueByTypeByHotelAsync(int hotelId)
         {
             var rows = await _context.PaymentLogs
-                .Where(pl => pl.To == hotelId && pl.Type != PaymentType.Refund)
+                .Where(pl => pl.HotelId == hotelId && pl.To == null && pl.Type != PaymentType.Refund)
                 .GroupBy(pl => pl.Type)
                 .Select(g => new { Type = g.Key, Revenue = g.Sum(x => x.Amount) })
                 .ToListAsync();
@@ -156,14 +146,14 @@ namespace Booking.Repositories
         public async Task<IEnumerable<MonthlyNet>> GetMonthlyNetByHotelAsync(int hotelId)
         {
             var rows = await _context.PaymentLogs
-                .Where(pl => pl.To == hotelId || pl.From == hotelId)
+                .Where(pl => pl.HotelId == hotelId)
                 .GroupBy(pl => new { pl.CreatedAt.Year, pl.CreatedAt.Month })
                 .Select(g => new
                 {
                     g.Key.Year,
                     g.Key.Month,
-                    Net = g.Sum(x => x.To == hotelId ? x.Amount : 0m)
-                       - g.Sum(x => x.From == hotelId ? x.Amount : 0m)
+                    Net = g.Sum(x => x.To == null ? x.Amount : 0m)
+                       - g.Sum(x => x.From == null ? x.Amount : 0m)
                 })
                 .OrderBy(x => x.Year).ThenBy(x => x.Month)
                 .ToListAsync();
@@ -173,18 +163,18 @@ namespace Booking.Repositories
         public async Task<RefundImpactData> GetRefundImpactByHotelAsync(int hotelId)
         {
             var baseQuery = _context.PaymentLogs
-                .Where(pl => pl.To == hotelId || pl.From == hotelId);
+                .Where(pl => pl.HotelId == hotelId);
 
             var paidRevenue = await baseQuery
-                .Where(pl => pl.To == hotelId && pl.Type == PaymentType.Booking)
+                .Where(pl => pl.To == null && pl.Type == PaymentType.Booking)
                 .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
 
             var refundAmount = await baseQuery
-                .Where(pl => pl.From == hotelId && pl.Type == PaymentType.Refund)
+                .Where(pl => pl.From == null && pl.Type == PaymentType.Refund)
                 .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
 
             var cancellationLoss = await baseQuery
-                .Where(pl => pl.From == hotelId && pl.Type == PaymentType.Cancellation)
+                .Where(pl => pl.From == null && pl.Type == PaymentType.Cancellation)
                 .SumAsync(pl => (decimal?)pl.Amount) ?? 0m;
 
             return new RefundImpactData(paidRevenue, refundAmount, cancellationLoss);
@@ -192,7 +182,8 @@ namespace Booking.Repositories
 
         public async Task<decimal> GetMonthlyBookingRevenueByHotelAsync(int hotelId, int year, int month)
             => await _context.PaymentLogs
-                .Where(pl => pl.To == hotelId
+                .Where(pl => pl.HotelId == hotelId
+                    && pl.To == null
                     && pl.Type == PaymentType.Booking
                     && pl.CreatedAt.Year == year
                     && pl.CreatedAt.Month == month)
@@ -201,8 +192,8 @@ namespace Booking.Repositories
         public async Task<FinancialSummaryData> GetFinancialSummaryByHotelAsync(int hotelId)
         {
             var paymentRows = await _context.PaymentLogs
-                .Where(pl => pl.To == hotelId || pl.From == hotelId)
-                .GroupBy(pl => new { IsIncoming = pl.To == hotelId, IsRefund = pl.Type == PaymentType.Refund })
+                .Where(pl => pl.HotelId == hotelId)
+                .GroupBy(pl => new { IsIncoming = pl.To == null, IsRefund = pl.Type == PaymentType.Refund })
                 .Select(g => new { g.Key.IsIncoming, g.Key.IsRefund, Total = g.Sum(x => x.Amount) })
                 .ToListAsync();
 
@@ -249,14 +240,9 @@ namespace Booking.Repositories
         }
 
         private IQueryable<PaymentLog> BuildHotelQuery(
-            int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
+            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {
-            var query = incoming switch
-            {
-                true => _context.PaymentLogs.Where(p => p.To == hotelId),
-                false => _context.PaymentLogs.Where(p => p.From == hotelId),
-                null => _context.PaymentLogs.Where(p => p.To == hotelId || p.From == hotelId)
-            };
+            var query = _context.PaymentLogs.Where(p => p.HotelId == hotelId);
 
             if (type.HasValue)
                 query = query.Where(p => p.Type == type.Value);

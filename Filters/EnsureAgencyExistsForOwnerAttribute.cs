@@ -1,3 +1,4 @@
+using Booking.Constants;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using Booking.Models;
@@ -23,6 +24,12 @@ namespace Booking.Filters
             var agencyOwner = await _userManager.GetUserAsync(context.HttpContext.User);
             if (agencyOwner is null)
                 throw new AuthenticatedUserNotFoundException();
+
+            if (await _userManager.IsInRoleAsync(agencyOwner, Constants.Roles.Customer))
+            {
+                await next();
+                return;
+            }
 
             if (agencyOwner.AgencyId is null)
                 throw new AgencyNotAssignedException();

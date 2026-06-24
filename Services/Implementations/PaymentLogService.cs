@@ -27,40 +27,19 @@ namespace Booking.Services
                 request.Type, request.DateFrom, request.DateTo);
 
 
-            var allIds = items.SelectMany(p => new[] { p.From, p.To }).Distinct().ToList();
-            var nameMap = new Dictionary<int, string>();
-            var hotelIdSet = new HashSet<int>();
+            var userIds = items
+                .SelectMany(p => new int?[] { p.From, p.To })
+                .Where(id => id.HasValue).Select(id => id!.Value)
+                .Distinct().ToList();
 
-            foreach (var id in allIds)
-            {
-                var user = await _userManager.FindByIdAsync(id.ToString());
-                if (user is not null)
-                {
-                    nameMap[id] = $"{user.FirstName} {user.LastName}";
-                    continue;
-                }
-                var hotel = await _hotelRepository.GetByIdAsync(id);
-                if (hotel is not null)
-                {
-                    nameMap[id] = hotel.Name;
-                    hotelIdSet.Add(id);
-                }
-            }
+            var hotelIds = items
+                .Where(p => p.HotelId.HasValue).Select(p => p.HotelId!.Value)
+                .Distinct().ToList();
 
-            string ResolveName(int id) =>
-                nameMap.TryGetValue(id, out var name) ? name : id.ToString();
+            var userNameMap = await BuildUserNameMapAsync(userIds);
+            var hotelNameMap = await BuildHotelNameMapAsync(hotelIds);
 
-            var mapped = items.Select(p => new PaymentLogItemResponse
-            {
-                PaymentId = p.Id,
-                ReservationReference = p.Reservation?.ReservationNumber,
-                PaymentType = p.Type.ToString(),
-                Reason = p.Reason,
-                Amount = p.Amount,
-                FromName = ResolveName(p.From),
-                ToName = ResolveName(p.To),
-                CreatedAt = p.CreatedAt,
-            }).ToList();
+            var mapped = MapAllItems(items, userNameMap, hotelNameMap);
 
             return new PaginatedResponse<PaymentLogItemResponse>
             {
@@ -73,40 +52,37 @@ namespace Booking.Services
         }
 
         public async Task<PaymentLogSummaryResponse> GetHotelLogsAsync(
-            int hotelId, bool? incoming, PaymentLogListRequest request)
+            int hotelId, PaymentLogListRequest request)
         {
             bool ascending = IsAscending(request.SortOrder);
 
-            var items = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
-            var total = await _paymentLogRepository.CountHotelLogsAsync(hotelId, incoming, request.Type, request.DateFrom, request.DateTo);
+            var items = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
+            var total = await _paymentLogRepository.CountHotelLogsAsync(hotelId, request.Type, request.DateFrom, request.DateTo);
             var summary = await _paymentLogRepository.GetHotelSummaryAsync(hotelId);
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var hotelName = hotel?.Name ?? hotelId.ToString();
 
             var userIds = items
-                .Select(p => p.To == hotelId ? p.From : p.To)
+                .SelectMany(p => new int?[] { p.From, p.To })
+                .Where(id => id.HasValue).Select(id => id!.Value)
                 .Distinct()
                 .ToList();
 
-            var userMap = new Dictionary<int, string>();
-            foreach (var uid in userIds)
-            {
-                var user = await _userManager.FindByIdAsync(uid.ToString());
-                userMap[uid] = user is not null ? $"{user.FirstName} {user.LastName}" : uid.ToString();
-            }
+            var userMap = await BuildUserNameMapAsync(userIds);
 
             var mapped = items.Select(p =>
             {
-                bool isIncoming = p.To == hotelId;
-                int userId = isIncoming ? p.From : p.To;
-                string userName = userMap.TryGetValue(userId, out var n) ? n : userId.ToString();
+                bool isIncoming = p.To == null;
+                int? userId = isIncoming ? p.From : p.To;
+                string userName = userId.HasValue && userMap.TryGetValue(userId.Value, out var n) ? n : hotelName;
 
                 return new PaymentLogItemResponse
                 {
                     PaymentId = p.Id,
                     ReservationReference = p.Reservation?.ReservationNumber,
                     PaymentType = p.Type.ToString(),
+                    TransactionType = isIncoming ? TransactionTypes.Incoming : TransactionTypes.Outgoing,
                     Reason = p.Reason,
                     Amount = p.Amount,
                     FromName = isIncoming ? userName : hotelName,
@@ -145,16 +121,16 @@ namespace Booking.Services
             var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
                 ?? throw new PaymentLogNotFoundException(paymentLogId);
 
-            if (log.To != hotelId && log.From != hotelId)
+            if (log.HotelId != hotelId)
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var hotelName = hotel?.Name ?? hotelId.ToString();
 
-            bool isIncoming = log.To == hotelId;
-            int userId = isIncoming ? log.From : log.To;
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : userId.ToString();
+            bool isIncoming = log.To == null;
+            int? userId = isIncoming ? log.From : log.To;
+            var user = userId.HasValue ? await _userManager.FindByIdAsync(userId.Value.ToString()) : null;
+            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : hotelName;
 
             return new PaymentLogDetailsResponse
             {
@@ -188,19 +164,17 @@ namespace Booking.Services
             var dbRows = (await _paymentLogRepository.GetMonthlyIncomingByAgencyAsync(agencyId, from, to))
                 .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
 
-            var result = new List<MonthlyRevenueItem>(RevenueReportConstants.PeriodLengthMonths);
-            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
-            {
-                var month = from.AddMonths(i);
-                dbRows.TryGetValue((month.Year, month.Month), out var profit);
-                result.Add(new MonthlyRevenueItem
+            return GetMonthRange(from, RevenueReportConstants.PeriodLengthMonths)
+                .Select(month =>
                 {
-                    Month = month.ToString(RevenueReportConstants.MonthFormat),
-                    Year = month.Year,
-                    Revenue = profit
-                });
-            }
-            return result;
+                    dbRows.TryGetValue((month.Year, month.Month), out var profit);
+                    return new MonthlyRevenueItem
+                    {
+                        Month = month.ToString(RevenueReportConstants.MonthFormat),
+                        Year = month.Year,
+                        Revenue = profit
+                    };
+                }).ToList();
         }
 
         public async Task<IReadOnlyList<MonthlyRevenueItem>> GetAgencyMonthlyExpensesAsync(int agencyId)
@@ -217,19 +191,17 @@ namespace Booking.Services
             var dbRows = (await _paymentLogRepository.GetMonthlyOutgoingByAgencyAsync(agencyId, from, to))
                 .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
 
-            var result = new List<MonthlyRevenueItem>(RevenueReportConstants.PeriodLengthMonths);
-            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
-            {
-                var month = from.AddMonths(i);
-                dbRows.TryGetValue((month.Year, month.Month), out var expenses);
-                result.Add(new MonthlyRevenueItem
+            return GetMonthRange(from, RevenueReportConstants.PeriodLengthMonths)
+                .Select(month =>
                 {
-                    Month = month.ToString(RevenueReportConstants.MonthFormat),
-                    Year = month.Year,
-                    Revenue = expenses
-                });
-            }
-            return result;
+                    dbRows.TryGetValue((month.Year, month.Month), out var expenses);
+                    return new MonthlyRevenueItem
+                    {
+                        Month = month.ToString(RevenueReportConstants.MonthFormat),
+                        Year = month.Year,
+                        Revenue = expenses
+                    };
+                }).ToList();
         }
 
         public async Task<IReadOnlyList<CashFlowItem>> GetHotelCashFlowAsync(int hotelId)
@@ -249,21 +221,19 @@ namespace Booking.Services
             var outgoingMap = (await _paymentLogRepository.GetMonthlyOutgoingByHotelAsync(hotelId, from, to))
                 .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
 
-            var result = new List<CashFlowItem>(RevenueReportConstants.PeriodLengthMonths);
-            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
-            {
-                var month = from.AddMonths(i);
-                incomingMap.TryGetValue((month.Year, month.Month), out var incoming);
-                outgoingMap.TryGetValue((month.Year, month.Month), out var outgoing);
-                result.Add(new CashFlowItem
+            return GetMonthRange(from, RevenueReportConstants.PeriodLengthMonths)
+                .Select(month =>
                 {
-                    Month = month.ToString(RevenueReportConstants.MonthFormat),
-                    Year = month.Year,
-                    Incoming = incoming,
-                    Outgoing = outgoing
-                });
-            }
-            return result;
+                    incomingMap.TryGetValue((month.Year, month.Month), out var incoming);
+                    outgoingMap.TryGetValue((month.Year, month.Month), out var outgoing);
+                    return new CashFlowItem
+                    {
+                        Month = month.ToString(RevenueReportConstants.MonthFormat),
+                        Year = month.Year,
+                        Incoming = incoming,
+                        Outgoing = outgoing
+                    };
+                }).ToList();
         }
 
         public async Task<IReadOnlyList<RevenueByTypeItem>> GetHotelRevenueByTypeAsync(int hotelId)
@@ -304,9 +274,8 @@ namespace Booking.Services
                 .ToDictionary(r => (r.Year, r.Month), r => r.Net);
 
             var result = new List<BalanceTrendItem>(RevenueReportConstants.PeriodLengthMonths);
-            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
+            foreach (var month in GetMonthRange(windowStart, RevenueReportConstants.PeriodLengthMonths))
             {
-                var month = windowStart.AddMonths(i);
                 windowMap.TryGetValue((month.Year, month.Month), out var netChange);
                 balance += netChange;
                 result.Add(new BalanceTrendItem
@@ -384,20 +353,19 @@ namespace Booking.Services
             var expensesMap = (await _paymentLogRepository.GetMonthlyOutgoingByHotelAsync(hotelId, from, to))
                 .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
 
-            var items = new List<RevenueExpensesItem>(RevenueReportConstants.PeriodLengthMonths);
-            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
-            {
-                var month = from.AddMonths(i);
-                revenueMap.TryGetValue((month.Year, month.Month), out var revenue);
-                expensesMap.TryGetValue((month.Year, month.Month), out var expenses);
-                items.Add(new RevenueExpensesItem
+            var items = GetMonthRange(from, RevenueReportConstants.PeriodLengthMonths)
+                .Select(month =>
                 {
-                    Month    = month.ToString(RevenueReportConstants.MonthFormat),
-                    Year     = month.Year,
-                    Revenue  = revenue,
-                    Expenses = expenses
-                });
-            }
+                    revenueMap.TryGetValue((month.Year, month.Month), out var revenue);
+                    expensesMap.TryGetValue((month.Year, month.Month), out var expenses);
+                    return new RevenueExpensesItem
+                    {
+                        Month    = month.ToString(RevenueReportConstants.MonthFormat),
+                        Year     = month.Year,
+                        Revenue  = revenue,
+                        Expenses = expenses
+                    };
+                }).ToList();
             return new RevenueExpensesResponse { Data = items };
         }
 
@@ -415,20 +383,17 @@ namespace Booking.Services
             var dbRows = (await _paymentLogRepository.GetMonthlyIncomingByAgencyAsync(agencyId, from, to))
                 .ToDictionary(r => (r.Year, r.Month), r => r.Revenue);
 
-            var result = new List<MonthlyRevenueItem>(RevenueReportConstants.PeriodLengthMonths);
-            for (int i = 0; i < RevenueReportConstants.PeriodLengthMonths; i++)
-            {
-                var month = from.AddMonths(i);
-                dbRows.TryGetValue((month.Year, month.Month), out var revenue);
-                result.Add(new MonthlyRevenueItem
+            return GetMonthRange(from, RevenueReportConstants.PeriodLengthMonths)
+                .Select(month =>
                 {
-                    Month = month.ToString(RevenueReportConstants.MonthFormat),
-                    Year = month.Year,
-                    Revenue = revenue
-                });
-            }
-
-            return result;
+                    dbRows.TryGetValue((month.Year, month.Month), out var revenue);
+                    return new MonthlyRevenueItem
+                    {
+                        Month = month.ToString(RevenueReportConstants.MonthFormat),
+                        Year = month.Year,
+                        Revenue = revenue
+                    };
+                }).ToList();
         }
 
         public async Task<IReadOnlyList<HotelRevenueItem>> GetAgencyRevenuePerHotelAsync(int agencyId)
@@ -444,6 +409,7 @@ namespace Booking.Services
 
         public async Task<PaymentLogDetailsResponse> CreateAsync(int hotelId, CreatePaymentLogRequest request)
         {
+            var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var log = await _paymentLogRepository.CreateAsync(new PaymentLog
             {
                 ReservationId = request.ReservationId,
@@ -451,7 +417,9 @@ namespace Booking.Services
                 Type = request.Type,
                 Reason = ResolveReason(request.Type, request.Reason),
                 From = request.From,
-                To = request.To
+                To = request.To,
+                HotelId = hotelId,
+                AgencyId = hotel?.AgencyId
             });
 
             var saved = await _paymentLogRepository.GetByIdAsync(log.Id);
@@ -464,7 +432,7 @@ namespace Booking.Services
             var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
                 ?? throw new PaymentLogNotFoundException(paymentLogId);
 
-            if (log.To != hotelId && log.From != hotelId)
+            if (log.HotelId != hotelId)
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             if (request.Amount.HasValue) log.Amount = request.Amount.Value;
@@ -488,7 +456,7 @@ namespace Booking.Services
             var log = await _paymentLogRepository.GetByIdAsync(paymentLogId)
                 ?? throw new PaymentLogNotFoundException(paymentLogId);
 
-            if (log.To != hotelId && log.From != hotelId)
+            if (log.HotelId != hotelId)
                 throw new PaymentLogForbiddenException(paymentLogId, hotelId);
 
             await _paymentLogRepository.DeleteAsync(log);
@@ -507,10 +475,10 @@ namespace Booking.Services
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
             var hotelName = hotel?.Name ?? hotelId.ToString();
 
-            bool isIncoming = log.To == hotelId;
-            int userId = isIncoming ? log.From : log.To;
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : userId.ToString();
+            bool isIncoming = log.To == null;
+            int? userId = isIncoming ? log.From : log.To;
+            var user = userId.HasValue ? await _userManager.FindByIdAsync(userId.Value.ToString()) : null;
+            var userName = user is not null ? $"{user.FirstName} {user.LastName}" : hotelName;
 
             return new PaymentLogDetailsResponse
             {
@@ -527,6 +495,54 @@ namespace Booking.Services
             };
         }
 
+        private static List<PaymentLogItemResponse> MapAllItems(
+            List<PaymentLog> items,
+            Dictionary<int, string> userNameMap,
+            Dictionary<int, string> hotelNameMap)
+        {
+            string resolveUser(int? id) =>
+                id.HasValue && userNameMap.TryGetValue(id.Value, out var n) ? n : id?.ToString() ?? string.Empty;
+
+            string resolveHotel(int? hotelId) =>
+                hotelId.HasValue && hotelNameMap.TryGetValue(hotelId.Value, out var n) ? n : PaymentLogConstants.FallbackHotelName;
+
+            return items.Select(p => new PaymentLogItemResponse
+            {
+                PaymentId = p.Id,
+                ReservationReference = p.Reservation?.ReservationNumber,
+                PaymentType = p.Type.ToString(),
+                Reason = p.Reason,
+                Amount = p.Amount,
+                FromName = p.From.HasValue ? resolveUser(p.From) : resolveHotel(p.HotelId),
+                ToName = p.To.HasValue ? resolveUser(p.To) : resolveHotel(p.HotelId),
+                CreatedAt = p.CreatedAt,
+            }).ToList();
+        }
+
+        private async Task<Dictionary<int, string>> BuildUserNameMapAsync(List<int> ids)
+        {
+            var map = new Dictionary<int, string>();
+            foreach (var id in ids)
+            {
+                var user = await _userManager.FindByIdAsync(id.ToString());
+                if (user is not null)
+                    map[id] = $"{user.FirstName} {user.LastName}";
+            }
+            return map;
+        }
+
+        private async Task<Dictionary<int, string>> BuildHotelNameMapAsync(List<int> ids)
+        {
+            var map = new Dictionary<int, string>();
+            foreach (var id in ids)
+            {
+                var hotel = await _hotelRepository.GetByIdAsync(id);
+                if (hotel is not null)
+                    map[id] = hotel.Name;
+            }
+            return map;
+        }
+
         private static string ResolveReason(PaymentType type, string? overrideReason) =>
             overrideReason ?? type switch
             {
@@ -540,6 +556,9 @@ namespace Booking.Services
                 _ => string.Empty
             };
 
+
+        private static IEnumerable<DateTime> GetMonthRange(DateTime from, int count) =>
+            Enumerable.Range(0, count).Select(i => from.AddMonths(i));
 
         private static DateOnly GetWeekStart(DateTime dt)
         {
@@ -559,21 +578,21 @@ namespace Booking.Services
 
             if (res is not null)
             {
-                timeline.Add(new() { Event = "Reservation Created", OccurredAt = res.CreatedAt });
-                timeline.Add(new() { Event = "Payment Recorded", OccurredAt = log.CreatedAt });
+                timeline.Add(new() { Event = PaymentTimelineEvents.ReservationCreated, OccurredAt = res.CreatedAt });
+                timeline.Add(new() { Event = PaymentTimelineEvents.PaymentRecorded, OccurredAt = log.CreatedAt });
 
                 if (res.Status is ReservationStatus.CheckedIn or ReservationStatus.CheckedOut)
-                    timeline.Add(new() { Event = "Checked In", OccurredAt = res.CheckInDate.ToDateTime(TimeOnly.MinValue) });
+                    timeline.Add(new() { Event = PaymentTimelineEvents.CheckedIn, OccurredAt = res.CheckInDate.ToDateTime(TimeOnly.MinValue) });
 
                 if (res.Status == ReservationStatus.CheckedOut)
-                    timeline.Add(new() { Event = "Checked Out", OccurredAt = res.CheckOutDate.ToDateTime(TimeOnly.MinValue) });
+                    timeline.Add(new() { Event = PaymentTimelineEvents.CheckedOut, OccurredAt = res.CheckOutDate.ToDateTime(TimeOnly.MinValue) });
 
                 if (res.Status == ReservationStatus.Cancelled && res.CancelledAt.HasValue)
-                    timeline.Add(new() { Event = "Cancelled", OccurredAt = res.CancelledAt.Value });
+                    timeline.Add(new() { Event = PaymentTimelineEvents.Cancelled, OccurredAt = res.CancelledAt.Value });
             }
             else
             {
-                timeline.Add(new() { Event = "Payment Recorded", OccurredAt = log.CreatedAt });
+                timeline.Add(new() { Event = PaymentTimelineEvents.PaymentRecorded, OccurredAt = log.CreatedAt });
             }
 
             return [.. timeline.OrderBy(t => t.OccurredAt)];

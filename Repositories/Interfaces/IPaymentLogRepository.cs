@@ -24,9 +24,9 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<PaymentLog>> GetAllPagedAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
         Task<int> CountAllAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
 
-        // Hotel — paged (incoming=null=all, true=incoming only, false=outgoing only)
-        Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
-        Task<int> CountHotelLogsAsync(int hotelId, bool? incoming, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
+        // Hotel — paged (all transactions)
+        Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
+        Task<int> CountHotelLogsAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
 
         // Hotel — unfiltered summary totals in one query
         Task<HotelPaymentSummary> GetHotelSummaryAsync(int hotelId);
