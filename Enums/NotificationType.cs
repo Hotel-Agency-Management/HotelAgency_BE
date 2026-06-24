@@ -9,6 +9,7 @@ namespace Booking.Enums
         System,
         NewAgencyRegistered,
         AgencyActivated,
-        NewHotelCreated
+        NewHotelCreated,
+        Alert
     }
 }

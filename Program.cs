@@ -227,16 +227,18 @@ var app = builder.Build();
 
 await SeedManager.SeedAsync(app.Services);
 
-RecurringJob.AddOrUpdate<CheckInReminderJob>(
+var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
+
+recurringJobs.AddOrUpdate<CheckInReminderJob>(
     "check-in-reminder",
     job => job.ExecuteAsync(),
     "0 8 * * *",
     new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
-RecurringJob.AddOrUpdate<OverdueTicketsJob>(
+recurringJobs.AddOrUpdate<OverdueTicketsJob>(
     "overdue-tickets",
     job => job.ExecuteAsync(),
-    "0 * * * *",
+    "0 */2 * * *",
     new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
 if (app.Environment.IsDevelopment())
