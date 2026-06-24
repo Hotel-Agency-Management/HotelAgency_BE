@@ -148,6 +148,13 @@ namespace Booking.Repositories
             return await GetByIdAsync(reservation.Id) ?? reservation;
         }
 
+        public async Task<IEnumerable<Reservation>> GetTomorrowCheckInsWithCustomerAsync(DateOnly tomorrow)
+            => await _context.Reservations
+                .Where(r => r.CheckInDate == tomorrow
+                         && r.CustomerId != null
+                         && !r.CheckInReminderSent)
+                .ToListAsync();
+
         public async Task<int> GetTotalCountByAgencyAsync(int agencyId)
             => await _context.Reservations
                 .Where(r => r.Hotel!.AgencyId == agencyId)

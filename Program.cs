@@ -20,6 +20,7 @@ using Booking.Factories;
 using System.Text.Json.Serialization;
 using Booking.Converters;
 using Booking.Hubs;
+using Booking.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -187,6 +188,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailJobService, EmailJobService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
+builder.Services.AddScoped<CheckInReminderJob>();
+builder.Services.AddScoped<OverdueTicketsJob>();
+
 // Hangfire with MySQL
 var hangfireConnection = connectionString;
 
@@ -222,6 +226,18 @@ builder.Services.AddSignalR();
 var app = builder.Build();
 
 await SeedManager.SeedAsync(app.Services);
+
+RecurringJob.AddOrUpdate<CheckInReminderJob>(
+    "check-in-reminder",
+    job => job.ExecuteAsync(),
+    "0 8 * * *",
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+RecurringJob.AddOrUpdate<OverdueTicketsJob>(
+    "overdue-tickets",
+    job => job.ExecuteAsync(),
+    "0 * * * *",
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
 if (app.Environment.IsDevelopment())
 {

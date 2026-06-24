@@ -44,6 +44,8 @@ namespace Booking.Models
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        public bool OverdueNotificationSent { get; set; } = false;
+
         [ForeignKey(nameof(HotelId))]
         public Hotel? Hotel { get; set; }
 
