@@ -39,24 +39,24 @@ namespace Booking.Services
             return response;
         }
 
-        public async Task<PaginatedResponse<NotificationResponse>> GetUserNotificationsAsync(
+        public async Task<NotificationListResponse> GetUserNotificationsAsync(
             int userId, NotificationListRequest request)
         {
             var (items, totalCount) = await _notificationRepository.GetByUserIdAsync(
                 userId, request.IsRead, request.Type, request.PageNumber, request.PageSize);
 
-            return new PaginatedResponse<NotificationResponse>
+            var unreadCount = await _notificationRepository.CountUnreadByUserIdAsync(userId);
+
+            return new NotificationListResponse
             {
                 Items = items.Select(n => new NotificationResponse(n)).ToList(),
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
                 TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize),
+                UnreadCount = unreadCount
             };
         }
-
-        public async Task<int> GetUnreadCountAsync(int userId)
-            => await _notificationRepository.CountUnreadByUserIdAsync(userId);
 
         public async Task MarkAsReadAsync(int userId, int notificationId)
         {

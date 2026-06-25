@@ -25,16 +25,6 @@ namespace Booking.Controllers
             return Ok(result);
         }
 
-        [HttpGet("unread-count")]
-        public async Task<IActionResult> GetUnreadCount()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user is null) return Unauthorized(Messages.Unauthorized);
-
-            var count = await _notificationService.GetUnreadCountAsync(user.Id);
-            return Ok(new { UnreadCount = count });
-        }
-
         [HttpPatch("{id:int}/read")]
         public async Task<IActionResult> MarkAsRead([FromRoute] int id)
         {

@@ -44,4 +44,14 @@ namespace Booking.DTO
         public bool? IsRead { get; set; }
         public NotificationType? Type { get; set; }
     }
+
+    public class NotificationListResponse
+    {
+        public IReadOnlyCollection<NotificationResponse> Items { get; set; } = [];
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+        public int TotalCount { get; set; }
+        public int TotalPages { get; set; }
+        public int UnreadCount { get; set; }
+    }
 }
