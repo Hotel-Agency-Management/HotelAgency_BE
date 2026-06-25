@@ -97,8 +97,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = saved.CustomerId.Value,
-                    Title = "Reservation Confirmed",
-                    Message = $"Your reservation #{saved.ReservationNumber} has been confirmed.",
+                    Title = NotificationTitles.ReservationConfirmed,
+                    Message = string.Format(NotificationMessages.ReservationConfirmed, saved.ReservationNumber),
                     Type = NotificationType.Reservation,
                     Metadata = $"{{\"reservationId\":{saved.Id}}}"
                 });
@@ -107,8 +107,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = staffManagerId,
-                    Title = "New Reservation",
-                    Message = $"Reservation #{saved.ReservationNumber} has been created for {saved.GuestFullName}.",
+                    Title = NotificationTitles.NewReservation,
+                    Message = string.Format(NotificationMessages.NewReservation, saved.ReservationNumber, saved.GuestFullName),
                     Type = NotificationType.Reservation,
                     Metadata = $"{{\"reservationId\":{saved.Id}}}"
                 });
@@ -189,8 +189,8 @@ namespace Booking.Services
             await _notificationService.CreateAsync(new CreateNotificationRequest
             {
                 UserId = user.Id,
-                Title = "Reservation Confirmed",
-                Message = $"Your reservation #{saved.ReservationNumber} has been confirmed.",
+                Title = NotificationTitles.ReservationConfirmed,
+                Message = string.Format(NotificationMessages.ReservationConfirmed, saved.ReservationNumber),
                 Type = NotificationType.Reservation,
                 Metadata = $"{{\"reservationId\":{saved.Id}}}"
             });
@@ -199,8 +199,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = onlineManagerId,
-                    Title = "New Online Reservation",
-                    Message = $"New online reservation #{saved.ReservationNumber} received from {saved.GuestFullName}.",
+                    Title = NotificationTitles.NewOnlineReservation,
+                    Message = string.Format(NotificationMessages.NewOnlineReservation, saved.ReservationNumber, saved.GuestFullName),
                     Type = NotificationType.Reservation,
                     Metadata = $"{{\"reservationId\":{saved.Id}}}"
                 });
@@ -283,8 +283,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = updated.CustomerId.Value,
-                    Title = "Check-Out Processed",
-                    Message = $"Your check-out for reservation #{updated.ReservationNumber} has been processed. Thank you for your stay!",
+                    Title = NotificationTitles.CheckOutProcessed,
+                    Message = string.Format(NotificationMessages.CheckOutProcessed, updated.ReservationNumber),
                     Type = NotificationType.Reservation,
                     Metadata = $"{{\"reservationId\":{updated.Id}}}"
                 });
@@ -334,8 +334,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = managerId,
-                    Title = "Reservation Updated by Guest",
-                    Message = $"Reservation #{reservation.ReservationNumber} has been updated by the guest.",
+                    Title = NotificationTitles.ReservationUpdatedByGuest,
+                    Message = string.Format(NotificationMessages.ReservationUpdatedByGuest, reservation.ReservationNumber),
                     Type = NotificationType.Reservation,
                     Metadata = $"{{\"reservationId\":{reservation.Id}}}"
                 });
@@ -355,8 +355,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = managerId,
-                    Title = "Reservation Cancelled by Guest",
-                    Message = $"Reservation #{reservation.ReservationNumber} has been cancelled by the guest.",
+                    Title = NotificationTitles.ReservationCancelledByGuest,
+                    Message = string.Format(NotificationMessages.ReservationCancelledByGuest, reservation.ReservationNumber),
                     Type = NotificationType.Reservation,
                     Metadata = $"{{\"reservationId\":{reservation.Id}}}"
                 });
@@ -475,8 +475,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = updated.CustomerId.Value,
-                    Title = "Reservation Cancelled",
-                    Message = $"Your reservation #{updated.ReservationNumber} has been cancelled.",
+                    Title = NotificationTitles.ReservationCancelled,
+                    Message = string.Format(NotificationMessages.ReservationCancelled, updated.ReservationNumber),
                     Type = NotificationType.Reservation,
                     Metadata = $"{{\"reservationId\":{updated.Id}}}"
                 });
@@ -528,8 +528,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = updated.CustomerId.Value,
-                    Title = "Refund Issued",
-                    Message = $"A refund of {refundAmount:F2} has been issued for reservation #{updated.ReservationNumber}.",
+                    Title = NotificationTitles.RefundIssued,
+                    Message = string.Format(NotificationMessages.RefundIssued, refundAmount, updated.ReservationNumber),
                     Type = NotificationType.Payment,
                     Metadata = $"{{\"reservationId\":{updated.Id}}}"
                 });

@@ -430,8 +430,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = request.To.Value,
-                    Title = "Payment Received",
-                    Message = $"A payment of {request.Amount:F2} has been credited to your account.",
+                    Title = NotificationTitles.PaymentReceived,
+                    Message = string.Format(NotificationMessages.PaymentReceived, request.Amount),
                     Type = NotificationType.Payment,
                     Metadata = $"{{\"paymentLogId\":{log.Id}}}"
                 });

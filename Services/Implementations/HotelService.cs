@@ -56,8 +56,8 @@ namespace Booking.Services
 
             var agency = await _agencyRepository.GetByIdAsync(saved.AgencyId);
             await _notificationService.NotifySuperAdminsAsync(
-                "New Hotel Created",
-                $"A new hotel '{saved.Name}' has been created under agency '{agency?.AgencyName ?? "Unknown"}'.",
+                NotificationTitles.NewHotelCreated,
+                string.Format(NotificationMessages.NewHotelCreated, saved.Name, agency?.AgencyName ?? "Unknown"),
                 NotificationType.NewHotelCreated);
 
             return new HotelResponse(saved);

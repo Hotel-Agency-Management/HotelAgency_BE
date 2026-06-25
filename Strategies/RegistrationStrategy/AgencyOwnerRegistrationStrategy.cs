@@ -55,8 +55,8 @@ namespace Booking.Strategies
             });
 
             await _notificationService.NotifySuperAdminsAsync(
-                "New Agency Registered",
-                $"A new agency '{agencyRequest.AgencyName.Trim()}' has been registered.",
+                NotificationTitles.NewAgencyRegistered,
+                string.Format(NotificationMessages.NewAgencyRegistered, agencyRequest.AgencyName.Trim()),
                 NotificationType.NewAgencyRegistered);
 
             return user;

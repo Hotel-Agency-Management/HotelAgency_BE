@@ -50,8 +50,8 @@ namespace Booking.Services
             await _notificationService.CreateAsync(new CreateNotificationRequest
             {
                 UserId = request.AssignedToId,
-                Title = "New Ticket Assigned",
-                Message = $"You have been assigned to ticket '{saved.Title}'.",
+                Title = NotificationTitles.NewTicketAssigned,
+                Message = string.Format(NotificationMessages.TicketAssigned, saved.Title),
                 Type = NotificationType.Ticket,
                 Metadata = $"{{\"ticketId\":{saved.Id}}}"
             });
@@ -151,8 +151,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = request.AssignedToId.Value,
-                    Title = "Ticket Assigned",
-                    Message = $"You have been assigned to ticket '{updated.Title}'.",
+                    Title = NotificationTitles.TicketAssigned,
+                    Message = string.Format(NotificationMessages.TicketAssigned, updated.Title),
                     Type = NotificationType.Ticket,
                     Metadata = $"{{\"ticketId\":{updated.Id}}}"
                 });
@@ -175,8 +175,8 @@ namespace Booking.Services
             await _notificationService.CreateAsync(new CreateNotificationRequest
             {
                 UserId = updated.AssignedToId,
-                Title = "Ticket Status Updated",
-                Message = $"Ticket '{updated.Title}' status has been changed to {updated.Status}.",
+                Title = NotificationTitles.TicketStatusUpdated,
+                Message = string.Format(NotificationMessages.TicketStatusUpdated, updated.Title, updated.Status),
                 Type = NotificationType.Ticket,
                 Metadata = $"{{\"ticketId\":{updated.Id}}}"
             });

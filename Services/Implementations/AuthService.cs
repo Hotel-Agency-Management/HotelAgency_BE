@@ -175,8 +175,8 @@ namespace Booking.Services
                 await _notificationService.CreateAsync(new CreateNotificationRequest
                 {
                     UserId = user.Id,
-                    Title = "Password Changed",
-                    Message = "Your password has been changed successfully. If you did not make this change, please contact support immediately.",
+                    Title = NotificationTitles.PasswordChanged,
+                    Message = NotificationMessages.PasswordChanged,
                     Type = NotificationType.System
                 });
             return result;
@@ -260,8 +260,8 @@ namespace Booking.Services
             await _notificationService.CreateAsync(new CreateNotificationRequest
             {
                 UserId = user.Id,
-                Title = "Password Reset",
-                Message = "Your password has been reset successfully. If you did not request this, please contact support immediately.",
+                Title = NotificationTitles.PasswordReset,
+                Message = NotificationMessages.PasswordReset,
                 Type = NotificationType.System
             });
         }
@@ -338,8 +338,8 @@ namespace Booking.Services
             await _notificationService.CreateAsync(new CreateNotificationRequest
             {
                 UserId = userId,
-                Title = "Email Verified",
-                Message = "Your email has been verified. Welcome! Your account is now active.",
+                Title = NotificationTitles.EmailVerified,
+                Message = NotificationMessages.EmailVerified,
                 Type = NotificationType.System
             });
         }
