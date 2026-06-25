@@ -38,6 +38,7 @@ namespace Booking.Models
         public bool HasInsurance { get; set; } = false;
         public decimal InsuranceAmount { get; set; } = 0m;
         public string? CancellationReason { get; set; }
+        public bool CheckInReminderSent { get; set; } = false;
 
         [Required] public int CreatedById { get; set; }
         public int? UpdatedById { get; set; }

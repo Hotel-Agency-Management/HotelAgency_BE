@@ -35,6 +35,7 @@ namespace Booking.Data
             public DbSet<HousekeepingTicket> HousekeepingTickets { get; set; }
             public DbSet<TicketComment> TicketComments { get; set; }
             public DbSet<SystemLog> SystemLogs { get; set; }
+            public DbSet<Notification> Notifications { get; set; }
 
 
             protected override void OnModelCreating(ModelBuilder builder)
@@ -501,6 +502,35 @@ namespace Booking.Data
                         entity.HasIndex(l => l.CreatedAt);
                         entity.HasIndex(l => l.Action);
                         entity.HasIndex(l => l.EntityType);
+                  });
+
+                  builder.Entity<Notification>(entity =>
+                  {
+                        entity.ToTable("Notifications");
+
+                        entity.Property(n => n.Title)
+                              .IsRequired()
+                              .HasMaxLength(200);
+
+                        entity.Property(n => n.Message)
+                              .IsRequired()
+                              .HasColumnType("TEXT");
+
+                        entity.Property(n => n.Type)
+                              .HasConversion<string>()
+                              .HasMaxLength(30);
+
+                        entity.Property(n => n.Metadata)
+                              .HasColumnType("json");
+
+                        entity.HasOne(n => n.User)
+                              .WithMany()
+                              .HasForeignKey(n => n.UserId)
+                              .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasIndex(n => n.UserId);
+                        entity.HasIndex(n => n.IsRead);
+                        entity.HasIndex(n => n.CreatedAt);
                   });
 
             }

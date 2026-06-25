@@ -4,6 +4,7 @@ using Booking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260622210030_AddNotifications")]
+    partial class AddNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -466,9 +469,6 @@ namespace Booking.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<bool>("OverdueNotificationSent")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<string>("Priority")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -752,9 +752,6 @@ namespace Booking.Migrations
 
                     b.Property<DateOnly>("CheckInDate")
                         .HasColumnType("date");
-
-                    b.Property<bool>("CheckInReminderSent")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateOnly>("CheckOutDate")
                         .HasColumnType("date");

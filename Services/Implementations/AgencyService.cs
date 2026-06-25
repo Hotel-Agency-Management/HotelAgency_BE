@@ -2,9 +2,9 @@ using Booking.Clients;
 using Booking.DTO;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
-using System.Globalization;
 using Booking.Interfaces.Services;
 using Booking.Models;
+using System.Globalization;
 
 namespace Booking.Services
 {

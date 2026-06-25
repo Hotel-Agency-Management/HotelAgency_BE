@@ -97,6 +97,13 @@ namespace Booking.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<HousekeepingTicket>> GetOverdueUnnotifiedAsync(DateTime utcNow)
+            => await _context.HousekeepingTickets
+                .Where(t => t.Deadline < utcNow
+                         && t.Status != TicketStatus.Done
+                         && !t.OverdueNotificationSent)
+                .ToListAsync();
+
         private IQueryable<HousekeepingTicket> BuildQuery(
             int hotelId,
             TicketStatus? status,

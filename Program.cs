@@ -19,6 +19,8 @@ using Booking.Strategies;
 using Booking.Factories;
 using System.Text.Json.Serialization;
 using Booking.Converters;
+using Booking.Hubs;
+using Booking.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -28,6 +30,17 @@ var serverVersion = new MySqlServerVersion(new Version(8, 0, 36));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -86,6 +99,18 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings.Key))
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddHttpContextAccessor();
@@ -109,6 +134,7 @@ builder.Services.AddScoped<ITermsAndConditionsRepository, TermsAndConditionsRepo
 builder.Services.AddScoped<IHousekeepingTicketRepository, HousekeepingTicketRepository>();
 builder.Services.AddScoped<ITicketCommentRepository, TicketCommentRepository>();
 builder.Services.AddScoped<ISystemLogRepository, SystemLogRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 
 
@@ -133,6 +159,7 @@ builder.Services.AddScoped<ITermsAndConditionsService, TermsAndConditionsService
 builder.Services.AddScoped<IHousekeepingTicketService, HousekeepingTicketService>();
 builder.Services.AddScoped<ITicketCommentService, TicketCommentService>();
 builder.Services.AddScoped<ISystemLogService, SystemLogService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 builder.Services.AddSingleton<IAppLinkService, AppLinkService>();
 
@@ -160,6 +187,9 @@ builder.Services.Configure<EmailOptions>(
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEmailJobService, EmailJobService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+
+builder.Services.AddScoped<CheckInReminderJob>();
+builder.Services.AddScoped<OverdueTicketsJob>();
 
 // Hangfire with MySQL
 var hangfireConnection = connectionString;
@@ -191,10 +221,25 @@ builder.Services.Configure<AuthSettings>(
 builder.Services.AddHangfireServer(options => options.WorkerCount = 2);
 
 builder.Services.AddAuthorization();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
 await SeedManager.SeedAsync(app.Services);
+
+var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
+
+recurringJobs.AddOrUpdate<CheckInReminderJob>(
+    "check-in-reminder",
+    job => job.ExecuteAsync(),
+    "0 8 * * *",
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+recurringJobs.AddOrUpdate<OverdueTicketsJob>(
+    "overdue-tickets",
+    job => job.ExecuteAsync(),
+    "0 */2 * * *",
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
 if (app.Environment.IsDevelopment())
 {
@@ -207,9 +252,11 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 
+app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

@@ -5,6 +5,6 @@ namespace Booking.Enums
         Active = 1,
         Rejected = 2,
         Pending = 3,
-        InComplete = 4
+        InComplete = 4,
     }
 }
