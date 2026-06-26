@@ -29,5 +29,10 @@ namespace Booking.Interfaces.Repositories
         Task<HousekeepingTicket> UpdateAsync(HousekeepingTicket ticket);
         Task DeleteAsync(HousekeepingTicket ticket);
         Task<(int Total, int Done)> GetCompletionCountsByHotelIdAsync(int hotelId);
+        Task<IEnumerable<(TicketStatus Status, int Count)>> GetStatusDistributionByHotelIdAsync(int hotelId);
+        Task<(int Total, int Done, int Overdue, int HighPriority)> GetKpiCountsByHotelIdAsync(int hotelId);
+        Task<IEnumerable<DateTime>> GetCreationDatesInRangeAsync(int hotelId, DateTime from, DateTime to);
+        Task<IEnumerable<(TicketType Type, int Count)>> GetTypeDistributionByHotelIdAsync(int hotelId);
+        Task<IEnumerable<(TicketPriority Priority, int Count)>> GetPriorityDistributionByHotelIdAsync(int hotelId);
     }
 }
