@@ -25,5 +25,6 @@ namespace Booking.Interfaces.Services
         Task<HotelReservationStatusDistributionResponse> GetHotelReservationStatusDistributionAsync(int hotelId);
         Task<HotelBookingTypeDistributionResponse> GetHotelBookingTypeDistributionAsync(int hotelId);
         Task<HotelRevenueTrendResponse> GetHotelRevenueTrendAsync(int hotelId, string groupBy);
+        Task<IReadOnlyList<InsuranceIncomePerBookingTrendItem>> GetHotelInsuranceIncomePerBookingTrendAsync(int hotelId);
     }
 }

@@ -12,5 +12,6 @@ namespace Booking.Interfaces.Services
         Task<TicketDetailResponse> UpdateTicketAsync(int hotelId, int ticketId, UpdateTicketRequest request);
         Task<TicketDetailResponse> UpdateTicketStatusAsync(int hotelId, int ticketId, UpdateTicketStatusRequest request);
         Task DeleteTicketAsync(int hotelId, int ticketId);
+        Task<TicketCompletionRateResponse> GetHotelTicketCompletionRateAsync(int hotelId);
     }
 }

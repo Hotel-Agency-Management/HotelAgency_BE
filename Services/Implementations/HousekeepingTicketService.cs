@@ -201,6 +201,13 @@ namespace Booking.Services
             }
         }
 
+        public async Task<TicketCompletionRateResponse> GetHotelTicketCompletionRateAsync(int hotelId)
+        {
+            var (total, done) = await _ticketRepository.GetCompletionCountsByHotelIdAsync(hotelId);
+            var value = total == 0 ? 0m : Math.Round(done / (decimal)total * DashboardConstants.PercentageMultiplier, DashboardConstants.DecimalPlaces);
+            return new TicketCompletionRateResponse { Value = value };
+        }
+
         private async Task ValidateAssigneeAsync(int hotelId, int userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());

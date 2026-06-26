@@ -45,4 +45,15 @@ namespace Booking.DTO
         public string GroupBy { get; set; } = string.Empty;
         public List<RevenueTrendItem> Items { get; set; } = new();
     }
+
+    public class InsuranceIncomePerBookingTrendItem
+    {
+        public string Month { get; set; } = string.Empty;
+        public decimal Value { get; set; }
+    }
+
+    public class TicketCompletionRateResponse
+    {
+        public decimal Value { get; set; }
+    }
 }

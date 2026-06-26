@@ -515,16 +515,16 @@ namespace Booking.Services
 
         public async Task<IReadOnlyList<BookingTypeDistributionItem>> GetAgencyBookingTypeDistributionAsync(int agencyId)
         {
-            var from = DateTime.UtcNow.AddMonths(-12);
+            var from = DateTime.UtcNow.AddMonths(DashboardConstants.AgencyTrendMonthsBack);
             var raw = (await _reservationRepository.GetBookingSourceDistributionByAgencyAsync(agencyId, from))
                         .ToDictionary(x => x.Source, x => x.Count);
 
             var allSources = new[]
             {
-                (ReservationSource.Website, "Online"),
-                (ReservationSource.OTA,     "OTA"),
-                (ReservationSource.Phone,   "Phone"),
-                (ReservationSource.WalkIn,  "Walk-in"),
+                (ReservationSource.Website, BookingSourceLabels.Online),
+                (ReservationSource.OTA,     BookingSourceLabels.OTA),
+                (ReservationSource.Phone,   BookingSourceLabels.Phone),
+                (ReservationSource.WalkIn,  BookingSourceLabels.WalkIn),
             };
 
             var total = raw.Values.Sum();
@@ -536,14 +536,14 @@ namespace Booking.Services
                 {
                     Type = s.Item2,
                     Count = count,
-                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * DashboardConstants.PercentageMultiplier, DashboardConstants.DecimalPlaces)
                 };
             }).ToList();
         }
 
         public async Task<IReadOnlyList<ReservationStatusDistributionItem>> GetAgencyStatusDistributionAsync(int agencyId)
         {
-            var from = DateTime.UtcNow.AddMonths(-12);
+            var from = DateTime.UtcNow.AddMonths(DashboardConstants.AgencyTrendMonthsBack);
             var raw = (await _reservationRepository.GetStatusDistributionByAgencyAsync(agencyId, from))
                         .ToDictionary(x => x.Status, x => x.Count);
 
@@ -586,7 +586,7 @@ namespace Booking.Services
 
         public async Task<IReadOnlyList<RoomTypeReservationsItem>> GetAgencyReservationsByRoomTypeAsync(int agencyId)
         {
-            var from = DateTime.UtcNow.AddMonths(-12);
+            var from = DateTime.UtcNow.AddMonths(DashboardConstants.AgencyTrendMonthsBack);
             var rows = await _reservationRepository.GetReservationsByRoomTypeForAgencyAsync(agencyId, from);
 
             return rows.Select(r => new RoomTypeReservationsItem
@@ -611,39 +611,39 @@ namespace Booking.Services
 
         public async Task<HotelRevenueTrendResponse> GetHotelRevenueTrendAsync(int hotelId, string groupBy)
         {
-            if (groupBy == "daily")
+            if (groupBy == DashboardConstants.GroupByDaily)
             {
-                var from = DateTime.UtcNow.AddDays(-29).Date;
-                var to = DateTime.UtcNow.AddDays(1).Date;
+                var from = DateTime.UtcNow.AddDays(DashboardConstants.DailyTrendDaysBack).Date;
+                var to = DateTime.UtcNow.AddDays(DashboardConstants.DailyTrendDaysForward).Date;
 
                 var raw = (await _reservationRepository.GetDailyRevenueByHotelAsync(hotelId, from, to))
                             .ToDictionary(x => new DateOnly(x.Year, x.Month, x.Day), x => x.Revenue);
 
-                var items = Enumerable.Range(0, 30).Select(i =>
+                var items = Enumerable.Range(0, DashboardConstants.DailyTrendDaysCount).Select(i =>
                 {
                     var date = DateOnly.FromDateTime(from).AddDays(i);
                     raw.TryGetValue(date, out var revenue);
-                    return new RevenueTrendItem { Label = date.ToString("dd MMM"), Revenue = revenue };
+                    return new RevenueTrendItem { Label = date.ToString(DashboardConstants.DailyLabelFormat), Revenue = revenue };
                 }).ToList();
 
-                return new HotelRevenueTrendResponse { GroupBy = "daily", Items = items };
+                return new HotelRevenueTrendResponse { GroupBy = DashboardConstants.GroupByDaily, Items = items };
             }
             else
             {
-                var from = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-11);
-                var to = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(1);
+                var from = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, RevenueReportConstants.FirstDayOfMonth).AddMonths(RevenueReportConstants.MonthsBack);
+                var to = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, RevenueReportConstants.FirstDayOfMonth).AddMonths(RevenueReportConstants.MonthsForward);
 
                 var raw = (await _reservationRepository.GetMonthlyRevenueByHotelAsync(hotelId, from, to))
                             .ToDictionary(x => (x.Year, x.Month), x => x.Revenue);
 
-                var items = Enumerable.Range(0, 12).Select(i =>
+                var items = Enumerable.Range(0, RevenueReportConstants.PeriodLengthMonths).Select(i =>
                 {
                     var date = from.AddMonths(i);
                     raw.TryGetValue((date.Year, date.Month), out var revenue);
-                    return new RevenueTrendItem { Label = date.ToString("MMM"), Revenue = revenue };
+                    return new RevenueTrendItem { Label = date.ToString(RevenueReportConstants.MonthFormat), Revenue = revenue };
                 }).ToList();
 
-                return new HotelRevenueTrendResponse { GroupBy = "monthly", Items = items };
+                return new HotelRevenueTrendResponse { GroupBy = DashboardConstants.GroupByMonthly, Items = items };
             }
         }
 
@@ -654,10 +654,10 @@ namespace Booking.Services
 
             var allSources = new[]
             {
-                (ReservationSource.Website, "Online"),
-                (ReservationSource.OTA,     "OTA"),
-                (ReservationSource.Phone,   "Phone"),
-                (ReservationSource.WalkIn,  "Walk-in"),
+                (ReservationSource.Website, BookingSourceLabels.Online),
+                (ReservationSource.OTA,     BookingSourceLabels.OTA),
+                (ReservationSource.Phone,   BookingSourceLabels.Phone),
+                (ReservationSource.WalkIn,  BookingSourceLabels.WalkIn),
             };
 
             var total = raw.Values.Sum();
@@ -669,7 +669,7 @@ namespace Booking.Services
                 {
                     Type = s.Item2,
                     Count = count,
-                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * DashboardConstants.PercentageMultiplier, DashboardConstants.DecimalPlaces)
                 };
             }).ToList();
 
@@ -703,7 +703,7 @@ namespace Booking.Services
                 {
                     Status = s.ToString(),
                     Count = count,
-                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * 100, 2)
+                    Percentage = total == 0 ? 0 : Math.Round(count / (decimal)total * DashboardConstants.PercentageMultiplier, DashboardConstants.DecimalPlaces)
                 };
             }).ToList();
 
@@ -712,6 +712,29 @@ namespace Booking.Services
                 TotalReservations = total,
                 Items = items
             };
+        }
+
+        public async Task<IReadOnlyList<InsuranceIncomePerBookingTrendItem>> GetHotelInsuranceIncomePerBookingTrendAsync(int hotelId)
+        {
+            var from = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, RevenueReportConstants.FirstDayOfMonth).AddMonths(RevenueReportConstants.MonthsBack);
+            var to = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, RevenueReportConstants.FirstDayOfMonth).AddMonths(RevenueReportConstants.MonthsForward);
+
+            var raw = (await _reservationRepository.GetMonthlyInsuranceIncomeByHotelAsync(hotelId, from, to))
+                        .ToDictionary(x => (x.Year, x.Month), x => (x.TotalInsurance, x.TotalReservations));
+
+            return Enumerable.Range(0, RevenueReportConstants.PeriodLengthMonths).Select(i =>
+            {
+                var date = from.AddMonths(i);
+                raw.TryGetValue((date.Year, date.Month), out var entry);
+                var value = entry.TotalReservations > 0
+                    ? Math.Round(entry.TotalInsurance / entry.TotalReservations, DashboardConstants.DecimalPlaces)
+                    : 0m;
+                return new InsuranceIncomePerBookingTrendItem
+                {
+                    Month = date.ToString(DashboardConstants.MonthKeyFormat),
+                    Value = value
+                };
+            }).ToList();
         }
 
         private static bool EnsureCancellable(Reservation reservation)

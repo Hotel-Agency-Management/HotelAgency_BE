@@ -266,6 +266,44 @@ namespace Booking.Repositories
             return rows.Select(r => (r.Year, r.Month, r.Day, r.Revenue));
         }
 
+        public async Task<IEnumerable<(int Year, int Month, int Day, decimal TotalInsurance, int TotalReservations)>> GetDailyInsuranceIncomeByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.HotelId == hotelId
+                         && r.CreatedAt >= from && r.CreatedAt < to
+                         && r.Status != ReservationStatus.Cancelled)
+                .GroupBy(r => new { r.CreatedAt.Year, r.CreatedAt.Month, r.CreatedAt.Day })
+                .Select(g => new
+                {
+                    g.Key.Year, g.Key.Month, g.Key.Day,
+                    TotalInsurance = g.Sum(r => r.InsuranceAmount),
+                    TotalReservations = g.Count()
+                })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Year, r.Month, r.Day, r.TotalInsurance, r.TotalReservations));
+        }
+
+        public async Task<IEnumerable<(int Year, int Month, decimal TotalInsurance, int TotalReservations)>> GetMonthlyInsuranceIncomeByHotelAsync(
+            int hotelId, DateTime from, DateTime to)
+        {
+            var rows = await _context.Reservations
+                .Where(r => r.HotelId == hotelId
+                         && r.CreatedAt >= from && r.CreatedAt < to
+                         && r.Status != ReservationStatus.Cancelled)
+                .GroupBy(r => new { r.CreatedAt.Year, r.CreatedAt.Month })
+                .Select(g => new
+                {
+                    g.Key.Year, g.Key.Month,
+                    TotalInsurance = g.Sum(r => r.InsuranceAmount),
+                    TotalReservations = g.Count()
+                })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Year, r.Month, r.TotalInsurance, r.TotalReservations));
+        }
+
         public async Task<HotelOverviewCards> GetHotelOverviewCardsAsync(int hotelId)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

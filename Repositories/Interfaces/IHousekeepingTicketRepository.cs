@@ -28,5 +28,6 @@ namespace Booking.Interfaces.Repositories
             int? visibleToUserId = null);
         Task<HousekeepingTicket> UpdateAsync(HousekeepingTicket ticket);
         Task DeleteAsync(HousekeepingTicket ticket);
+        Task<(int Total, int Done)> GetCompletionCountsByHotelIdAsync(int hotelId);
     }
 }

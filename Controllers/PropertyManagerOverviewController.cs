@@ -13,7 +13,8 @@ namespace Booking.Controllers
     [Route("api/hotels/{hotelId}/overview")]
     public class PropertyManagerOverviewController(
         IRoomService _roomService,
-        IReservationService _reservationService) : ControllerBase
+        IReservationService _reservationService,
+        IHousekeepingTicketService _ticketService) : ControllerBase
     {
         [HttpGet("room-status-distribution")]
         public async Task<IActionResult> GetRoomStatusDistribution([FromRoute] int hotelId)
@@ -46,9 +47,23 @@ namespace Booking.Controllers
         [HttpGet("revenue-trend")]
         public async Task<IActionResult> GetRevenueTrend(
             [FromRoute] int hotelId,
-            [FromQuery] string groupBy = "monthly")
+            [FromQuery] string groupBy = DashboardConstants.GroupByMonthly)
         {
             var result = await _reservationService.GetHotelRevenueTrendAsync(hotelId, groupBy);
+            return Ok(result);
+        }
+
+        [HttpGet("insurance-income-trend")]
+        public async Task<IActionResult> GetInsuranceIncomePerBookingTrend([FromRoute] int hotelId)
+        {
+            var result = await _reservationService.GetHotelInsuranceIncomePerBookingTrendAsync(hotelId);
+            return Ok(result);
+        }
+
+        [HttpGet("ticket-completion-rate")]
+        public async Task<IActionResult> GetTicketCompletionRate([FromRoute] int hotelId)
+        {
+            var result = await _ticketService.GetHotelTicketCompletionRateAsync(hotelId);
             return Ok(result);
         }
     }
