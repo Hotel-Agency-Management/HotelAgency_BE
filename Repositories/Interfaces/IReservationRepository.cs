@@ -37,5 +37,7 @@ namespace Booking.Interfaces.Repositories
         Task<IEnumerable<(ReservationSource Source, int Count)>> GetBookingTypeDistributionByHotelIdAsync(int hotelId);
         Task<IEnumerable<(int Year, int Month, decimal Revenue)>> GetMonthlyRevenueByHotelAsync(int hotelId, DateTime from, DateTime to);
         Task<IEnumerable<(int Year, int Month, int Day, decimal Revenue)>> GetDailyRevenueByHotelAsync(int hotelId, DateTime from, DateTime to);
+        Task<IEnumerable<(int Year, int Month, int Day, decimal TotalInsurance, int TotalReservations)>> GetDailyInsuranceIncomeByHotelAsync(int hotelId, DateTime from, DateTime to);
+        Task<IEnumerable<(int Year, int Month, decimal TotalInsurance, int TotalReservations)>> GetMonthlyInsuranceIncomeByHotelAsync(int hotelId, DateTime from, DateTime to);
     }
 }

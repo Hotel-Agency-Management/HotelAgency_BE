@@ -97,6 +97,14 @@ namespace Booking.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<(int Total, int Done)> GetCompletionCountsByHotelIdAsync(int hotelId)
+        {
+            var query = _context.HousekeepingTickets.Where(t => t.HotelId == hotelId);
+            var total = await query.CountAsync();
+            var done  = await query.CountAsync(t => t.Status == TicketStatus.Done);
+            return (total, done);
+        }
+
         private IQueryable<HousekeepingTicket> BuildQuery(
             int hotelId,
             TicketStatus? status,
