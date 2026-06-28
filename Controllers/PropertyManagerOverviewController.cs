@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}")]
+    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager}, {Roles.SuperAdmin}")]
     [EnsureHotelExistsForOwnerAttribute]
     [Route("api/hotels/{hotelId}/overview")]
     public class PropertyManagerOverviewController(

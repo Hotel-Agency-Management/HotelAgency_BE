@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Identity;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner}")]
+    [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.SuperAdmin}")]
     [EnsureAgencyExistsForOwnerAttribute]
     [Route("api/agencies/{agencyId}/overview")]
     public class AgencyOverviewController(

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager},{Roles.HousekeepingManager}")]
+    [Authorize(Roles = $"{Roles.AgencyOwner},{Roles.PropertyManager},{Roles.HousekeepingManager}, {Roles.SuperAdmin}")]
     [EnsureHotelExistsForOwnerAttribute]
     [Route("api/hotels/{hotelId}/housekeeping/dashboard")]
     public class HousekeepingDashboardController(
