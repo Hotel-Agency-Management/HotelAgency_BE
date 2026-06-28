@@ -13,5 +13,10 @@ namespace Booking.Interfaces.Services
         Task<TicketDetailResponse> UpdateTicketStatusAsync(int hotelId, int ticketId, UpdateTicketStatusRequest request);
         Task DeleteTicketAsync(int hotelId, int ticketId);
         Task<TicketCompletionRateResponse> GetHotelTicketCompletionRateAsync(int hotelId);
+        Task<TicketStatusDistributionResponse> GetTicketStatusDistributionAsync(int hotelId);
+        Task<HousekeepingKpiResponse> GetHousekeepingKpiAsync(int hotelId);
+        Task<OpenTicketsOverTimeResponse> GetOpenTicketsOverTimeAsync(int hotelId, string granularity);
+        Task<TicketTypeDistributionResponse> GetTicketTypeDistributionAsync(int hotelId);
+        Task<TicketPriorityDistributionResponse> GetTicketPriorityDistributionAsync(int hotelId);
     }
 }

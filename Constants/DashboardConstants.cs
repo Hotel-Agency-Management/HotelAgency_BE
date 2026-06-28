@@ -7,6 +7,9 @@ namespace Booking.Constants
 
         public const string GroupByDaily   = "daily";
         public const string GroupByMonthly = "monthly";
+        public const string GroupByDay     = "day";
+        public const string GroupByWeek    = "week";
+        public const string GroupByMonth   = "month";
 
         public const int DailyTrendDaysBack    = -29;
         public const int DailyTrendDaysForward = 1;

@@ -208,6 +208,190 @@ namespace Booking.Services
             return new TicketCompletionRateResponse { Value = value };
         }
 
+        public async Task<TicketStatusDistributionResponse> GetTicketStatusDistributionAsync(int hotelId)
+        {
+            var raw = (await _ticketRepository.GetStatusDistributionByHotelIdAsync(hotelId))
+                        .ToDictionary(x => x.Status, x => x.Count);
+
+            var allStatuses = new[]
+            {
+                TicketStatus.Todo,
+                TicketStatus.InProgress,
+                TicketStatus.Review,
+                TicketStatus.Done,
+            };
+
+            var total = raw.Values.Sum();
+
+            var items = allStatuses.Select(s =>
+            {
+                raw.TryGetValue(s, out var count);
+                return new TicketStatusSlice
+                {
+                    Status = s.ToString(),
+                    Count = count,
+                    Percentage = total == 0 ? 0 : Math.Round(
+                        count / (decimal)total * DashboardConstants.PercentageMultiplier,
+                        DashboardConstants.DecimalPlaces)
+                };
+            }).ToList();
+
+            return new TicketStatusDistributionResponse { Total = total, Items = items };
+        }
+
+        public async Task<TicketTypeDistributionResponse> GetTicketTypeDistributionAsync(int hotelId)
+        {
+            var raw = (await _ticketRepository.GetTypeDistributionByHotelIdAsync(hotelId))
+                        .ToDictionary(x => x.Type, x => x.Count);
+
+            var allTypes = new[]
+            {
+                TicketType.Task,
+                TicketType.Issue,
+                TicketType.Inspection,
+                TicketType.MaintenanceRequest,
+            };
+
+            var total = raw.Values.Sum();
+
+            var data = allTypes.Select(t =>
+            {
+                raw.TryGetValue(t, out var count);
+                return new TicketTypeSlice { Type = t.ToString(), Count = count };
+            }).ToList();
+
+            return new TicketTypeDistributionResponse { Total = total, Data = data };
+        }
+
+        public async Task<TicketPriorityDistributionResponse> GetTicketPriorityDistributionAsync(int hotelId)
+        {
+            var raw = (await _ticketRepository.GetPriorityDistributionByHotelIdAsync(hotelId))
+                        .ToDictionary(x => x.Priority, x => x.Count);
+
+            var allPriorities = new[]
+            {
+                TicketPriority.Low,
+                TicketPriority.Medium,
+                TicketPriority.High,
+                TicketPriority.Urgent,
+            };
+
+            var total = raw.Values.Sum();
+
+            var data = allPriorities.Select(p =>
+            {
+                raw.TryGetValue(p, out var count);
+                return new TicketPrioritySlice { Priority = p.ToString(), Count = count };
+            }).ToList();
+
+            return new TicketPriorityDistributionResponse { Total = total, Data = data };
+        }
+
+        public async Task<HousekeepingKpiResponse> GetHousekeepingKpiAsync(int hotelId)
+        {
+            var (total, done, overdue, highPriority) = await _ticketRepository.GetKpiCountsByHotelIdAsync(hotelId);
+            var active = total - done;
+            var rate = total == 0 ? 0m : Math.Round(
+                done / (decimal)total * DashboardConstants.PercentageMultiplier,
+                DashboardConstants.DecimalPlaces);
+
+            return new HousekeepingKpiResponse
+            {
+                ActiveTickets       = new KpiCount { Count = active },
+                OverdueTickets      = new KpiCount { Count = overdue },
+                HighPriorityTickets = new KpiCount { Count = highPriority },
+                CompletionRate      = new CompletionRateKpi { Done = done, Total = total, Rate = rate }
+            };
+        }
+
+        public async Task<OpenTicketsOverTimeResponse> GetOpenTicketsOverTimeAsync(int hotelId, string granularity)
+        {
+            var today = DateTime.UtcNow.Date;
+            var from  = today.AddDays(DashboardConstants.DailyTrendDaysBack);
+            var to    = today.AddDays(1).AddTicks(-1);
+
+            var dates = (await _ticketRepository.GetCreationDatesInRangeAsync(hotelId, from, to)).ToList();
+
+            var series = granularity == DashboardConstants.GroupByMonth
+                ? BuildMonthlySeries(dates, from, today)
+                : granularity == DashboardConstants.GroupByWeek
+                    ? BuildWeeklySeries(dates, from, today)
+                    : BuildDailySeries(dates, from, today);
+
+            return new OpenTicketsOverTimeResponse
+            {
+                Granularity = granularity,
+                From        = from.ToString(DashboardConstants.IsoDateFormat),
+                To          = today.ToString(DashboardConstants.IsoDateFormat),
+                Series      = series
+            };
+        }
+
+        private static List<OpenTicketsTrendItem> BuildDailySeries(
+            List<DateTime> dates, DateTime from, DateTime today)
+        {
+            var grouped = dates.GroupBy(d => d.Date).ToDictionary(g => g.Key, g => g.Count());
+
+            return Enumerable.Range(0, DashboardConstants.DailyTrendDaysCount)
+                .Select(i =>
+                {
+                    var day = from.AddDays(i);
+                    grouped.TryGetValue(day, out var count);
+                    return new OpenTicketsTrendItem
+                    {
+                        Date = day.ToString(DashboardConstants.IsoDateFormat),
+                        Open = count
+                    };
+                })
+                .ToList();
+        }
+
+        private static List<OpenTicketsTrendItem> BuildWeeklySeries(
+            List<DateTime> dates, DateTime from, DateTime today)
+        {
+            var series = new List<OpenTicketsTrendItem>();
+            var cursor = from;
+
+            while (cursor <= today)
+            {
+                var fullEnd   = cursor.AddDays(6);
+                var bucketEnd = fullEnd <= today ? fullEnd : today;
+
+                series.Add(new OpenTicketsTrendItem
+                {
+                    Date = cursor.ToString(DashboardConstants.IsoDateFormat),
+                    Open = dates.Count(d => d.Date >= cursor && d.Date <= bucketEnd)
+                });
+
+                cursor = cursor.AddDays(7);
+            }
+
+            return series;
+        }
+
+        private static List<OpenTicketsTrendItem> BuildMonthlySeries(
+            List<DateTime> dates, DateTime from, DateTime today)
+        {
+            var series = new List<OpenTicketsTrendItem>();
+            var cursor = from;
+
+            while (cursor <= today)
+            {
+                var lastOfMonth = new DateTime(cursor.Year, cursor.Month, DateTime.DaysInMonth(cursor.Year, cursor.Month));
+                var bucketEnd   = lastOfMonth <= today ? lastOfMonth : today;
+
+                series.Add(new OpenTicketsTrendItem
+                {
+                    Date = cursor.ToString(DashboardConstants.IsoDateFormat),
+                    Open = dates.Count(d => d.Date >= cursor && d.Date <= bucketEnd)
+                });
+
+                cursor = new DateTime(cursor.Year, cursor.Month, 1).AddMonths(1);
+            }
+
+            return series;
+        }
+
         private async Task ValidateAssigneeAsync(int hotelId, int userId)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());

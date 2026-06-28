@@ -105,6 +105,61 @@ namespace Booking.Repositories
             return (total, done);
         }
 
+        public async Task<IEnumerable<(TicketStatus Status, int Count)>> GetStatusDistributionByHotelIdAsync(int hotelId)
+        {
+            var rows = await _context.HousekeepingTickets
+                .Where(t => t.HotelId == hotelId)
+                .GroupBy(t => t.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Status, r.Count));
+        }
+
+        public async Task<(int Total, int Done, int Overdue, int HighPriority)> GetKpiCountsByHotelIdAsync(int hotelId)
+        {
+            var now = DateTime.UtcNow;
+            var query = _context.HousekeepingTickets.Where(t => t.HotelId == hotelId);
+
+            var total        = await query.CountAsync();
+            var done         = await query.CountAsync(t => t.Status == TicketStatus.Done);
+            var overdue      = await query.CountAsync(t => t.Deadline < now && t.Status != TicketStatus.Done);
+            var highPriority = await query.CountAsync(
+                t => t.Priority == TicketPriority.High || t.Priority == TicketPriority.Urgent);
+
+            return (total, done, overdue, highPriority);
+        }
+
+        public async Task<IEnumerable<DateTime>> GetCreationDatesInRangeAsync(int hotelId, DateTime from, DateTime to)
+        {
+            return await _context.HousekeepingTickets
+                .Where(t => t.HotelId == hotelId && t.CreatedAt >= from && t.CreatedAt <= to)
+                .Select(t => t.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<(TicketType Type, int Count)>> GetTypeDistributionByHotelIdAsync(int hotelId)
+        {
+            var rows = await _context.HousekeepingTickets
+                .Where(t => t.HotelId == hotelId)
+                .GroupBy(t => t.Type)
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Type, r.Count));
+        }
+
+        public async Task<IEnumerable<(TicketPriority Priority, int Count)>> GetPriorityDistributionByHotelIdAsync(int hotelId)
+        {
+            var rows = await _context.HousekeepingTickets
+                .Where(t => t.HotelId == hotelId)
+                .GroupBy(t => t.Priority)
+                .Select(g => new { Priority = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.Select(r => (r.Priority, r.Count));
+        }
+
         private IQueryable<HousekeepingTicket> BuildQuery(
             int hotelId,
             TicketStatus? status,
