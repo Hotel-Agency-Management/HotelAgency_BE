@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Booking.Controllers
 {
     [ApiController]
-    [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.Accountant}")]
+    [Authorize(Roles = $"{Roles.AgencyOwner}, {Roles.PropertyManager}, {Roles.Accountant}, {Roles.SuperAdmin}")]
     [Route("api/hotels/{hotelId}")]
     public class AccountantController(IPaymentLogService _paymentLogService) : ControllerBase
     {
