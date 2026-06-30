@@ -31,6 +31,19 @@ namespace Booking.Filters
                 return;
             }
 
+            if (await _userManager.IsInRoleAsync(agencyOwner, Constants.Roles.SuperAdmin))
+            {
+                if (context.ActionArguments.TryGetValue("agencyId", out var adminRouteValue) && adminRouteValue is int adminAgencyId)
+                {
+                    var foundAgency = await _agencyRepository.GetByIdAsync(adminAgencyId);
+                    if (foundAgency is null)
+                        throw new AgencyNotFoundException(adminAgencyId);
+                    context.HttpContext.Items[FilterHelpers.AgencyIdItemKey] = adminAgencyId;
+                }
+                await next();
+                return;
+            }
+
             if (agencyOwner.AgencyId is null)
                 throw new AgencyNotAssignedException();
 

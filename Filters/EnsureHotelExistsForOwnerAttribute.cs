@@ -36,6 +36,18 @@ namespace Booking.Filters
                 return;
             }
 
+            if (await _userManager.IsInRoleAsync(agencyOwner, Roles.SuperAdmin))
+            {
+                var foundHotel = await _hotelRepository.GetByIdAsync(hotelId);
+                if (foundHotel is null)
+                {
+                    context.Result = FilterHelpers.NotFound(string.Format(Messages.HotelNotFound, hotelId));
+                    return;
+                }
+                await next();
+                return;
+            }
+
             if (agencyOwner.AgencyId is null)
             {
                 context.Result = new BadRequestObjectResult(Messages.AgencyIdMissing);
