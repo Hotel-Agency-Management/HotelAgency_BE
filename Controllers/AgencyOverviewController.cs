@@ -25,8 +25,8 @@ namespace Booking.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
 
-            var bookingStats = await _reservationService.GetAgencyStatsAsync(user.AgencyId!.Value);
-            var revenueStats = await _paymentLogService.GetAgencyRevenueStatsAsync(user.AgencyId!.Value);
+            var bookingStats = await _reservationService.GetAgencyStatsAsync(user.AgencyId ?? agencyId);
+            var revenueStats = await _paymentLogService.GetAgencyRevenueStatsAsync(user.AgencyId ?? agencyId);
 
             return Ok(new AgencyOverviewResponse
             {
@@ -43,7 +43,7 @@ namespace Booking.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
 
-            var trend = await _paymentLogService.GetAgencyRevenueTrendAsync(user.AgencyId!.Value);
+            var trend = await _paymentLogService.GetAgencyRevenueTrendAsync(user.AgencyId ?? agencyId);
             return Ok(trend);
         }
 
@@ -53,7 +53,7 @@ namespace Booking.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
 
-            var distribution = await _reservationService.GetAgencyStatusDistributionAsync(user.AgencyId!.Value);
+            var distribution = await _reservationService.GetAgencyStatusDistributionAsync(user.AgencyId ?? agencyId);
             return Ok(distribution);
         }
 
@@ -63,7 +63,7 @@ namespace Booking.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
 
-            var distribution = await _reservationService.GetAgencyBookingTypeDistributionAsync(user.AgencyId!.Value);
+            var distribution = await _reservationService.GetAgencyBookingTypeDistributionAsync(user.AgencyId ?? agencyId);
             return Ok(distribution);
         }
 
@@ -73,7 +73,7 @@ namespace Booking.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
 
-            var result = await _paymentLogService.GetAgencyRevenuePerHotelAsync(user.AgencyId!.Value);
+            var result = await _paymentLogService.GetAgencyRevenuePerHotelAsync(user.AgencyId ?? agencyId);
             return Ok(result);
         }
 
@@ -83,7 +83,7 @@ namespace Booking.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
 
-            var resolvedId = user.AgencyId!.Value;
+            var resolvedId = user.AgencyId ?? agencyId;
             var profit   = await _paymentLogService.GetAgencyMonthlyProfitAsync(resolvedId);
             var expenses = await _paymentLogService.GetAgencyMonthlyExpensesAsync(resolvedId);
 
@@ -104,7 +104,7 @@ namespace Booking.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized(Messages.Unauthorized);
 
-            var result = await _reservationService.GetAgencyReservationsByRoomTypeAsync(user.AgencyId!.Value);
+            var result = await _reservationService.GetAgencyReservationsByRoomTypeAsync(user.AgencyId ?? agencyId);
             return Ok(result);
         }
     }
