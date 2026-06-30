@@ -1,5 +1,6 @@
 using Booking.Clients;
 using Booking.DTO;
+using Booking.Enums;
 using Booking.Exceptions;
 using Booking.Interfaces.Repositories;
 using System.Globalization;
@@ -11,6 +12,7 @@ namespace Booking.Services
     public class AgencyService(
         IAgencyRepository _agencyRepository,
         IBlobStorageService _blobStorageService,
+        IPlanRepository _planRepository,
         ILogger<AgencyService> _logger) : IAgencyService
     {
         public async Task<PaginatedResponse<AgencyListItemResponse>> GetAllAgenciesAsync(AgencyListRequest request)
@@ -88,6 +90,25 @@ namespace Booking.Services
 
             _logger.LogInformation("Agency {AgencyId} logo updated", agencyId);
             return logoUrl;
+        }
+
+        public async Task ChangePlanAsync(int agencyId, int planId)
+        {
+            var plan = await _planRepository.GetByIdAsync(planId);
+            if (plan is null)
+                throw new PlanNotFoundException(planId);
+
+            if (plan.Status != PlanStatus.Active)
+                throw new PlanNotAvailableException(planId);
+
+            var agency = await _agencyRepository.GetByIdAsync(agencyId)
+                ?? throw new AgencyNotFoundException(agencyId);
+
+            agency.PlanId = planId;
+            agency.UpdatedAt = DateTime.UtcNow;
+
+            await _agencyRepository.UpdateAsync(agency);
+            _logger.LogInformation("Agency {AgencyId} plan changed to {PlanId}", agencyId, planId);
         }
 
         public async Task<AgencyGrowthResponse> GetMonthlyGrowthAsync()

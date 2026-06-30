@@ -35,6 +35,7 @@ public static class Messages
     // Agency
     public const string LogoUpdatedSuccessfully = "Logo Updated Successfully";
     public const string AgencyUpdatedSuccessfully = "Agency Updated Successfully";
+    public const string PlanChangedSuccessfully = "Plan Changed Successfully";
 
     //filter
     public const string HotelIdMissing = "HotelId is missing.";

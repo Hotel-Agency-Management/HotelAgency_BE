@@ -9,6 +9,7 @@ namespace Booking.Interfaces.Services
         Task<Agency> GetAgencyProfileAsync(int agencyId);
         Task UpdateAgencyAsync(int agencyId, UpdateAgencyRequest request);
         Task<string> UpdateAgencyLogoAsync(int agencyId, IFormFile file);
+        Task ChangePlanAsync(int agencyId, int planId);
         Task<AgencyGrowthResponse> GetMonthlyGrowthAsync();
     }
 }
