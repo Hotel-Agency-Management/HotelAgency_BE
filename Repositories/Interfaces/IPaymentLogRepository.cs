@@ -21,12 +21,12 @@ namespace Booking.Interfaces.Repositories
         Task<PaymentLog> CreateAsync(PaymentLog paymentLog);
 
         // Admin — all platform logs
-        Task<IEnumerable<PaymentLog>> GetAllPagedAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
-        Task<int> CountAllAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
+        Task<IEnumerable<PaymentLog>> GetAllPagedAsync(PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
+        Task<int> CountAllAsync(PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo);
 
         // Hotel — paged (all transactions)
-        Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
-        Task<int> CountHotelLogsAsync(int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo);
+        Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(int hotelId, PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize);
+        Task<int> CountHotelLogsAsync(int hotelId, PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo);
 
         // Hotel — unfiltered summary totals in one query
         Task<HotelPaymentSummary> GetHotelSummaryAsync(int hotelId);
