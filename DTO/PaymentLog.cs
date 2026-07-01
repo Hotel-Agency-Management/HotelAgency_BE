@@ -40,6 +40,7 @@ namespace Booking.DTO
         public int PageSize { get; set; } = 10;
 
         public PaymentType? Type { get; set; }
+        public PaymentDirection? Direction { get; set; }
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
         public string SortOrder { get; set; } = SortOrders.Newest;

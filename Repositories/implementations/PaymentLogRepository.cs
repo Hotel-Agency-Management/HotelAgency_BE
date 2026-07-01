@@ -19,28 +19,28 @@ namespace Booking.Repositories
         }
 
         public async Task<IEnumerable<PaymentLog>> GetAllPagedAsync(
-            PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize)
-            => await BuildBaseQuery(type, dateFrom, dateTo, ascending)
+            PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo, bool ascending, int pageNumber, int pageSize)
+            => await BuildBaseQuery(type, direction, dateFrom, dateTo, ascending)
                 .Include(p => p.Reservation)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-        public async Task<int> CountAllAsync(PaymentType? type, DateTime? dateFrom, DateTime? dateTo)
-            => await BuildBaseQuery(type, dateFrom, dateTo, ascending: false).CountAsync();
+        public async Task<int> CountAllAsync(PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo)
+            => await BuildBaseQuery(type, direction, dateFrom, dateTo, ascending: false).CountAsync();
 
         public async Task<IEnumerable<PaymentLog>> GetHotelLogsAsync(
-            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo,
+            int hotelId, PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo,
             bool ascending, int pageNumber, int pageSize)
-            => await BuildHotelQuery(hotelId, type, dateFrom, dateTo, ascending)
+            => await BuildHotelQuery(hotelId, type, direction, dateFrom, dateTo, ascending)
                 .Include(p => p.Reservation)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
         public async Task<int> CountHotelLogsAsync(
-            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo)
-            => await BuildHotelQuery(hotelId, type, dateFrom, dateTo, ascending: false).CountAsync();
+            int hotelId, PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo)
+            => await BuildHotelQuery(hotelId, type, direction, dateFrom, dateTo, ascending: false).CountAsync();
 
         public async Task<HotelPaymentSummary> GetHotelSummaryAsync(int hotelId)
         {
@@ -223,12 +223,16 @@ namespace Booking.Repositories
         }
 
         private IQueryable<PaymentLog> BuildBaseQuery(
-            PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
+            PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {
             var query = _context.PaymentLogs.AsQueryable();
 
             if (type.HasValue)
                 query = query.Where(p => p.Type == type.Value);
+            if (direction == PaymentDirection.Incoming)
+                query = query.Where(p => p.To == null);
+            else if (direction == PaymentDirection.Outgoing)
+                query = query.Where(p => p.From == null);
             if (dateFrom.HasValue)
                 query = query.Where(p => p.CreatedAt >= dateFrom.Value);
             if (dateTo.HasValue)
@@ -240,12 +244,16 @@ namespace Booking.Repositories
         }
 
         private IQueryable<PaymentLog> BuildHotelQuery(
-            int hotelId, PaymentType? type, DateTime? dateFrom, DateTime? dateTo, bool ascending)
+            int hotelId, PaymentType? type, PaymentDirection? direction, DateTime? dateFrom, DateTime? dateTo, bool ascending)
         {
             var query = _context.PaymentLogs.Where(p => p.HotelId == hotelId);
 
             if (type.HasValue)
                 query = query.Where(p => p.Type == type.Value);
+            if (direction == PaymentDirection.Incoming)
+                query = query.Where(p => p.To == null);
+            else if (direction == PaymentDirection.Outgoing)
+                query = query.Where(p => p.From == null);
             if (dateFrom.HasValue)
                 query = query.Where(p => p.CreatedAt >= dateFrom.Value);
             if (dateTo.HasValue)

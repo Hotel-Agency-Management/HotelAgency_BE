@@ -21,10 +21,10 @@ namespace Booking.Services
             bool ascending = IsAscending(request.SortOrder);
 
             var items = (await _paymentLogRepository.GetAllPagedAsync(
-                request.Type, request.DateFrom, request.DateTo, ascending,
+                request.Type, request.Direction, request.DateFrom, request.DateTo, ascending,
                 request.PageNumber, request.PageSize)).ToList();
             var total = await _paymentLogRepository.CountAllAsync(
-                request.Type, request.DateFrom, request.DateTo);
+                request.Type, request.Direction, request.DateFrom, request.DateTo);
 
 
             var userIds = items
@@ -56,8 +56,8 @@ namespace Booking.Services
         {
             bool ascending = IsAscending(request.SortOrder);
 
-            var items = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, request.Type, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
-            var total = await _paymentLogRepository.CountHotelLogsAsync(hotelId, request.Type, request.DateFrom, request.DateTo);
+            var items = (await _paymentLogRepository.GetHotelLogsAsync(hotelId, request.Type, request.Direction, request.DateFrom, request.DateTo, ascending, request.PageNumber, request.PageSize)).ToList();
+            var total = await _paymentLogRepository.CountHotelLogsAsync(hotelId, request.Type, request.Direction, request.DateFrom, request.DateTo);
             var summary = await _paymentLogRepository.GetHotelSummaryAsync(hotelId);
 
             var hotel = await _hotelRepository.GetByIdAsync(hotelId);
