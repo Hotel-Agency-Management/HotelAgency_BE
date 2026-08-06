@@ -41,4 +41,12 @@ namespace Booking.Exceptions
         {
         }
     }
+
+    public class PlanNotAvailableException : PlanException
+    {
+        public PlanNotAvailableException(int planId)
+            : base($"Plan with id '{planId}' is not available for selection.", (int)HttpStatusCode.BadRequest)
+        {
+        }
+    }
 }

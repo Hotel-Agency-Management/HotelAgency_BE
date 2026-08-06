@@ -160,4 +160,11 @@ namespace Booking.DTO
         }
     }
 
+    public class ChangePlanRequest
+    {
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "PlanId must be a positive integer.")]
+        public int PlanId { get; set; }
+    }
+
 }

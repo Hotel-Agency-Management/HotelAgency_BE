@@ -35,6 +35,17 @@ namespace Booking.Controllers
             });
         }
 
+        [HttpPatch("plan")]
+        public async Task<IActionResult> ChangePlan([FromBody] ChangePlanRequest request)
+        {
+            var agencyId = FilterHelpers.GetRequiredAgencyId(HttpContext);
+            await _agencyService.ChangePlanAsync(agencyId, request.PlanId);
+            return Ok(new AgencyResponseDto
+            {
+                Message = Messages.PlanChangedSuccessfully
+            });
+        }
+
         [HttpPatch("update-logo")]
         public async Task<IActionResult> UpdateAgencyLogo([FromForm] IFormFile file)
         {

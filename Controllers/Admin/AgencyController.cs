@@ -49,6 +49,17 @@ namespace Booking.Controllers.Admin
             });
         }
 
+        [HttpPatch("{agencyId:int}/plan")]
+        [EnsureAgencyExistsForAdminAttribute]
+        public async Task<IActionResult> ChangePlan([FromRoute] int agencyId, [FromBody] ChangePlanRequest request)
+        {
+            await _agencyService.ChangePlanAsync(agencyId, request.PlanId);
+            return Ok(new AgencyResponseDto
+            {
+                Message = Messages.PlanChangedSuccessfully
+            });
+        }
+
         [HttpPatch("{agencyId:int}/update-logo")]
         [EnsureAgencyExistsForAdminAttribute]
         public async Task<IActionResult> UpdateAgencyLogo([FromRoute] int agencyId, [FromForm] IFormFile file)
