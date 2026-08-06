@@ -26,6 +26,7 @@ namespace Booking.Services
         IAgencyRepository _agencyRepository,
         IHotelRepository _hotelRepository,
         ILoginResponseStrategyFactory _loginResponseStrategyFactory,
+        INotificationService _notificationService,
         ILogger<AuthService> _logger) : IAuthService
     {
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
@@ -169,7 +170,16 @@ namespace Booking.Services
 
         public async Task<IdentityResult> ChangePasswordAsync(ApplicationUser user, ChangePasswordDto dto)
         {
-            return await _authRepository.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            var result = await _authRepository.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (result.Succeeded)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = user.Id,
+                    Title = NotificationTitles.PasswordChanged,
+                    Message = NotificationMessages.PasswordChanged,
+                    Type = NotificationType.System
+                });
+            return result;
         }
 
         public async Task<bool> SendResetPasswordEmailAsync(string email)
@@ -246,6 +256,14 @@ namespace Booking.Services
 
             await _authRepository.MarkCodeAsUsedAsync(resetCode);
             _logger.LogInformation("Password reset completed for {Email}", email);
+
+            await _notificationService.CreateAsync(new CreateNotificationRequest
+            {
+                UserId = user.Id,
+                Title = NotificationTitles.PasswordReset,
+                Message = NotificationMessages.PasswordReset,
+                Type = NotificationType.System
+            });
         }
 
         public async Task<RefreshTokenResponseDto> RefreshTokenAsync(string token)
@@ -316,6 +334,14 @@ namespace Booking.Services
 
             await _authRepository.MarkEmailVerificationTokenAsUsedAsync(verificationToken);
             _logger.LogInformation("Email verified for user {UserId}", userId);
+
+            await _notificationService.CreateAsync(new CreateNotificationRequest
+            {
+                UserId = userId,
+                Title = NotificationTitles.EmailVerified,
+                Message = NotificationMessages.EmailVerified,
+                Type = NotificationType.System
+            });
         }
 
         public async Task ResendVerificationEmailAsync(string email)

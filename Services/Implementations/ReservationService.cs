@@ -18,6 +18,7 @@ namespace Booking.Services
         IEmailJobService _emailJobService,
         IPaymentLogRepository _paymentLogRepository,
         IHotelRepository _hotelRepository,
+        INotificationService _notificationService,
         ILogger<ReservationService> _logger) : IReservationService
     {
         public async Task<ReservationResponse> CreateReservationAsync(int hotelId, int staffUserId, CreateReservationRequest request)
@@ -61,7 +62,8 @@ namespace Booking.Services
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
             });
 
-            var agencyId = (await _hotelRepository.GetByIdAsync(saved.HotelId))?.AgencyId;
+            var hotel = await _hotelRepository.GetByIdAsync(saved.HotelId);
+            var agencyId = hotel?.AgencyId;
 
             await _paymentLogRepository.CreateAsync(new PaymentLog
             {
@@ -90,6 +92,27 @@ namespace Booking.Services
 
             await SendConfirmationEmailAsync(saved);
             _logger.LogInformation("Reservation {ReservationNumber} created for hotel {HotelId} by staff {StaffUserId}", saved.ReservationNumber, hotelId, staffUserId);
+
+            if (saved.CustomerId.HasValue)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = saved.CustomerId.Value,
+                    Title = NotificationTitles.ReservationConfirmed,
+                    Message = string.Format(NotificationMessages.ReservationConfirmed, saved.ReservationNumber),
+                    Type = NotificationType.Reservation,
+                    Metadata = $"{{\"reservationId\":{saved.Id}}}"
+                });
+
+            if (hotel?.ManagerUserId is int staffManagerId)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = staffManagerId,
+                    Title = NotificationTitles.NewReservation,
+                    Message = string.Format(NotificationMessages.NewReservation, saved.ReservationNumber, saved.GuestFullName),
+                    Type = NotificationType.Reservation,
+                    Metadata = $"{{\"reservationId\":{saved.Id}}}"
+                });
+
             return new ReservationResponse(saved);
         }
 
@@ -132,7 +155,8 @@ namespace Booking.Services
                 ReservationRooms = rooms.Select(r => new ReservationRoom { RoomId = r.Id }).ToList()
             });
 
-            var agencyId = (await _hotelRepository.GetByIdAsync(saved.HotelId))?.AgencyId;
+            var hotel = await _hotelRepository.GetByIdAsync(saved.HotelId);
+            var agencyId = hotel?.AgencyId;
 
             await _paymentLogRepository.CreateAsync(new PaymentLog
             {
@@ -161,6 +185,26 @@ namespace Booking.Services
 
             await SendConfirmationEmailAsync(saved);
             _logger.LogInformation("Reservation {ReservationNumber} created by customer {CustomerId} for hotel {HotelId}", saved.ReservationNumber, user.Id, hotelId);
+
+            await _notificationService.CreateAsync(new CreateNotificationRequest
+            {
+                UserId = user.Id,
+                Title = NotificationTitles.ReservationConfirmed,
+                Message = string.Format(NotificationMessages.ReservationConfirmed, saved.ReservationNumber),
+                Type = NotificationType.Reservation,
+                Metadata = $"{{\"reservationId\":{saved.Id}}}"
+            });
+
+            if (hotel?.ManagerUserId is int onlineManagerId)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = onlineManagerId,
+                    Title = NotificationTitles.NewOnlineReservation,
+                    Message = string.Format(NotificationMessages.NewOnlineReservation, saved.ReservationNumber, saved.GuestFullName),
+                    Type = NotificationType.Reservation,
+                    Metadata = $"{{\"reservationId\":{saved.Id}}}"
+                });
+
             return new ReservationResponse(saved);
         }
 
@@ -235,6 +279,16 @@ namespace Booking.Services
             var updated = await _reservationRepository.UpdateAsync(reservation);
             _logger.LogInformation("Reservation {ReservationId} status changed to {Status} for hotel {HotelId}", reservationId, request.Status, hotelId);
 
+            if (request.Status == ReservationStatus.CheckedOut && updated.CustomerId.HasValue)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = updated.CustomerId.Value,
+                    Title = NotificationTitles.CheckOutProcessed,
+                    Message = string.Format(NotificationMessages.CheckOutProcessed, updated.ReservationNumber),
+                    Type = NotificationType.Reservation,
+                    Metadata = $"{{\"reservationId\":{updated.Id}}}"
+                });
+
             return new ReservationResponse(updated);
         }
 
@@ -273,7 +327,20 @@ namespace Booking.Services
                 reservation.Status != ReservationStatus.Confirmed)
                 throw new BadRequestException(Messages.ReservationNotUpdatable);
 
-            return await ApplyUpdateAsync(reservation, customerId, request);
+            var result = await ApplyUpdateAsync(reservation, customerId, request);
+
+            var hotel = await _hotelRepository.GetByIdAsync(reservation.HotelId);
+            if (hotel?.ManagerUserId is int managerId)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = managerId,
+                    Title = NotificationTitles.ReservationUpdatedByGuest,
+                    Message = string.Format(NotificationMessages.ReservationUpdatedByGuest, reservation.ReservationNumber),
+                    Type = NotificationType.Reservation,
+                    Metadata = $"{{\"reservationId\":{reservation.Id}}}"
+                });
+
+            return result;
         }
 
         public async Task<CancellationResponse> CancelMyReservationAsync(
@@ -282,7 +349,19 @@ namespace Booking.Services
             var reservation = await _reservationRepository.GetByIdAndCustomerIdAsync(reservationId, customerId)
                 ?? throw new ReservationNotFoundException(reservationId);
 
-            return await ApplyCancellationAsync(reservation, request);
+            var result = await ApplyCancellationAsync(reservation, request);
+
+            if (reservation.Hotel?.ManagerUserId is int managerId)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = managerId,
+                    Title = NotificationTitles.ReservationCancelledByGuest,
+                    Message = string.Format(NotificationMessages.ReservationCancelledByGuest, reservation.ReservationNumber),
+                    Type = NotificationType.Reservation,
+                    Metadata = $"{{\"reservationId\":{reservation.Id}}}"
+                });
+
+            return result;
         }
 
         private async Task<ReservationResponse> ApplyUpdateAsync(
@@ -392,6 +471,16 @@ namespace Booking.Services
 
             var updated = await _reservationRepository.UpdateAsync(reservation);
 
+            if (updated.CustomerId.HasValue)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = updated.CustomerId.Value,
+                    Title = NotificationTitles.ReservationCancelled,
+                    Message = string.Format(NotificationMessages.ReservationCancelled, updated.ReservationNumber),
+                    Type = NotificationType.Reservation,
+                    Metadata = $"{{\"reservationId\":{updated.Id}}}"
+                });
+
             var cancelAgencyId = reservation.Hotel?.AgencyId;
 
             if (fee > 0m)
@@ -433,6 +522,17 @@ namespace Booking.Services
                     AgencyId = cancelAgencyId
                 });
             }
+
+            var refundAmount = fee > 0m ? originalTotal - fee : originalTotal;
+            if (updated.CustomerId.HasValue && refundAmount > 0)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = updated.CustomerId.Value,
+                    Title = NotificationTitles.RefundIssued,
+                    Message = string.Format(NotificationMessages.RefundIssued, refundAmount, updated.ReservationNumber),
+                    Type = NotificationType.Payment,
+                    Metadata = $"{{\"reservationId\":{updated.Id}}}"
+                });
 
             var message = fee == 0m ? Messages.FreeCancellationMessage : Messages.PaidCancellationMessage;
             return new CancellationResponse(updated, message);

@@ -14,6 +14,7 @@ namespace Booking.Services
         UserManager<ApplicationUser> _userManager,
         IHotelRepository _hotelRepository,
         ISystemLogService _logService,
+        INotificationService _notificationService,
         ILogger<PaymentLogService> _logger) : IPaymentLogService
     {
         public async Task<PaginatedResponse<PaymentLogItemResponse>> GetAllAsync(PaymentLogListRequest request)
@@ -424,6 +425,17 @@ namespace Booking.Services
 
             var saved = await _paymentLogRepository.GetByIdAsync(log.Id);
             _logger.LogInformation("Payment log created for hotel {HotelId}, amount {Amount}, type {Type}", hotelId, request.Amount, request.Type);
+
+            if (request.To.HasValue)
+                await _notificationService.CreateAsync(new CreateNotificationRequest
+                {
+                    UserId = request.To.Value,
+                    Title = NotificationTitles.PaymentReceived,
+                    Message = string.Format(NotificationMessages.PaymentReceived, request.Amount),
+                    Type = NotificationType.Payment,
+                    Metadata = $"{{\"paymentLogId\":{log.Id}}}"
+                });
+
             return await MapToDetailsAsync(hotelId, saved!);
         }
 
